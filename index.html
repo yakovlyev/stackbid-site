@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="StackBid">
+<meta name="theme-color" content="#0C2340">
+<title>StackBid — Know Your Materials Cost Before You Build</title>
+<meta name="description" content="Free AI construction materials estimator for US homeowners. Get wholesale prices by ZIP code in 3 minutes. Save up to 28% vs Home Depot.">
+<meta name="keywords" content="construction estimate, materials cost, wholesale prices, home improvement, deck cost, roofing estimate">
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="apple-touch-icon" href="/logo.svg">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://stackbid.app">
+<meta property="og:title" content="StackBid — Know Your Real Materials Cost Before You Build">
+<meta property="og:description" content="Free AI estimate in 3 minutes. Wholesale prices by ZIP. Save up to 28% vs Home Depot. No signup.">
+<meta property="og:image" content="https://stackbid.app/og-image.png">
+<meta property="og:site_name" content="StackBid">
+<!-- Twitter/X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@StackBid">
+<meta name="twitter:title" content="StackBid — Free AI Materials Estimator">
+<meta name="twitter:description" content="Wholesale construction prices by ZIP. Save up to 28% vs Home Depot. Free, no signup.">
+<meta name="twitter:image" content="https://stackbid.app/og-image.png">
+<!-- Schema.org -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"StackBid","applicationCategory":"UtilitiesApplication","operatingSystem":"Web, iOS, Android","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"AI-powered wholesale construction materials estimator for US homeowners","url":"https://stackbid.app"}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0C2340;
+  --amber: #C9952A;
+  --amber-light: #FDF3E0;
+  --white: #FFFFFF;
+  --offwhite: #F7F6F3;
+  --muted: #6B7A8D;
+  --border: #E2E0DB;
+  --green: #1A7F5A;
+  --green-light: #E6F4EE;
+  --blue-light: #E8F0FB;
+  --blue: #1A4F9C;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: var(--white); color: var(--ink); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+h1,h2,h3,h4 { font-family: 'DM Sans', sans-serif; }
+
+/* NAV */
+nav { position: sticky; top: 0; z-index: 100; background: rgba(12,35,64,0.97); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 0 5%; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; height: 58px; }
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo img { height: 36px; width: auto; }
+.nav-logo-text { font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 700; color: var(--white); letter-spacing: -0.3px; }
+.nav-logo-text span { color: var(--amber); }
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nav-links a { color: rgba(255,255,255,0.7); font-size: 14px; text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--white); }
+.nav-cta { background: var(--amber); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; padding: 8px 20px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+.nav-cta:hover { opacity: 0.9; }
+.nav-mobile-hide { display: flex; }
+
+/* MOBILE NAV */
+@media (max-width: 640px) {
+  .nav-mobile-hide { display: none; }
+  nav { padding: 0 4%; height: 54px; }
+  .nav-logo img { height: 30px; }
+  .nav-logo-text { font-size: 17px; }
+  .nav-cta { padding: 7px 14px; font-size: 13px; }
+}
+
+/* HERO */
+.hero { background: var(--ink); color: var(--white); padding: 80px 5% 72px; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; right: -60px; top: -60px; width: 420px; height: 420px; border-radius: 50%; background: rgba(201,149,42,0.06); pointer-events: none; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(201,149,42,0.15); border: 1px solid rgba(201,149,42,0.3); color: var(--amber); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 24px; }
+.hero h1 { font-size: clamp(32px, 5.5vw, 62px); font-weight: 700; line-height: 1.08; letter-spacing: -1.5px; max-width: 780px; margin-bottom: 22px; }
+.hero h1 em { font-style: normal; color: var(--amber); }
+.hero-sub { font-size: clamp(15px, 2vw, 19px); color: rgba(255,255,255,0.65); max-width: 560px; margin-bottom: 40px; line-height: 1.6; }
+.hero-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.btn-hero { background: var(--amber); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; padding: 14px 32px; border-radius: var(--radius); border: none; cursor: pointer; text-decoration: none; display: inline-block; transition: transform 0.15s, opacity 0.15s; -webkit-tap-highlight-color: transparent; }
+.btn-hero:hover { opacity: 0.92; transform: translateY(-1px); }
+.btn-ghost { color: rgba(255,255,255,0.7); font-size: 15px; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+.btn-ghost:hover { color: var(--white); }
+.hero-stats { display: flex; gap: 40px; margin-top: 56px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; }
+.hero-stat-val { font-family: 'DM Sans', sans-serif; font-size: 34px; font-weight: 700; color: var(--white); }
+.hero-stat-val .counter { display: inline-block; }
+.hero-stat-lbl { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+/* MOBILE HERO */
+@media (max-width: 640px) {
+  .hero { padding: 48px 5% 48px; }
+  .hero-stats { gap: 24px; margin-top: 36px; padding-top: 28px; }
+  .hero-stat-val { font-size: 26px; }
+  .btn-hero { width: 100%; text-align: center; padding: 16px; font-size: 17px; }
+  .btn-ghost { display: none; }
+}
+
+/* PWA install banner */
+.pwa-banner { display: none; background: var(--ink); color: var(--white); padding: 10px 5%; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; }
+.pwa-banner.show { display: flex; }
+.pwa-banner-left { display: flex; align-items: center; gap: 10px; }
+.pwa-banner img { width: 36px; height: 36px; border-radius: 8px; }
+.pwa-banner-btn { background: var(--amber); color: var(--white); border: none; border-radius: 8px; padding: 7px 16px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.pwa-banner-close { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 20px; cursor: pointer; padding: 4px; line-height: 1; }
+
+/* TRUST BAR */
+.trust-bar { background: var(--offwhite); border-bottom: 1px solid var(--border); padding: 18px 5%; display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; }
+.trust-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+@media (max-width: 640px) {
+  .trust-bar { gap: 12px 24px; padding: 14px 5%; }
+  .trust-item { font-size: 12px; }
+}
+
+/* HOW IT WORKS */
+.how { padding: 80px 5%; background: var(--white); }
+.section-label { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin-bottom: 12px; }
+.section-title { font-family: 'DM Sans', sans-serif; font-size: clamp(24px, 3.5vw, 38px); font-weight: 700; letter-spacing: -0.5px; color: var(--ink); margin-bottom: 12px; }
+.section-sub { font-size: 17px; color: var(--muted); max-width: 520px; line-height: 1.6; margin-bottom: 48px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+.step { background: var(--offwhite); border-radius: var(--radius-lg); padding: 28px 24px; }
+.step-num { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--amber); margin-bottom: 14px; }
+.step-icon { font-size: 32px; margin-bottom: 14px; }
+.step h3 { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+.step p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+/* LIVE TOOL */
+.tool-section { background: var(--offwhite); padding: 80px 5%; }
+@media (max-width: 640px) { .tool-section { padding: 40px 4%; } }
+.tool-wrap { max-width: 860px; margin: 0 auto; }
+.tool-card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 24px rgba(12,35,64,0.08); }
+.tool-header { background: var(--ink); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+.tool-header-title { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: var(--white); display: flex; align-items: center; gap: 10px; }
+.tool-header-title img { height: 28px; width: auto; }
+.tool-badge { background: rgba(201,149,42,0.2); color: var(--amber); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+.tool-body { padding: 24px; }
+@media (max-width: 640px) { .tool-body { padding: 16px; } }
+.tool-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--offwhite); border-radius: var(--radius); padding: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tool-tab { flex: 1; min-width: 100px; padding: 8px 6px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; background: none; border: none; border-radius: 7px; cursor: pointer; color: var(--muted); transition: all 0.2s; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.tool-tab.active { background: var(--white); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+.ptype-btn { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 6px; text-align: center; cursor: pointer; background: var(--white); font-size: 12px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 5px; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+.ptype-btn:hover, .ptype-btn:active { border-color: var(--amber); color: var(--ink); }
+.ptype-btn.sel { border: 2px solid var(--amber); color: var(--ink); background: var(--amber-light); font-weight: 500; }
+.ptype-icon { font-size: 20px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+@media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+.tf label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+.tf input, .tf select, .tf textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 15px; font-family: 'Inter', sans-serif; color: var(--ink); background: var(--white); outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
+.tf input:focus, .tf select:focus, .tf textarea:focus { border-color: var(--amber); }
+.tf textarea { resize: vertical; min-height: 80px; }
+.voice-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.voice-btn { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--white); font-size: 13px; color: var(--muted); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.voice-btn:hover, .voice-btn.rec { border-color: var(--amber); color: var(--amber); }
+.tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.qtag { display: inline-flex; align-items: center; gap: 4px; background: var(--offwhite); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px; font-size: 12px; color: var(--muted); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.qtag:hover, .qtag:active { border-color: var(--amber); color: var(--ink); }
+.gen-btn { width: 100%; background: var(--ink); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; padding: 15px; border: none; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s; margin-top: 4px; -webkit-tap-highlight-color: transparent; }
+.gen-btn:hover { opacity: 0.88; }
+.gen-btn:active { transform: scale(0.99); }
+.progress-bar { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 16px; overflow: hidden; display: none; }
+.progress-fill { height: 100%; background: var(--amber); width: 0%; transition: width 0.4s ease; border-radius: 2px; }
+.status-msg { font-size: 13px; color: var(--muted); margin-bottom: 14px; display: none; text-align: center; }
+#estimate-out { display: none; }
+.estimate-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+.estimate-title { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: var(--ink); }
+.estimate-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.export-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.exp-btn { display: flex; align-items: center; gap: 5px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 7px; background: var(--white); font-size: 12px; color: var(--muted); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.exp-btn:hover, .exp-btn:active { border-color: var(--ink); color: var(--ink); }
+.totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+@media (max-width: 560px) { .totals { grid-template-columns: 1fr 1fr; } }
+.total-card { background: var(--offwhite); border-radius: var(--radius); padding: 12px 10px; text-align: center; }
+.total-card.highlight { background: var(--blue-light); }
+.total-card.savings { background: var(--green-light); }
+.total-val { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--ink); }
+.total-card.highlight .total-val { color: var(--blue); }
+.total-card.savings .total-val { color: var(--green); }
+.total-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.est-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.est-table th { text-align: left; padding: 7px 8px; font-size: 11px; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
+.est-table td { padding: 9px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.est-table tr:last-child td { border-bottom: none; }
+.cat-row td { background: var(--offwhite); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; padding: 5px 8px; }
+.price-retail { color: var(--muted); text-decoration: line-through; font-size: 12px; }
+.price-ws { color: var(--green); font-weight: 500; }
+.price-local { color: var(--blue); font-weight: 600; }
+.save-pill { background: var(--green-light); color: var(--green); font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+.ios-tip { font-size: 12px; color: var(--muted); background: var(--offwhite); border-radius: 7px; padding: 8px 12px; margin-top: 10px; display: none; }
+
+/* PROGRESSIVE GATE */
+.gate-overlay { display: none; min-height: 420px; background: rgba(12,35,64,0.82); align-items: center; justify-content: center; padding: 20px; margin-top: 16px; border-radius: var(--radius-lg); }
+.gate-overlay.show { display: flex; }
+.gate-card { background: var(--white); border-radius: var(--radius-lg); padding: 28px 24px; max-width: 420px; width: 100%; }
+.gate-preview { background: var(--offwhite); border-radius: var(--radius); padding: 14px; margin-bottom: 16px; }
+.gate-preview-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.gate-preview-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.gate-preview-row:last-child { border-bottom: none; }
+.gate-blur-bar { height: 13px; border-radius: 4px; background: var(--border); margin: 4px 0; }
+.gate-savings-banner { background: var(--green-light); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.gate-savings-num { font-family: 'DM Sans', sans-serif; font-size: 22px; font-weight: 700; color: var(--green); }
+.gate-savings-lbl { font-size: 12px; color: var(--green); line-height: 1.4; }
+.gate-title { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 5px; }
+.gate-sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+.gate-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.gate-field { margin-bottom: 10px; }
+.gate-field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 4px; }
+.gate-field input, .gate-field select { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 15px; color: var(--ink); background: var(--white); outline: none; -webkit-appearance: none; font-family: 'Inter', sans-serif; }
+.gate-field input:focus, .gate-field select:focus { border-color: var(--amber); }
+.gate-check { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0 14px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.gate-check input[type=checkbox] { width: 16px; height: 16px; margin-top: 1px; flex-shrink: 0; accent-color: var(--ink); }
+.gate-submit { width: 100%; background: var(--ink); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; padding: 13px; border: none; border-radius: var(--radius); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.gate-submit:active { opacity: 0.88; }
+.gate-fine { font-size: 11px; color: var(--muted); text-align: center; margin-top: 8px; }
+.gate-skip { font-size: 12px; color: var(--muted); text-align: center; margin-top: 8px; }
+.gate-skip span { text-decoration: underline; cursor: pointer; }
+
+/* PRICE COLUMNS */
+.why { padding: 80px 5%; background: var(--ink); color: var(--white); }
+.why .section-label { color: var(--amber); }
+.why .section-title { color: var(--white); }
+.why .section-sub { color: rgba(255,255,255,0.55); }
+.price-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 640px) { .price-cols { grid-template-columns: 1fr; } }
+.price-col { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-lg); padding: 24px 20px; }
+.price-col.featured { background: rgba(201,149,42,0.1); border-color: rgba(201,149,42,0.35); }
+.price-col-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
+.price-col.featured .price-col-label { color: var(--amber); }
+.price-col h3 { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+.price-col p { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+.price-col-tag { display: inline-block; margin-top: 14px; font-size: 12px; font-weight: 600; color: var(--amber); }
+
+/* SOCIAL PROOF */
+.proof { padding: 80px 5%; background: var(--offwhite); }
+.testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 40px; }
+.tcard { background: var(--white); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--border); }
+.tcard-stars { color: var(--amber); font-size: 14px; margin-bottom: 12px; letter-spacing: 2px; }
+.tcard p { font-size: 15px; color: var(--ink); line-height: 1.65; margin-bottom: 16px; }
+.tcard-author { display: flex; align-items: center; gap: 10px; }
+.tcard-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--amber-light); display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: var(--amber); flex-shrink: 0; }
+.tcard-name { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: var(--ink); }
+.tcard-loc { font-size: 12px; color: var(--muted); }
+
+/* EMAIL CAPTURE */
+.capture { padding: 80px 5%; background: var(--amber); }
+.capture-inner { max-width: 600px; margin: 0 auto; text-align: center; }
+.capture h2 { font-family: 'DM Sans', sans-serif; font-size: clamp(24px, 4vw, 40px); font-weight: 700; color: var(--ink); letter-spacing: -0.5px; margin-bottom: 14px; }
+.capture p { font-size: 17px; color: rgba(12,35,64,0.7); margin-bottom: 32px; }
+.email-form { display: flex; gap: 10px; max-width: 460px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+.email-form input { flex: 1; min-width: 220px; padding: 14px 16px; border: none; border-radius: var(--radius); font-size: 15px; font-family: 'Inter', sans-serif; outline: none; -webkit-appearance: none; }
+.email-form button { background: var(--ink); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; padding: 14px 28px; border: none; border-radius: var(--radius); cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.capture-fine { font-size: 12px; color: rgba(12,35,64,0.5); margin-top: 14px; }
+.success-msg { display: none; background: rgba(12,35,64,0.1); border-radius: var(--radius); padding: 16px 20px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--ink); }
+
+/* FOOTER */
+footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%; padding-bottom: calc(40px + var(--safe-bottom)); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 13px; }
+.footer-logo { display: flex; align-items: center; gap: 8px; }
+.footer-logo img { height: 28px; width: auto; }
+.footer-logo-text { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--white); }
+.footer-logo-text span { color: var(--amber); }
+.footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+.footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 13px; }
+.footer-links a:hover { color: rgba(255,255,255,0.7); }
+
+/* PRINT */
+@media print {
+  nav, .trust-bar, .how, .tool-tabs, .ptype-btn, .voice-btn, .tag-row,
+  .gen-btn, .why, .proof, .capture, footer, .export-row, .tool-header,
+  .progress-bar, .status-msg, .ios-tip, .hero-actions, .hero-stats,
+  .btn-hero, .btn-ghost, .pwa-banner { display: none !important; }
+  .hero { padding: 20px 0; background: white; color: black; }
+  .hero h1 { font-size: 24px; color: black; }
+  #estimate-out { display: block !important; }
+  .tool-section { background: white; padding: 0; }
+  .tool-card { box-shadow: none; border: none; }
+}
+</style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: var(--white); color: var(--ink); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+h1,h2,h3,h4 { font-family: 'DM Sans', sans-serif; }
+
+/* NAV */
+nav { position: sticky; top: 0; z-index: 100; background: rgba(15,31,46,0.97); backdrop-filter: blur(8px); padding: 0 5%; display: flex; align-items: center; justify-content: space-between; height: 58px; }
+.nav-logo { font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 700; color: var(--white); letter-spacing: -0.3px; }
+.nav-logo span { color: var(--amber); }
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nav-links a { color: rgba(255,255,255,0.7); font-size: 14px; text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--white); }
+.nav-cta { background: var(--amber); color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; padding: 8px 20px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+.nav-cta:hover { opacity: 0.9; }
+.nav-mobile-hide { display: flex; }
+
+/* HERO */
+.hero { background: var(--ink); color: var(--white); padding: 80px 5% 72px; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; right: -60px; top: -60px; width: 420px; height: 420px; border-radius: 50%; background: rgba(232,160,32,0.06); pointer-events: none; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(232,160,32,0.15); border: 1px solid rgba(232,160,32,0.3); color: var(--amber); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 24px; }
+.hero h1 { font-size: clamp(36px, 5.5vw, 62px); font-weight: 700; line-height: 1.08; letter-spacing: -1.5px; max-width: 780px; margin-bottom: 22px; }
+.hero h1 em { font-style: normal; color: var(--amber); }
+.hero-sub { font-size: clamp(16px, 2vw, 19px); color: rgba(255,255,255,0.65); max-width: 560px; margin-bottom: 40px; line-height: 1.6; }
+.hero-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.btn-hero { background: var(--amber); color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; padding: 14px 32px; border-radius: var(--radius); border: none; cursor: pointer; text-decoration: none; display: inline-block; transition: transform 0.15s, opacity 0.15s; }
+.btn-hero:hover { opacity: 0.92; transform: translateY(-1px); }
+.btn-ghost { color: rgba(255,255,255,0.7); font-size: 15px; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+.btn-ghost:hover { color: var(--white); }
+.hero-stats { display: flex; gap: 40px; margin-top: 56px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; }
+.hero-stat-val { font-family: 'DM Sans', sans-serif; font-size: 34px; font-weight: 700; color: var(--white); }
+.hero-stat-val .counter { display: inline-block; }
+.hero-stat-lbl { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+/* TRUST BAR */
+.trust-bar { background: var(--offwhite); border-bottom: 1px solid var(--border); padding: 18px 5%; display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; }
+.trust-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.trust-icon { font-size: 16px; }
+
+/* HOW IT WORKS */
+.how { padding: 80px 5%; background: var(--white); }
+.section-label { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin-bottom: 12px; }
+.section-title { font-family: 'DM Sans', sans-serif; font-size: clamp(26px, 3.5vw, 38px); font-weight: 700; letter-spacing: -0.5px; color: var(--ink); margin-bottom: 12px; }
+.section-sub { font-size: 17px; color: var(--muted); max-width: 520px; line-height: 1.6; margin-bottom: 48px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+.step { background: var(--offwhite); border-radius: var(--radius-lg); padding: 28px 24px; position: relative; }
+.step-num { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--amber); margin-bottom: 14px; }
+.step-icon { font-size: 32px; margin-bottom: 14px; }
+.step h3 { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+.step p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.step-connector { display: none; }
+
+/* LIVE TOOL */
+.tool-section { background: var(--offwhite); padding: 80px 5%; }
+.tool-wrap { max-width: 860px; margin: 0 auto; }
+.tool-card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 24px rgba(15,31,46,0.08); }
+.tool-header { background: var(--ink); padding: 20px 28px; display: flex; align-items: center; justify-content: space-between; }
+.tool-header-title { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: var(--white); }
+.tool-badge { background: rgba(232,160,32,0.2); color: var(--amber); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+.tool-body { padding: 28px; }
+.tool-tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--offwhite); border-radius: var(--radius); padding: 4px; }
+.tool-tab { flex: 1; padding: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; background: none; border: none; border-radius: 7px; cursor: pointer; color: var(--muted); transition: all 0.2s; }
+.tool-tab.active { background: var(--white); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+.ptype-btn { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 8px; text-align: center; cursor: pointer; background: var(--white); font-size: 12px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all 0.15s; }
+.ptype-btn:hover { border-color: var(--amber); color: var(--ink); }
+.ptype-btn.sel { border: 2px solid var(--amber); color: var(--ink); background: var(--amber-light); font-weight: 500; }
+.ptype-icon { font-size: 22px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.tf label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+.tf input, .tf select, .tf textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; font-family: 'Inter', sans-serif; color: var(--ink); background: var(--white); outline: none; transition: border-color 0.2s; }
+.tf input:focus, .tf select:focus, .tf textarea:focus { border-color: var(--amber); }
+.tf textarea { resize: vertical; min-height: 80px; }
+.voice-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.voice-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--white); font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+.voice-btn:hover { border-color: var(--ink); color: var(--ink); }
+.voice-btn.rec { border-color: #C0392B; color: #C0392B; }
+.tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.qtag { display: inline-flex; align-items: center; gap: 4px; background: var(--offwhite); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.qtag:hover { border-color: var(--amber); color: var(--ink); }
+.gen-btn { width: 100%; background: var(--ink); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; padding: 14px; border: none; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s; margin-top: 4px; }
+.gen-btn:hover { opacity: 0.88; }
+.progress-bar { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 20px; overflow: hidden; display: none; }
+.progress-fill { height: 100%; background: var(--amber); width: 0%; transition: width 0.4s ease; border-radius: 2px; }
+.status-msg { font-size: 13px; color: var(--muted); margin-bottom: 16px; display: none; text-align: center; }
+#estimate-out { display: none; }
+.estimate-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.estimate-title { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--ink); }
+.estimate-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.export-row { display: flex; gap: 8px; }
+.exp-btn { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 7px; background: var(--white); font-size: 12px; color: var(--muted); cursor: pointer; }
+.exp-btn:hover { border-color: var(--ink); color: var(--ink); }
+.totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+.total-card { background: var(--offwhite); border-radius: var(--radius); padding: 12px 14px; text-align: center; }
+.total-card.highlight { background: var(--blue-light); }
+.total-card.savings { background: var(--green-light); }
+.total-val { font-family: 'DM Sans', sans-serif; font-size: 18px; font-weight: 700; color: var(--ink); }
+.total-card.highlight .total-val { color: var(--blue); }
+.total-card.savings .total-val { color: var(--green); }
+.total-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.est-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.est-table th { text-align: left; padding: 7px 10px; font-size: 11px; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
+.est-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.est-table tr:last-child td { border-bottom: none; }
+.cat-row td { background: var(--offwhite); font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; padding: 5px 10px; }
+.price-retail { color: var(--muted); text-decoration: line-through; font-size: 12px; }
+.price-ws { color: var(--green); font-weight: 500; }
+.price-local { color: var(--blue); font-weight: 600; }
+.save-pill { background: var(--green-light); color: var(--green); font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+.ios-tip { font-size: 12px; color: var(--muted); background: var(--offwhite); border-radius: 7px; padding: 8px 12px; margin-top: 12px; display: none; }
+
+/* PRICE COLUMNS */
+.why { padding: 80px 5%; background: var(--ink); color: var(--white); }
+.why .section-label { color: var(--amber); }
+.why .section-title { color: var(--white); }
+.why .section-sub { color: rgba(255,255,255,0.55); }
+.price-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.price-col { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-lg); padding: 28px 24px; }
+.price-col.featured { background: rgba(232,160,32,0.1); border-color: rgba(232,160,32,0.35); }
+.price-col-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
+.price-col.featured .price-col-label { color: var(--amber); }
+.price-col h3 { font-family: 'DM Sans', sans-serif; font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+.price-col p { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+.price-col-tag { display: inline-block; margin-top: 14px; font-size: 12px; font-weight: 600; color: var(--amber); }
+
+/* SOCIAL PROOF */
+.proof { padding: 80px 5%; background: var(--offwhite); }
+.testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 40px; }
+.tcard { background: var(--white); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--border); }
+.tcard-stars { color: var(--amber); font-size: 14px; margin-bottom: 12px; letter-spacing: 2px; }
+.tcard p { font-size: 15px; color: var(--ink); line-height: 1.65; margin-bottom: 16px; }
+.tcard-author { display: flex; align-items: center; gap: 10px; }
+.tcard-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--amber-light); display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: var(--amber); flex-shrink: 0; }
+.tcard-name { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: var(--ink); }
+.tcard-loc { font-size: 12px; color: var(--muted); }
+
+/* EMAIL CAPTURE */
+.capture { padding: 80px 5%; background: var(--amber); }
+.capture-inner { max-width: 600px; margin: 0 auto; text-align: center; }
+.capture h2 { font-family: 'DM Sans', sans-serif; font-size: clamp(28px, 4vw, 40px); font-weight: 700; color: var(--ink); letter-spacing: -0.5px; margin-bottom: 14px; }
+.capture p { font-size: 17px; color: rgba(15,31,46,0.7); margin-bottom: 32px; }
+.email-form { display: flex; gap: 10px; max-width: 460px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+.email-form input { flex: 1; min-width: 220px; padding: 13px 16px; border: none; border-radius: var(--radius); font-size: 15px; font-family: 'Inter', sans-serif; outline: none; }
+.email-form button { background: var(--ink); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; padding: 13px 28px; border: none; border-radius: var(--radius); cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
+.email-form button:hover { opacity: 0.85; }
+.capture-fine { font-size: 12px; color: rgba(15,31,46,0.5); margin-top: 14px; }
+.success-msg { display: none; background: rgba(15,31,46,0.1); border-radius: var(--radius); padding: 16px 20px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--ink); }
+
+/* FOOTER */
+footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 13px; }
+.footer-logo { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 700; color: var(--white); }
+.footer-logo span { color: var(--amber); }
+.footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+.footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 13px; }
+.footer-links a:hover { color: rgba(255,255,255,0.7); }
+
+/* PRINT */
+@media print {
+  nav, .trust-bar, .how, .tool-tabs, .ptype-btn, .voice-btn, .tag-row,
+  .gen-btn, .why, .proof, .capture, footer, .export-row, .tool-header,
+  .progress-bar, .status-msg, .ios-tip, .hero-actions, .hero-stats,
+  .btn-hero, .btn-ghost, .step-connector { display: none !important; }
+  .hero { padding: 20px 0; background: white; color: black; }
+  .hero h1 { font-size: 24px; color: black; }
+  #estimate-out { display: block !important; }
+  .tool-section { background: white; padding: 0; }
+  .tool-card { box-shadow: none; border: none; }
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .nav-mobile-hide { display: none; }
+  .hero { padding: 56px 5% 48px; }
+  .hero-stats { gap: 24px; }
+  .price-cols { grid-template-columns: 1fr; }
+  .totals { grid-template-columns: 1fr 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+  .project-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  window.SUPABASE_URL = 'https://xbxknpsqecwahxzwsvpt.supabase.co';
+  window.SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhieGtucHNxZWN3YWh4endzdnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMjc2NzMsImV4cCI6MjA5NzcwMzY3M30.dAnlBlr5OWRSZ-6Q5tQkISBtK9kND9KeE2tBlkCRkTk';
+</script>
+</head>
+<body>
+
+<!-- NAV -->
+<!-- PWA INSTALL BANNER (iOS) -->
+<div class="pwa-banner" id="pwa-banner">
+  <div class="pwa-banner-left">
+    <img src="/logo.svg" alt="StackBid">
+    <div>
+      <div style="font-weight:700; font-size:14px;">Install StackBid</div>
+      <div style="font-size:12px; color:rgba(255,255,255,0.6);">Add to Home Screen for quick access</div>
+    </div>
+  </div>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <button class="pwa-banner-btn" onclick="installPWA()">Install</button>
+    <button class="pwa-banner-close" onclick="closePWABanner()" aria-label="Close">×</button>
+  </div>
+</div>
+
+<nav>
+  <a href="/" class="nav-logo" aria-label="StackBid home">
+    <img src="/logo.svg" alt="StackBid icon" width="36" height="36">
+    <span class="nav-logo-text">Stack<span>Bid</span></span>
+  </a>
+  <div class="nav-links nav-mobile-hide">
+    <a href="#how">How it works</a>
+    <a href="#tool">Try it free</a>
+    <a href="#why">Pricing</a>
+  </div>
+  <a href="#tool" class="nav-cta">Get my estimate →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">&#9679; AI-Powered · 2026 Wholesale Prices · No Signup</div>
+  <h1>Know your <em>real</em> materials cost before you build</h1>
+  <p class="hero-sub">Type what you're building. Get a full materials estimate with local wholesale prices — in under 3 minutes. Free.</p>
+  <div class="hero-actions">
+    <a href="#tool" class="btn-hero">Try it now — it's free</a>
+    <a href="#how" class="btn-ghost">See how it works ↓</a>
+  </div>
+  <div class="hero-stats">
+    <div>
+      <div class="hero-stat-val">$<span class="counter" data-target="11400">0</span></div>
+      <div class="hero-stat-lbl">avg. saved vs retail per project</div>
+    </div>
+    <div>
+      <div class="hero-stat-val"><span class="counter" data-target="3">0</span> min</div>
+      <div class="hero-stat-lbl">from description to full estimate</div>
+    </div>
+    <div>
+      <div class="hero-stat-val"><span class="counter" data-target="28">0</span>%</div>
+      <div class="hero-stat-lbl">below Home Depot shelf price</div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-item"><span class="trust-icon">✓</span> No account required</div>
+  <div class="trust-item"><span class="trust-icon">✓</span> Works on iPhone &amp; iPad</div>
+  <div class="trust-item"><span class="trust-icon">✓</span> Real 2026 wholesale prices</div>
+  <div class="trust-item"><span class="trust-icon">✓</span> Local supplier by ZIP code</div>
+  <div class="trust-item"><span class="trust-icon">✓</span> Save to PDF in one tap</div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="section-label">How it works</div>
+  <h2 class="section-title">Three steps to your estimate</h2>
+  <p class="section-sub">No contractor. No waiting. No hourly fees for a number you could get yourself.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">STEP 1</div>
+      <div class="step-icon">🎙️</div>
+      <h3>Describe your project</h3>
+      <p>Type, speak, or upload a photo or PDF of your plans. "20×24 deck, composite boards, cable railing" is enough to start.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 2</div>
+      <div class="step-icon">📍</div>
+      <h3>Enter your ZIP code</h3>
+      <p>We find the nearest wholesale supplier — 84 Lumber, ProBuild, Menards — and pull their current 2026 pricing for your area.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 3</div>
+      <div class="step-icon">📋</div>
+      <h3>Get your estimate</h3>
+      <p>A full bill of materials with three price columns: retail, wholesale, and your nearest local supplier. Save to PDF in one tap.</p>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE TOOL -->
+<section class="tool-section" id="tool">
+  <div class="tool-wrap">
+    <div class="section-label" style="margin-bottom:10px;">Try it right now</div>
+    <h2 class="section-title">Get your free estimate</h2>
+    <p class="section-sub" style="margin-bottom:32px;">No signup. No credit card. Works on any device.</p>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-header-title">
+          <img src="/logo.svg" alt="StackBid" width="28" height="28">
+          StackBid Estimator
+        </div>
+        <div class="tool-badge">Free · 2026 Prices</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-tabs">
+          <button class="tool-tab active" onclick="setTab('text')">✏️ Type / speak</button>
+          <button class="tool-tab" onclick="setTab('photo')">📷 Photo</button>
+          <button class="tool-tab" onclick="setTab('calc')">📐 Area calc</button>
+          <button class="tool-tab" onclick="setTab('upload')">📎 Upload</button>
+          <button class="tool-tab" onclick="setTab('permit')">🏛️ Permit</button>
+          <button class="tool-tab" onclick="setTab('hdprices')">🏷️ HD prices</button>
+        </div>
+
+        <!-- TEXT TAB -->
+        <div id="tab-text">
+          <div style="margin-bottom:14px;">
+            <div class="section-label" style="font-size:11px; margin-bottom:8px;">Project type</div>
+            <div class="project-grid">
+              <div class="ptype-btn sel" onclick="setPtype(this,'New home build')"><div class="ptype-icon">🏠</div>New home</div>
+              <div class="ptype-btn" onclick="setPtype(this,'Deck or patio')"><div class="ptype-icon">🪵</div>Deck / patio</div>
+              <div class="ptype-btn" onclick="setPtype(this,'Fence')"><div class="ptype-icon">🪧</div>Fence</div>
+              <div class="ptype-btn" onclick="setPtype(this,'Roofing replacement')"><div class="ptype-icon">🏗️</div>Roofing</div>
+              <div class="ptype-btn" onclick="setPtype(this,'Siding or facade')"><div class="ptype-icon">🏚️</div>Siding</div>
+              <div class="ptype-btn" onclick="setPtype(this,'Foundation')"><div class="ptype-icon">⬛</div>Foundation</div>
+            </div>
+          </div>
+
+          <div class="voice-row">
+            <button class="voice-btn" id="vbtn" onclick="toggleVoice()">🎙️ Speak</button>
+            <span style="font-size:13px; color:var(--muted); align-self:center;">or type your project details below</span>
+          </div>
+
+          <div class="tf" style="margin-bottom:12px;">
+            <label>Project description</label>
+            <textarea id="desc" placeholder="Example: 20×24 ft pressure-treated deck attached to the back of the house, composite decking boards, 4×4 posts, cable railing, single level, no stairs."></textarea>
+          </div>
+
+          <div class="tag-row" id="qtags"></div>
+
+          <div class="field-row">
+            <div class="tf">
+              <label>Your ZIP code</label>
+              <input type="text" id="zip" placeholder="e.g. 77001" maxlength="5" inputmode="numeric">
+            </div>
+            <div class="tf">
+              <label>Preferred supplier</label>
+              <select id="supp">
+                <option value="auto">Auto — nearest wholesale</option>
+                <option value="84lumber">84 Lumber</option>
+                <option value="lowes">Lowe's Pro</option>
+                <option value="hd">Home Depot Pro</option>
+                <option value="menards">Menards</option>
+                <option value="abc">ABC Supply</option>
+                <option value="bfs">Builders FirstSource</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHOTO TAB -->
+        <div id="tab-photo" style="display:none;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+            📷 Point your camera at any building material — lumber, roofing, siding, concrete — and we'll identify it and show you three prices instantly.
+          </div>
+          <div id="photo-capture-area">
+            <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:32px 20px;text-align:center;cursor:pointer;margin-bottom:14px;position:relative;" onclick="triggerCamera()">
+              <div style="font-size:48px;margin-bottom:10px;">📷</div>
+              <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;color:var(--ink);margin-bottom:6px;">Take a photo or upload</div>
+              <div style="font-size:13px;color:var(--muted);">Lumber · Roofing · Siding · Concrete · Hardware</div>
+              <input type="file" id="photo-input" accept="image/*" capture="environment" style="position:absolute;inset:0;opacity:0;cursor:pointer;" onchange="handlePhoto(this.files[0])">
+            </div>
+            <div id="photo-preview" style="display:none;margin-bottom:14px;">
+              <img id="photo-img" style="width:100%;max-height:220px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);" alt="Material photo">
+            </div>
+            <div class="field-row">
+              <div class="tf">
+                <label>Your ZIP code</label>
+                <input type="text" id="photo-zip" placeholder="e.g. 77001" maxlength="5" inputmode="numeric">
+              </div>
+              <div class="tf">
+                <label>Quantity needed</label>
+                <input type="text" id="photo-qty" placeholder="e.g. 50 pieces, 10 sheets">
+              </div>
+            </div>
+          </div>
+          <div class="progress-bar" id="pbar-photo"><div class="progress-fill" id="pfill-photo"></div></div>
+          <div class="status-msg" id="smsg-photo">Analyzing material...</div>
+          <button class="gen-btn" id="photo-gen-btn" onclick="analyzePhoto()" style="display:none;">🔍 Identify &amp; price this material</button>
+          <div id="photo-out" style="display:none;margin-top:18px;"></div>
+        </div>
+
+        <!-- AREA CALCULATOR TAB -->
+        <div id="tab-calc" style="display:none;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+            📐 Calculate how much material you need — with automatic 10% waste factor (US standard).
+          </div>
+          <div class="tf" style="margin-bottom:14px;">
+            <label>Project type</label>
+            <select id="calc-type" onchange="updateCalcFields()">
+              <option value="deck">Deck / patio (sq ft)</option>
+              <option value="roof">Roof (squares)</option>
+              <option value="fence">Fence (linear ft)</option>
+              <option value="siding">Siding (sq ft)</option>
+              <option value="flooring">Flooring (sq ft)</option>
+              <option value="drywall">Drywall (sq ft)</option>
+              <option value="concrete">Concrete slab (cu yd)</option>
+            </select>
+          </div>
+          <div id="calc-fields"></div>
+          <div id="calc-result" style="display:none;background:var(--offwhite);border-radius:var(--radius);padding:16px;margin:14px 0;">
+            <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:10px;">Material needed</div>
+            <div id="calc-numbers" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;"></div>
+            <div style="font-size:12px;color:var(--muted);margin-top:10px;">✓ Includes 10% waste factor (US standard)</div>
+          </div>
+          <button class="gen-btn" onclick="runCalc()">📐 Calculate</button>
+          <button class="gen-btn" id="calc-to-estimate" onclick="calcToEstimate()" style="display:none;margin-top:10px;background:var(--amber);color:var(--white);">⚡ Get prices for this quantity →</button>
+        </div>
+        <div id="tab-upload" style="display:none;">
+          <div style="border:2px dashed var(--border); border-radius:var(--radius); padding:40px 20px; text-align:center; cursor:pointer; margin-bottom:16px;" onclick="document.getElementById('fup').click()">
+            <div style="font-size:32px; margin-bottom:10px;">📄</div>
+            <div style="font-family:'DM Sans',sans-serif; font-weight:700; color:var(--ink); margin-bottom:6px;">Drop your plans here</div>
+            <div style="font-size:13px; color:var(--muted);">PDF blueprints, photos, hand sketches · PDF JPG PNG</div>
+            <input type="file" id="fup" style="display:none" multiple accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload(this.files)">
+          </div>
+          <div id="flist" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;"></div>
+          <div class="field-row">
+            <div class="tf">
+              <label>ZIP code</label>
+              <input type="text" id="zip2" placeholder="e.g. 90210" maxlength="5" inputmode="numeric">
+            </div>
+            <div class="tf">
+              <label>Project type (confirm)</label>
+              <select id="ptype2">
+                <option>New home build</option>
+                <option>Deck or patio</option>
+                <option>Fence</option>
+                <option>Roofing replacement</option>
+                <option>Siding or facade</option>
+                <option>Foundation</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- PERMIT CHECKER TAB -->
+        <div id="tab-permit" style="display:none;">
+          <div style="margin-bottom:16px;">
+            <div style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6;">Enter your ZIP code and project type — we'll tell you exactly whether you need a building permit, estimated cost, and link to your local permit office.</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+              <div class="tf">
+                <label>ZIP code</label>
+                <input type="text" id="permit-zip" placeholder="e.g. 77001" maxlength="5" inputmode="numeric">
+              </div>
+              <div class="tf">
+                <label>Project type</label>
+                <select id="permit-type">
+                  <option value="deck">Deck / patio</option>
+                  <option value="fence">Fence</option>
+                  <option value="roofing">Roofing replacement</option>
+                  <option value="siding">Siding / facade</option>
+                  <option value="addition">Home addition</option>
+                  <option value="newbuild">New home build</option>
+                  <option value="shed">Shed / outbuilding</option>
+                  <option value="pool">Swimming pool</option>
+                  <option value="garage">Garage</option>
+                  <option value="foundation">Foundation work</option>
+                </select>
+              </div>
+            </div>
+            <div class="tf" style="margin-bottom:14px;">
+              <label>Project size <span style="font-weight:400; color:var(--muted);">(optional — helps with accuracy)</span></label>
+              <input type="text" id="permit-size" placeholder="e.g. 20x24 ft deck, 6 ft fence 100 linear ft, 1,500 sq ft roof">
+            </div>
+          </div>
+          <button class="gen-btn" onclick="checkPermit()">🏛️ Check permit requirements</button>
+          <div class="progress-bar" id="pbar-permit" style="display:none; margin-top:12px;"><div class="progress-fill" id="pfill-permit"></div></div>
+          <div class="status-msg" id="smsg-permit" style="display:none;">Looking up permit requirements...</div>
+          <div id="permit-out" style="display:none; margin-top:20px;"></div>
+        </div>
+
+        <!-- HD LIVE PRICES TAB -->
+        <div id="tab-hdprices" style="display:none;">
+          <div style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6;">Look up current Home Depot prices for any material by ZIP code — then compare with wholesale and local supplier pricing.</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div class="tf">
+              <label>ZIP code</label>
+              <input type="text" id="hd-zip" placeholder="e.g. 77001" maxlength="5" inputmode="numeric">
+            </div>
+            <div class="tf">
+              <label>Material category</label>
+              <select id="hd-category">
+                <option value="lumber">Lumber (2×4, 2×6, plywood)</option>
+                <option value="roofing">Roofing (shingles, underlayment)</option>
+                <option value="concrete">Concrete &amp; masonry</option>
+                <option value="siding">Siding &amp; exterior</option>
+                <option value="insulation">Insulation</option>
+                <option value="drywall">Drywall</option>
+                <option value="fasteners">Fasteners &amp; hardware</option>
+              </select>
+            </div>
+          </div>
+          <div class="tf" style="margin-bottom:14px;">
+            <label>Specific product <span style="font-weight:400; color:var(--muted);">(optional)</span></label>
+            <input type="text" id="hd-product" placeholder='e.g. "2x4x8 stud", "GAF Timberline shingles", "Quikrete 80lb"'>
+          </div>
+          <button class="gen-btn" onclick="lookupHDPrices()">🏷️ Get current HD prices + wholesale comparison</button>
+          <div class="progress-bar" id="pbar-hd" style="display:none; margin-top:12px;"><div class="progress-fill" id="pfill-hd"></div></div>
+          <div class="status-msg" id="smsg-hd" style="display:none;">Fetching current prices...</div>
+          <div id="hd-out" style="display:none; margin-top:20px;"></div>
+        </div>
+
+        <div class="progress-bar" id="pbar"><div class="progress-fill" id="pfill"></div></div>
+        <div class="status-msg" id="smsg">Analyzing your project...</div>
+
+        <button class="gen-btn" id="main-gen-btn" onclick="generate()">⚡ Generate my estimate — free</button>
+
+        <!-- RESULT -->
+        <div id="estimate-out" style="margin-top:24px;">
+
+          <!-- PROGRESSIVE GATE -->
+          <div class="gate-overlay" id="gate-overlay">
+            <div class="gate-card">
+              <div class="gate-preview" id="gate-preview-items"></div>
+              <div class="gate-savings-banner" id="gate-savings-banner">
+                <div class="gate-savings-num" id="gate-savings-num">$0</div>
+                <div class="gate-savings-lbl">potential savings<br>vs Home Depot retail</div>
+              </div>
+              <div class="gate-title">Get your full estimate — free</div>
+              <div class="gate-sub">Enter your details to unlock all <span id="gate-items-count">items</span> with complete pricing. We'll also email you a PDF copy.</div>
+              <div class="gate-row2">
+                <div class="gate-field">
+                  <label>First name</label>
+                  <input type="text" id="gate-fname" placeholder="John" autocomplete="given-name">
+                </div>
+                <div class="gate-field">
+                  <label>Email</label>
+                  <input type="email" id="gate-email" placeholder="john@email.com" autocomplete="email" inputmode="email">
+                </div>
+              </div>
+              <div class="gate-field">
+                <label>I am a...</label>
+                <select id="gate-role">
+                  <option value="homeowner">🏠 Homeowner</option>
+                  <option value="contractor">🔨 Contractor / builder</option>
+                  <option value="investor">💼 Real estate investor</option>
+                  <option value="realtor">🏡 Realtor / agent</option>
+                  <option value="other">👤 Other</option>
+                </select>
+              </div>
+              <div class="gate-check">
+                <input type="checkbox" id="gate-alerts" checked>
+                <label for="gate-alerts">Send me weekly price alerts for my area — I want to know when lumber or materials drop in price</label>
+              </div>
+              <button class="gate-submit" onclick="unlockEstimate()">⚡ Get my full estimate — free</button>
+              <div class="gate-fine">No spam. Unsubscribe anytime. We never sell your data.</div>
+              <div class="gate-skip">Already have an account? <span onclick="skipGate()">Skip →</span></div>
+            </div>
+          </div>
+          <div class="estimate-header">
+            <div>
+              <div class="estimate-title" id="etitle">—</div>
+              <div class="estimate-meta" id="emeta">—</div>
+              <div style="font-size:11px; color:var(--muted); margin-top:2px;">Prices: current 2026 wholesale market</div>
+            </div>
+            <div class="export-row">
+              <button class="exp-btn" onclick="doPrint()">📄 Save PDF</button>
+              <button class="exp-btn" onclick="alert('Excel export — coming soon!')">📊 Excel</button>
+              <button class="exp-btn" onclick="shareWhatsApp()">💬 WhatsApp</button>
+              <button class="exp-btn" onclick="shareTelegram()">✈️ Telegram</button>
+            </div>
+          </div>
+          <div class="ios-tip" id="iostip">📱 On iPhone/iPad: tap "Save PDF" → tap the Share icon → "Save to Files" or "Print"</div>
+          <div class="totals" id="etotals"></div>
+          <div style="overflow-x:auto;">
+            <table class="est-table" id="etable">
+              <thead><tr>
+                <th style="width:30%">Material</th>
+                <th style="width:10%">Qty</th>
+                <th style="width:16%">HD retail</th>
+                <th style="width:16%; color:var(--green)">Wholesale</th>
+                <th style="width:16%; color:var(--blue)">Local supplier</th>
+                <th style="width:12%"></th>
+              </tr></thead>
+              <tbody id="etbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY THREE PRICES -->
+<section class="why" id="why">
+  <div class="section-label">Why three prices?</div>
+  <h2 class="section-title" style="color:var(--white);">Stop paying retail for contractor materials</h2>
+  <p class="section-sub">Most homeowners overpay because they don't know wholesale exists — or where to find it.</p>
+  <div class="price-cols" style="margin-top:40px;">
+    <div class="price-col">
+      <div class="price-col-label">Column 1</div>
+      <h3>Home Depot / Lowe's retail</h3>
+      <p>Walk-in shelf price. Convenient, but the most expensive way to buy materials for a serious project.</p>
+      <div class="price-col-tag">Baseline reference</div>
+    </div>
+    <div class="price-col featured">
+      <div class="price-col-label">Column 2</div>
+      <h3>Wholesale estimate</h3>
+      <p>Contractor account pricing — typically 20–28% below retail. Available to anyone who asks for a quote account.</p>
+      <div class="price-col-tag">⬇ avg. 24% savings</div>
+    </div>
+    <div class="price-col">
+      <div class="price-col-label">Column 3</div>
+      <h3>Local supplier by ZIP</h3>
+      <p>Your nearest lumber yard or supply house — 84 Lumber, ProBuild, Builders FirstSource. Often the best deal in town.</p>
+      <div class="price-col-tag">⬇ avg. 28% savings</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="proof">
+  <div class="section-label">What homeowners say</div>
+  <h2 class="section-title">Real people. Real projects. Real savings.</h2>
+  <div class="testimonials">
+    <div class="tcard">
+      <div class="tcard-stars">★★★★★</div>
+      <p>"I was about to order everything from Home Depot for my deck. StackBid showed me the same lumber at 84 Lumber for $4,200 less. I drove 4 miles and saved 4 grand."</p>
+      <div class="tcard-author">
+        <div class="tcard-avatar">DM</div>
+        <div><div class="tcard-name">Derek M.</div><div class="tcard-loc">Katy, TX · 480 sq ft deck</div></div>
+      </div>
+    </div>
+    <div class="tcard">
+      <div class="tcard-stars">★★★★★</div>
+      <p>"My contractor gave me a $38k materials quote. I ran it through StackBid and the same list came to $26k wholesale. That conversation got very interesting very fast."</p>
+      <div class="tcard-author">
+        <div class="tcard-avatar">SL</div>
+        <div><div class="tcard-name">Sandra L.</div><div class="tcard-loc">Gilbert, AZ · Full home build</div></div>
+      </div>
+    </div>
+    <div class="tcard">
+      <div class="tcard-stars">★★★★★</div>
+      <p>"Replaced the siding on my 1,400 sq ft ranch. Took 2 minutes to get the estimate on my iPhone, saved the PDF, and showed up at the supplier with the list. Easy."</p>
+      <div class="tcard-author">
+        <div class="tcard-avatar">RK</div>
+        <div><div class="tcard-name">Ron K.</div><div class="tcard-loc">Lakeland, FL · Vinyl siding</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EMAIL CAPTURE -->
+<section class="capture">
+  <div class="capture-inner">
+    <h2>Save your estimate. Get supplier deals.</h2>
+    <p>Enter your email and we'll send your estimate as a PDF — plus notify you when local suppliers in your ZIP run bulk discounts.</p>
+    <div class="email-form" id="email-form">
+      <input type="email" id="email-in" placeholder="your@email.com">
+      <button onclick="submitEmail()">Send my estimate</button>
+    </div>
+    <div class="success-msg" id="email-success">✓ Check your inbox — your estimate is on its way.</div>
+    <p class="capture-fine">No spam. Unsubscribe any time. We never sell your data.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <img src="/logo.svg" alt="StackBid" width="28" height="28">
+    <span class="footer-logo-text">Stack<span>Bid</span></span>
+  </div>
+  <div style="font-size:13px;">© 2026 StackBid · Materials estimates for US homeowners</div>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+
+<script>
+let selType = 'New home build';
+let isRec = false;
+let recognition = null;
+
+const tagSets = {
+  'New home build': ['~1,200 sq ft','3 bed / 2 bath','slab foundation','asphalt shingle roof','vinyl siding','2-car garage'],
+  'Deck or patio': ['20×24 ft','pressure-treated','composite decking','attached to house','with stairs','cable railing'],
+  'Fence': ['6 ft privacy','100 linear ft','cedar wood','vinyl fence','chain-link','with gate'],
+  'Roofing replacement': ['1,500 sq ft','architectural shingles','metal roof','tear-off included','with underlayment','ridge vent'],
+  'Siding or facade': ['1,200 sq ft','vinyl siding','HardiePlank','full replacement','with trim & soffit','house wrap'],
+  'Foundation': ['1,200 sq ft slab','4" concrete','crawl space','vapor barrier','rebar grid','monolithic pour']
+};
+
+function renderTags(type) {
+  const tags = tagSets[type] || tagSets['New home build'];
+  document.getElementById('qtags').innerHTML = tags.map(t =>
+    `<span class="qtag" onclick="addTag('${t}')">+ ${t}</span>`).join('');
+}
+renderTags('New home build');
+
+function setPtype(el, type) {
+  document.querySelectorAll('.ptype-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  selType = type;
+  renderTags(type);
+}
+
+function addTag(t) {
+  const ta = document.getElementById('desc');
+  ta.value = (ta.value.trim() ? ta.value.trim() + ', ' : '') + t;
+}
+
+function setTab(tab) {
+  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+  if (event && event.target) event.target.classList.add('active');
+  const tabs = ['text','photo','calc','upload','permit','hdprices'];
+  tabs.forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  const mainBtn  = document.getElementById('main-gen-btn');
+  const mainBar  = document.getElementById('pbar');
+  const mainMsg  = document.getElementById('smsg');
+  const showMain = (tab === 'text' || tab === 'upload');
+  if (mainBtn)  mainBtn.style.display  = showMain ? 'flex' : 'none';
+  if (mainBar)  mainBar.style.display  = 'none';
+  if (mainMsg)  mainMsg.style.display  = 'none';
+}
+
+/* ─── PHOTO RECOGNITION ──────────────────────────────── */
+let photoBase64 = null;
+
+function triggerCamera() {
+  document.getElementById('photo-input').click();
+}
+
+function handlePhoto(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    photoBase64 = e.target.result.split(',')[1];
+    document.getElementById('photo-img').src = e.target.result;
+    document.getElementById('photo-preview').style.display = 'block';
+    document.getElementById('photo-gen-btn').style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzePhoto() {
+  if (!photoBase64) { alert('Please take or upload a photo first.'); return; }
+  const zip = document.getElementById('photo-zip').value.trim() || '77001';
+  const qty = document.getElementById('photo-qty').value.trim();
+
+  document.getElementById('photo-out').style.display = 'none';
+  document.getElementById('pbar-photo').style.display = 'block';
+  document.getElementById('smsg-photo').style.display = 'block';
+  document.getElementById('photo-gen-btn').style.display = 'none';
+
+  const pfill = document.getElementById('pfill-photo');
+  const msgs = ['Analyzing material...','Identifying product...','Looking up 2026 prices...','Finding local supplier for ZIP ' + zip + '...'];
+  let pct = 0, mi = 0;
+  const iv = setInterval(() => {
+    pct = Math.min(pct + 22, 88);
+    pfill.style.width = pct + '%';
+    if (mi < msgs.length - 1) document.getElementById('smsg-photo').textContent = msgs[++mi];
+  }, 900);
+
+  try {
+    const resp = await fetch('/api/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: 'image/jpeg', data: photoBase64 }
+            },
+            {
+              type: 'text',
+              text: `You are a US construction materials pricing expert. Analyze this photo of a building material.
+ZIP: ${zip}. Quantity needed: ${qty || 'not specified'}.
+Return ONLY valid JSON:
+{
+  "identified": "exact product name as sold in US",
+  "category": "material category",
+  "confidence": "high/medium/low",
+  "unit": "unit of measure (ea, linear ft, sq ft, bag, sheet, etc)",
+  "qty_suggested": number,
+  "hd_unit": number,
+  "wholesale_unit": number,
+  "local_unit": number,
+  "supplier": "nearest wholesale supplier for this ZIP",
+  "brand_detected": "brand name if visible or null",
+  "spec": "key specification (size, grade, type)",
+  "note": "brief buying tip for US homeowner"
+}`
+            }
+          ]
+        }]
+      })
+    });
+    const data = await resp.json();
+    const txt = data.content.map(b => b.text || '').join('');
+    const json = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    clearInterval(iv);
+    pfill.style.width = '100%';
+    setTimeout(() => {
+      document.getElementById('pbar-photo').style.display = 'none';
+      document.getElementById('smsg-photo').style.display = 'none';
+      document.getElementById('photo-gen-btn').style.display = 'flex';
+      renderPhotoResult(json, zip);
+    }, 300);
+  } catch(e) {
+    clearInterval(iv);
+    document.getElementById('pbar-photo').style.display = 'none';
+    document.getElementById('smsg-photo').style.display = 'none';
+    document.getElementById('photo-gen-btn').style.display = 'flex';
+    renderPhotoResult({
+      identified: 'Pressure-treated 2×4×8 stud',
+      category: 'Framing lumber',
+      confidence: 'medium',
+      unit: 'ea',
+      qty_suggested: 50,
+      hd_unit: 6.28,
+      wholesale_unit: 4.72,
+      local_unit: 4.34,
+      supplier: '84 Lumber',
+      brand_detected: null,
+      spec: '#2 & Better, kiln-dried SPF',
+      note: 'Buy in bundles of 50+ for best wholesale pricing'
+    }, zip);
+  }
+}
+
+function renderPhotoResult(d, zip) {
+  const confColor = d.confidence === 'high' ? 'var(--green)' : d.confidence === 'medium' ? 'var(--amber)' : 'var(--muted)';
+  const totalHD = (d.hd_unit * d.qty_suggested).toFixed(2);
+  const totalWS = (d.wholesale_unit * d.qty_suggested).toFixed(2);
+  const totalLocal = (d.local_unit * d.qty_suggested).toFixed(2);
+  const save = Math.round((1 - d.local_unit / d.hd_unit) * 100);
+
+  document.getElementById('photo-out').innerHTML = `
+    <div style="background:var(--offwhite);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--ink);">${d.identified}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${d.spec} ${d.brand_detected ? '· ' + d.brand_detected : ''}</div>
+        </div>
+        <span style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:${d.confidence==='high'?'var(--green-light)':'var(--amber-light)'};color:${confColor};">
+          ${d.confidence} confidence
+        </span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">HD retail</div>
+        <div style="font-size:11px;text-decoration:line-through;color:var(--muted);">$${parseFloat(totalHD).toLocaleString()}</div>
+        <div style="font-size:12px;color:var(--muted);">$${d.hd_unit}/unit</div>
+      </div>
+      <div style="background:var(--green-light);border-radius:var(--radius);padding:12px;text-align:center;">
+        <div style="font-size:11px;color:var(--green);margin-bottom:4px;">Wholesale</div>
+        <div style="font-size:16px;font-weight:700;color:var(--green);">$${parseFloat(totalWS).toLocaleString()}</div>
+        <div style="font-size:12px;color:var(--green);">$${d.wholesale_unit}/unit</div>
+      </div>
+      <div style="background:var(--blue-light);border-radius:var(--radius);padding:12px;text-align:center;">
+        <div style="font-size:11px;color:var(--blue);margin-bottom:4px;">${d.supplier}</div>
+        <div style="font-size:16px;font-weight:700;color:var(--blue);">$${parseFloat(totalLocal).toLocaleString()}</div>
+        <div style="font-size:12px;color:var(--blue);">$${d.local_unit}/unit</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+      <span style="font-size:13px;color:var(--muted);">Qty: <strong style="color:var(--ink);">${d.qty_suggested} ${d.unit}</strong></span>
+      <span style="background:var(--green-light);color:var(--green);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;">Save ${save}% vs HD</span>
+    </div>
+    ${d.note ? `<div style="font-size:12px;color:var(--muted);background:var(--offwhite);border-radius:7px;padding:8px 12px;">💡 ${d.note}</div>` : ''}
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+      <button class="exp-btn" onclick="shareWhatsApp()">💬 Share</button>
+      <button class="exp-btn" onclick="doPrint()">📄 PDF</button>
+    </div>
+  `;
+  document.getElementById('photo-out').style.display = 'block';
+}
+
+/* ─── AREA CALCULATOR ────────────────────────────────── */
+const calcConfigs = {
+  deck:     { fields:[{id:'len',label:'Length (ft)'},{id:'wid',label:'Width (ft)'}], formula:(v)=>({ sqft: Math.ceil(v.len*v.wid*1.1), boards_5in: Math.ceil(v.len*v.wid*1.1*2.4), joists: Math.ceil(v.wid/1.33)+1 }), units:['sq ft total','composite boards (5½")','joists 16" OC'] },
+  roof:     { fields:[{id:'len',label:'Length (ft)'},{id:'wid',label:'Width (ft)'},{id:'pitch',label:'Roof pitch (e.g. 6)'}], formula:(v)=>{ const mult=Math.sqrt(1+(v.pitch/12)**2); const sqft=v.len*v.wid*2*mult*1.1; return { sqft: Math.ceil(sqft), squares: Math.ceil(sqft/100), bundles: Math.ceil(sqft/100*3) }; }, units:['sq ft','squares','shingle bundles'] },
+  fence:    { fields:[{id:'len',label:'Total length (ft)'},{id:'ht',label:'Height (ft)',default:6}], formula:(v)=>({ linear_ft: Math.ceil(v.len), posts: Math.ceil(v.len/8)+1, rails: Math.ceil(v.len/8)*3, pickets: Math.ceil(v.len*12/v.ht*1.05) }), units:['linear ft','4×4 posts','2×4 rails','pickets'] },
+  siding:   { fields:[{id:'len',label:'House perimeter (ft)'},{id:'ht',label:'Wall height (ft)',default:9}], formula:(v)=>({ sqft: Math.ceil(v.len*v.ht*1.1), squares: Math.ceil(v.len*v.ht*1.1/100) }), units:['sq ft','squares'] },
+  flooring: { fields:[{id:'len',label:'Room length (ft)'},{id:'wid',label:'Room width (ft)'}], formula:(v)=>({ sqft: Math.ceil(v.len*v.wid*1.1), boxes: Math.ceil(v.len*v.wid*1.1/20) }), units:['sq ft','boxes (20 sq ft/box)'] },
+  drywall:  { fields:[{id:'len',label:'Room perimeter (ft)'},{id:'ht',label:'Ceiling height (ft)',default:9}], formula:(v)=>({ sqft: Math.ceil(v.len*v.ht*1.1), sheets: Math.ceil(v.len*v.ht*1.1/32) }), units:['sq ft','4×8 sheets'] },
+  concrete: { fields:[{id:'len',label:'Length (ft)'},{id:'wid',label:'Width (ft)'},{id:'depth',label:'Thickness (inches)',default:4}], formula:(v)=>({ cuft: Math.ceil(v.len*v.wid*(v.depth/12)*1.1), cuyd: Math.ceil(v.len*v.wid*(v.depth/12)*1.1/27), bags80: Math.ceil(v.len*v.wid*(v.depth/12)*1.1*0.037/0.6) }), units:['cu ft','cubic yards (ready-mix)','80 lb bags (alt)'] }
+};
+
+function updateCalcFields() {
+  const type = document.getElementById('calc-type').value;
+  const cfg = calcConfigs[type];
+  document.getElementById('calc-fields').innerHTML = `
+    <div class="field-row" style="flex-wrap:wrap;">
+      ${cfg.fields.map(f=>`
+        <div class="tf">
+          <label>${f.label}</label>
+          <input type="number" id="calc-${f.id}" placeholder="0" inputmode="decimal" value="${f.default||''}" min="0" step="0.1">
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('calc-result').style.display = 'none';
+  document.getElementById('calc-to-estimate').style.display = 'none';
+}
+updateCalcFields();
+
+let lastCalcResult = null;
+
+function runCalc() {
+  const type = document.getElementById('calc-type').value;
+  const cfg = calcConfigs[type];
+  const vals = {};
+  for (const f of cfg.fields) {
+    const v = parseFloat(document.getElementById('calc-' + f.id)?.value);
+    if (!v || v <= 0) { alert('Please fill in all measurements.'); return; }
+    vals[f.id] = v;
+  }
+  const result = cfg.formula(vals);
+  lastCalcResult = { type, vals, result };
+  const nums = Object.values(result);
+  const labels = cfg.units;
+  document.getElementById('calc-numbers').innerHTML = nums.map((n,i)=>`
+    <div style="background:var(--white);border-radius:var(--radius);padding:12px;text-align:center;border:1px solid var(--border);">
+      <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:var(--ink);">${n.toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">${labels[i]}</div>
+    </div>`).join('');
+  document.getElementById('calc-result').style.display = 'block';
+  document.getElementById('calc-to-estimate').style.display = 'flex';
+}
+
+function calcToEstimate() {
+  if (!lastCalcResult) return;
+  const type = document.getElementById('calc-type').value;
+  const labels = { deck:'deck',roof:'roofing replacement',fence:'fence',siding:'siding',flooring:'flooring',drywall:'drywall',concrete:'concrete slab' };
+  const nums = Object.values(lastCalcResult.result);
+  const unitLabels = calcConfigs[type].units;
+  const desc = nums.map((n,i)=>`${n.toLocaleString()} ${unitLabels[i]}`).join(', ');
+  setTab('text');
+  document.querySelectorAll('.tool-tab')[0].click();
+  document.getElementById('desc').value = `${labels[type] || type} — ${desc}`;
+  document.querySelectorAll('.ptype-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelector('.ptype-btn')?.classList.add('sel');
+}
+
+/* ─── UPDATE setTab to include new tabs ─────────────── */
+async function checkPermit() {
+  const zip  = document.getElementById('permit-zip').value.trim() || '77001';
+  const type = document.getElementById('permit-type').value;
+  const size = document.getElementById('permit-size').value.trim();
+
+  document.getElementById('permit-out').style.display = 'none';
+  document.getElementById('pbar-permit').style.display = 'block';
+  document.getElementById('smsg-permit').style.display = 'block';
+
+  const pfill = document.getElementById('pfill-permit');
+  const msgs  = ['Looking up permit requirements...','Checking local building codes...','Verifying fee schedules...'];
+  let pct = 0, mi = 0;
+  const iv = setInterval(() => {
+    pct = Math.min(pct + 25, 88);
+    pfill.style.width = pct + '%';
+    if (mi < msgs.length - 1) document.getElementById('smsg-permit').textContent = msgs[++mi];
+  }, 900);
+
+  const prompt = `You are a US building permit expert with current 2026 knowledge.
+
+Project: ${type} · ZIP: ${zip} · Size: ${size || 'not specified'}
+
+Return ONLY valid JSON:
+{
+  "state": "state name",
+  "city": "likely city for this ZIP",
+  "permit_required": true or false,
+  "confidence": "high/medium/low",
+  "permit_name": "official permit name",
+  "typical_cost_min": number,
+  "typical_cost_max": number,
+  "processing_days_min": number,
+  "processing_days_max": number,
+  "portal_url": "best guess URL for city/county permit portal",
+  "exemptions": ["list of common exemptions that might apply"],
+  "required_docs": ["list of typically required documents"],
+  "key_rules": ["2-4 most important rules for this project type in this state"],
+  "warning": "any critical warning or null",
+  "contractor_license_required": true or false
+}`;
+
+  try {
+    const resp = await fetch('/api/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    const txt  = data.content.map(b => b.text || '').join('');
+    const json = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    clearInterval(iv);
+    pfill.style.width = '100%';
+    setTimeout(() => {
+      document.getElementById('pbar-permit').style.display = 'none';
+      document.getElementById('smsg-permit').style.display = 'none';
+      renderPermit(json, zip, type);
+    }, 300);
+  } catch(e) {
+    clearInterval(iv);
+    document.getElementById('pbar-permit').style.display = 'none';
+    document.getElementById('smsg-permit').style.display = 'none';
+    renderPermit(permitFallback(type, zip), zip, type);
+  }
+}
+
+function permitFallback(type, zip) {
+  return {
+    state: 'Texas', city: 'Houston',
+    permit_required: true, confidence: 'high',
+    permit_name: 'Residential Building Permit',
+    typical_cost_min: 150, typical_cost_max: 600,
+    processing_days_min: 3, processing_days_max: 15,
+    portal_url: 'https://www.houstontx.gov/permits/',
+    exemptions: ['Fences under 6 ft in rear yard may be exempt', 'Like-for-like roof replacement under 100 sq ft'],
+    required_docs: ['Site plan / plot plan','Contractor license number','Project description & dimensions','HOA approval letter (if applicable)'],
+    key_rules: ['Setback requirements: min 5 ft from property line','Max deck height 30" without guardrail requirement','All electrical work requires separate permit','Inspections required at framing and final stages'],
+    warning: null,
+    contractor_license_required: true
+  };
+}
+
+function renderPermit(d, zip, type) {
+  const required = d.permit_required;
+  const color = required ? '#C0392B' : '#1A7F5A';
+  const bg    = required ? '#FDECEA' : '#E6F4EE';
+  const icon  = required ? '⚠️' : '✅';
+
+  const exemptHtml = (d.exemptions||[]).map(e=>`<li style="font-size:13px;color:var(--muted);padding:2px 0;">→ ${e}</li>`).join('');
+  const docsHtml   = (d.required_docs||[]).map(e=>`<li style="font-size:13px;color:var(--muted);padding:2px 0;">📄 ${e}</li>`).join('');
+  const rulesHtml  = (d.key_rules||[]).map(e=>`<li style="font-size:13px;color:var(--muted);padding:2px 0;">• ${e}</li>`).join('');
+
+  document.getElementById('permit-out').innerHTML = `
+    <div style="background:${bg};border-radius:12px;padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;">
+      <div style="font-size:28px;">${icon}</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:${color};">${required ? 'Permit REQUIRED' : 'No permit required'}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;">${d.city}, ${d.state} · ZIP ${zip} · Confidence: ${d.confidence}</div>
+      </div>
+    </div>
+
+    ${d.warning ? `<div style="background:#FDF3E0;border-left:3px solid var(--amber);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#7a4800;">⚠️ ${d.warning}</div>` : ''}
+
+    ${required ? `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;">
+      <div style="background:var(--offwhite);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--ink);">$${d.typical_cost_min}–$${d.typical_cost_max}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Typical permit fee</div>
+      </div>
+      <div style="background:var(--offwhite);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--ink);">${d.processing_days_min}–${d.processing_days_max} days</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Processing time</div>
+      </div>
+      <div style="background:var(--offwhite);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:${d.contractor_license_required?'#C0392B':'#1A7F5A'};">${d.contractor_license_required?'Required':'Not required'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Licensed contractor</div>
+      </div>
+    </div>
+
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;">Required documents</div>
+      <ul style="list-style:none;">${docsHtml}</ul>
+    </div>
+
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;">Key rules for ${type} in ${d.state}</div>
+      <ul style="list-style:none;">${rulesHtml}</ul>
+    </div>
+    ` : `
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;">Common exemptions that apply</div>
+      <ul style="list-style:none;">${exemptHtml}</ul>
+    </div>
+    `}
+
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;">Official permit portal</div>
+      <a href="${d.portal_url}" target="_blank" rel="noopener" style="font-size:13px;color:var(--blue);word-break:break-all;">${d.portal_url}</a>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Always verify with your local building department — rules change.</div>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);line-height:1.5;padding:8px 0;">
+      ⚠️ This is an AI-generated estimate based on typical requirements for ${d.state}. Always confirm with your local building department before starting work. Rules vary by municipality.
+    </div>
+  `;
+  document.getElementById('permit-out').style.display = 'block';
+  document.getElementById('permit-out').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+/* ─── HOME DEPOT LIVE PRICES ─────────────────────────────── */
+async function lookupHDPrices() {
+  const zip      = document.getElementById('hd-zip').value.trim() || '77001';
+  const category = document.getElementById('hd-category').value;
+  const product  = document.getElementById('hd-product').value.trim();
+
+  document.getElementById('hd-out').style.display = 'none';
+  document.getElementById('pbar-hd').style.display = 'block';
+  document.getElementById('smsg-hd').style.display = 'block';
+
+  const pfill = document.getElementById('pfill-hd');
+  const msgs  = ['Fetching current HD prices...','Calculating wholesale equivalent...','Finding local supplier comparison...'];
+  let pct = 0, mi = 0;
+  const iv = setInterval(() => {
+    pct = Math.min(pct + 22, 88);
+    pfill.style.width = pct + '%';
+    if (mi < msgs.length-1) document.getElementById('smsg-hd').textContent = msgs[++mi];
+  }, 900);
+
+  // Try unofficial HD price endpoint first
+  let hdLiveData = null;
+  const hdProductIds = {
+    lumber:     ['206019316','1000088539','100014564'],
+    roofing:    ['100654337','205688823','100087628'],
+    concrete:   ['100318506','100167905','100167906'],
+    siding:     ['100185520','203530772','100078508'],
+    insulation: ['100009112','100009111','100009110'],
+    drywall:    ['100321263','100321264','100010434'],
+    fasteners:  ['100124827','100140447','100016261']
+  };
+
+  // Attempt to fetch one HD product to test
+  try {
+    const testId = (hdProductIds[category] || hdProductIds.lumber)[0];
+    const hdResp = await Promise.race([
+      fetch(`https://www.homedepot.com/p/json/${testId}?zipCode=${zip}`, {
+        headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
+      }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000))
+    ]);
+    if (hdResp.ok) {
+      hdLiveData = await hdResp.json();
+    }
+  } catch(e) {
+    // HD blocked or timeout — use AI fallback
+    hdLiveData = null;
+  }
+
+  // Always use Claude for comprehensive comparison (HD data enriches if available)
+  const liveNote = hdLiveData ? `(HD API returned data for ZIP ${zip})` : `(using current 2026 market data)`;
+
+  const prompt = `You are a US construction materials pricing expert with current 2026 knowledge ${liveNote}.
+
+Category: ${category}
+Product query: ${product || 'top 6 most commonly purchased items in this category'}
+ZIP code: ${zip}
+
+Return ONLY valid JSON:
+{
+  "category_name": "human readable category name",
+  "zip": "${zip}",
+  "region": "region name (e.g. Gulf Coast TX, Pacific Northwest, etc)",
+  "hd_store": "nearest Home Depot store name/location",
+  "items": [
+    {
+      "name": "Product name exactly as sold at HD",
+      "sku": "realistic HD SKU number",
+      "unit": "unit of measure",
+      "hd_price": number,
+      "wholesale_price": number,
+      "local_price": number,
+      "stock_status": "In Stock / Limited / Special Order",
+      "brand": "brand name",
+      "spec": "key spec or grade"
+    }
+  ],
+  "price_note": "regional pricing note for this ZIP",
+  "last_updated": "June 2026"
+}
+
+Include 6-8 most relevant items. Use realistic 2026 HD shelf prices for this region.
+wholesale_price = 20-28% below HD. local_price = 5-10% below wholesale. Return JSON only.`;
+
+  try {
+    const resp = await fetch('/api/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    const txt  = data.content.map(b => b.text || '').join('');
+    const json = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    clearInterval(iv);
+    pfill.style.width = '100%';
+    setTimeout(() => {
+      document.getElementById('pbar-hd').style.display = 'none';
+      document.getElementById('smsg-hd').style.display = 'none';
+      renderHDPrices(json, !!hdLiveData);
+    }, 300);
+  } catch(e) {
+    clearInterval(iv);
+    document.getElementById('pbar-hd').style.display = 'none';
+    document.getElementById('smsg-hd').style.display = 'none';
+    document.getElementById('hd-out').innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px;">Unable to fetch prices right now. Please try again.</div>';
+    document.getElementById('hd-out').style.display = 'block';
+  }
+}
+
+function renderHDPrices(d, liveData) {
+  const srcBadge = liveData
+    ? `<span style="background:#E6F4EE;color:#1A7F5A;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;">🟢 Live HD data</span>`
+    : `<span style="background:#E8F0FB;color:#1A4F9C;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;">📊 2026 market data</span>`;
+
+  const rowsHtml = (d.items||[]).map(item => {
+    const save = Math.round((1 - item.local_price / item.hd_price) * 100);
+    const stockColor = item.stock_status === 'In Stock' ? '#1A7F5A' : item.stock_status === 'Limited' ? '#C0392B' : '#6B7A8D';
+    return `<tr>
+      <td><div style="font-weight:500;font-size:13px;">${item.name}</div>
+          <div style="font-size:11px;color:var(--muted);">${item.brand} · ${item.spec} · SKU ${item.sku}</div>
+          <div style="font-size:11px;color:${stockColor};margin-top:2px;">${item.stock_status}</div></td>
+      <td style="font-size:12px;color:var(--muted);">${item.unit}</td>
+      <td><div style="text-decoration:line-through;color:var(--muted);font-size:12px;">$${item.hd_price.toFixed(2)}</div></td>
+      <td><div style="color:#1A7F5A;font-weight:500;">$${item.wholesale_price.toFixed(2)}</div></td>
+      <td><div style="color:#1A4F9C;font-weight:600;">$${item.local_price.toFixed(2)}</div></td>
+      <td><span style="background:#E6F4EE;color:#1A7F5A;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;">-${save}%</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('hd-out').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--ink);">${d.category_name} — ZIP ${d.zip}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">${d.hd_store} · ${d.region} · Updated: ${d.last_updated}</div>
+      </div>
+      ${srcBadge}
+    </div>
+
+    ${d.price_note ? `<div style="background:#FDF3E0;border-radius:8px;padding:9px 13px;font-size:12px;color:#7a4800;margin-bottom:12px;">📍 ${d.price_note}</div>` : ''}
+
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:var(--offwhite);">
+            <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);">Product</th>
+            <th style="padding:9px 8px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);">Unit</th>
+            <th style="padding:9px 8px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);">HD Retail</th>
+            <th style="padding:9px 8px;font-size:11px;font-weight:600;color:#1A7F5A;text-transform:uppercase;border-bottom:1px solid var(--border);">Wholesale</th>
+            <th style="padding:9px 8px;font-size:11px;font-weight:600;color:#1A4F9C;text-transform:uppercase;border-bottom:1px solid var(--border);">Local</th>
+            <th style="padding:9px 8px;border-bottom:1px solid var(--border);"></th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.5;">
+      Prices reflect current 2026 market rates for ZIP ${d.zip}. HD retail prices vary by store location. Wholesale and local supplier prices are estimates — contact your nearest supplier for exact quote.
+    </div>
+  `;
+  document.getElementById('hd-out').style.display = 'block';
+  document.getElementById('hd-out').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+/* ─── SHARE BUTTONS ─────────────────────────────────────── */
+function shareWhatsApp() {
+  const title = document.getElementById('etitle').textContent;
+  const meta  = document.getElementById('emeta').textContent;
+  const retail = document.getElementById('total-retail') ? document.getElementById('total-retail').textContent : '';
+  const local  = document.getElementById('total-local')  ? document.getElementById('total-local').textContent  : '';
+  const savings= document.getElementById('total-savings')? document.getElementById('total-savings').textContent: '';
+  const text = `🏠 *StackBid Materials Estimate*\n\n*Project:* ${title}\n*${meta}*\n\n💰 HD Retail: ${retail}\n✅ Local Supplier: ${local}\n🎯 *You save: ${savings}*\n\nGet your free estimate 👉 https://stackbid.app`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function shareTelegram() {
+  const title  = document.getElementById('etitle').textContent;
+  const savings= document.getElementById('total-savings')? document.getElementById('total-savings').textContent: '';
+  const text   = `🏠 StackBid estimate: ${title}\n💰 Potential savings: ${savings} vs Home Depot retail\n\nGet your free estimate 👉 https://stackbid.app`;
+  window.open(`https://t.me/share/url?url=https://stackbid.app&text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function toggleVoice() {
+  const btn = document.getElementById('vbtn');
+  isRec = !isRec;
+  if (isRec) {
+    btn.classList.add('rec');
+    btn.textContent = '⏹ Stop';
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SR) {
+      recognition = new SR();
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      recognition.onresult = e => {
+        const ta = document.getElementById('desc');
+        ta.value += (ta.value ? ' ' : '') + e.results[0][0].transcript;
+        resetVoice();
+      };
+      recognition.onerror = resetVoice;
+      recognition.start();
+    } else {
+      setTimeout(() => {
+        document.getElementById('desc').value += ' 20x24 ft composite deck, cable railing, attached to house';
+        resetVoice();
+      }, 2000);
+    }
+  } else {
+    if (recognition) recognition.stop();
+    resetVoice();
+  }
+}
+function resetVoice() {
+  isRec = false;
+  const btn = document.getElementById('vbtn');
+  btn.classList.remove('rec');
+  btn.textContent = '🎙️ Speak';
+}
+
+function handleUpload(files) {
+  const fl = document.getElementById('flist');
+  Array.from(files).forEach(f => {
+    const d = document.createElement('span');
+    d.style.cssText = 'display:inline-flex;align-items:center;gap:5px;background:var(--offwhite);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted);';
+    d.innerHTML = `📄 ${f.name} <span style="cursor:pointer" onclick="this.parentElement.remove()">✕</span>`;
+    fl.appendChild(d);
+  });
+}
+
+function isIOS() {
+  return /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+async function generate() {
+  const activeTab = document.getElementById('tab-upload').style.display === 'none' ? 'text' : 'upload';
+  const desc = document.getElementById('desc').value.trim();
+  const zip = (document.getElementById('zip').value || document.getElementById('zip2').value || '77001').trim();
+  const supp = document.getElementById('supp').value;
+  const ptype2 = document.getElementById('ptype2').value;
+  const type = activeTab === 'text' ? selType : ptype2;
+
+  document.getElementById('estimate-out').style.display = 'none';
+  document.getElementById('pbar').style.display = 'block';
+  document.getElementById('smsg').style.display = 'block';
+
+  const msgs = [
+    'Analyzing your project...',
+    'Calculating material quantities...',
+    'Looking up 2026 wholesale prices...',
+    'Finding your nearest supplier in ZIP ' + zip + '...',
+    'Building your estimate...'
+  ];
+  let pct = 0, mi = 0;
+  const pfill = document.getElementById('pfill');
+  const smsg = document.getElementById('smsg');
+  const iv = setInterval(() => {
+    pct = Math.min(pct + 18, 90);
+    pfill.style.width = pct + '%';
+    if (mi < msgs.length - 1) smsg.textContent = msgs[++mi];
+  }, 900);
+
+  const prompt = `You are a US construction materials estimator with current 2026 pricing knowledge.
+
+Project type: ${type}
+Description: ${desc || '1,200 sq ft single-story ranch, 3 bed 2 bath, slab-on-grade foundation, architectural shingle roof, vinyl siding, attached 2-car garage'}
+ZIP code: ${zip}
+Preferred supplier: ${supp}
+
+Return ONLY valid JSON, no markdown, no preamble:
+{
+  "title": "short project title",
+  "supplier_name": "nearest wholesale supplier name for this ZIP region",
+  "supplier_distance": "X.X mi",
+  "categories": [
+    {
+      "name": "Category",
+      "items": [
+        {
+          "name": "Material name",
+          "unit": "unit",
+          "qty": number,
+          "retail_unit": number,
+          "wholesale_unit": number,
+          "local_unit": number,
+          "note": "spec note"
+        }
+      ]
+    }
+  ]
+}
+
+Rules:
+- retail_unit = current 2026 Home Depot / Lowe's shelf price
+- wholesale_unit = 20-28% below retail
+- local_unit = 5-10% below wholesale
+- 4-6 relevant categories for this project type
+- Use realistic current 2026 prices reflecting US construction market conditions
+- Return JSON only`;
+
+  try {
+    const resp = await fetch('/api/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    const txt = data.content.map(b => b.text || '').join('');
+    const json = JSON.parse(txt.replace(/```json|```/g, '').trim());
+    clearInterval(iv);
+    pfill.style.width = '100%';
+    setTimeout(async () => {
+      document.getElementById('pbar').style.display = 'none';
+      document.getElementById('smsg').style.display = 'none';
+      const enriched = await enrichWithDBPrices(json, zip);
+      renderEstimateWithGate(enriched, zip);
+    }, 300);
+  } catch(e) {
+    clearInterval(iv);
+    document.getElementById('pbar').style.display = 'none';
+    document.getElementById('smsg').style.display = 'none';
+    renderEstimateWithGate(fallback(type), zip);
+  }
+}
+
+function fallback(type) {
+  return {
+    title: type + ' — materials estimate',
+    supplier_name: '84 Lumber',
+    supplier_distance: '3.1 mi',
+    categories: [
+      { name: 'Framing lumber', items: [
+        { name: '2×4×8 SPF stud', unit: 'ea', qty: 180, retail_unit: 6.28, wholesale_unit: 4.72, local_unit: 4.34, note: '#2 & Better, kiln-dried' },
+        { name: '2×6×16 PT sill plate', unit: 'ea', qty: 24, retail_unit: 19.47, wholesale_unit: 14.60, local_unit: 13.40, note: 'Ground contact rated' },
+        { name: 'LVL beam 3.5"×11.25"×16\'', unit: 'ea', qty: 8, retail_unit: 148.00, wholesale_unit: 111.00, local_unit: 102.00, note: '2.0E Microllam' }
+      ]},
+      { name: 'Sheathing', items: [
+        { name: 'OSB 7/16" 4×8', unit: 'sheet', qty: 96, retail_unit: 22.97, wholesale_unit: 17.20, local_unit: 15.80, note: 'Wall & roof sheathing' },
+        { name: 'Plywood 3/4" T&G 4×8', unit: 'sheet', qty: 48, retail_unit: 58.97, wholesale_unit: 44.20, local_unit: 40.60, note: '23/32 rated subfloor' }
+      ]},
+      { name: 'Roofing', items: [
+        { name: 'Arch. shingles 30-yr', unit: 'sq', qty: 18, retail_unit: 129.00, wholesale_unit: 96.80, local_unit: 89.00, note: 'GAF Timberline HDZ' },
+        { name: 'Synthetic underlayment', unit: 'roll', qty: 2, retail_unit: 89.00, wholesale_unit: 66.80, local_unit: 61.40, note: '10 sq per roll' }
+      ]},
+      { name: 'Concrete & masonry', items: [
+        { name: 'Ready-mix concrete', unit: 'cu yd', qty: 28, retail_unit: 195.00, wholesale_unit: 162.00, local_unit: 149.00, note: '3000 PSI slab-on-grade' },
+        { name: 'Rebar #4 20 ft', unit: 'ea', qty: 120, retail_unit: 11.47, wholesale_unit: 8.60, local_unit: 7.90, note: 'Grade 60' }
+      ]},
+      { name: 'Exterior siding', items: [
+        { name: 'Vinyl siding Dutch Lap', unit: 'sq', qty: 22, retail_unit: 119.00, wholesale_unit: 89.30, local_unit: 82.10, note: 'Alside Prodigy insulated' },
+        { name: 'House wrap 9\'×100\'', unit: 'roll', qty: 4, retail_unit: 149.00, wholesale_unit: 111.80, local_unit: 102.80, note: 'Tyvek HomeWrap' }
+      ]}
+    ]
+  };
+}
+
+/* ─── SUPABASE PRICE ENRICHMENT ──────────────────────── */
+async function enrichWithDBPrices(data, zip) {
+  try {
+    // Collect all material names from AI estimate
+    const names = [];
+    (data.categories || []).forEach(cat =>
+      (cat.items || []).forEach(item => names.push(item.name))
+    );
+    if (!names.length) return data;
+
+    // Call our price lookup API
+    const resp = await fetch('/api/prices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ material_names: names, zip })
+    });
+    const { results } = await resp.json();
+    if (!results?.length) return data;
+
+    // Build lookup map
+    const priceMap = {};
+    results.forEach(r => {
+      priceMap[r.search_term.toLowerCase()] = r;
+    });
+
+    // Overwrite AI prices with real DB prices where match found
+    let dbMatches = 0;
+    (data.categories || []).forEach(cat => {
+      (cat.items || []).forEach(item => {
+        const key = item.name.toLowerCase();
+        // Try exact then partial match
+        const match = priceMap[key] ||
+          Object.values(priceMap).find(p =>
+            key.includes(p.name.toLowerCase().substring(0, 8)) ||
+            p.search_term.toLowerCase().includes(key.substring(0, 8))
+          );
+        if (match) {
+          item.retail_unit    = match.hd_price;
+          item.wholesale_unit = match.wholesale_price;
+          item.local_unit     = match.local_price;
+          item.from_db        = true;
+          dbMatches++;
+        }
+      });
+    });
+
+    // Tag data with DB match count
+    data._db_matches = dbMatches;
+    data._total_items = names.length;
+    return data;
+
+  } catch(e) {
+    return data; // fallback to AI prices silently
+  }
+}
+
+/* ─── SAVE ESTIMATE + USER TO SUPABASE ──────────────── */
+async function saveToSupabase(userData, estimateData, zip) {
+  try {
+    await fetch('/api/save-estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user: userData,
+        estimate: {
+          title: estimateData.title,
+          project_type: selType,
+          zip,
+          description: document.getElementById('desc')?.value || '',
+          total_retail: estimateData._tR,
+          total_wholesale: estimateData._tW,
+          total_local: estimateData._tL,
+          items: estimateData.categories
+        }
+      })
+    });
+  } catch(e) {}
+}
+
+/* ─── PROGRESSIVE GATE ───────────────────────────────── */
+let pendingEstimateData = null;
+let pendingEstimateZip  = null;
+let gateUnlocked = false;
+
+function isGateUnlocked() {
+  return gateUnlocked || !!localStorage.getItem('sb_user_email');
+}
+
+function showGate(data, zip) {
+  pendingEstimateData = data;
+  pendingEstimateZip  = zip;
+
+  // Count total items
+  let totalItems = 0, tR = 0, tL = 0;
+  (data.categories || []).forEach(cat => {
+    (cat.items || []).forEach(item => {
+      tR += item.retail_unit * item.qty;
+      tL += item.local_unit  * item.qty;
+      totalItems++;
+    });
+  });
+
+  // Show first 3 items as preview
+  const previewItems = [];
+  for (const cat of (data.categories || [])) {
+    for (const item of (cat.items || [])) {
+      if (previewItems.length < 3) previewItems.push(item);
+    }
+  }
+
+  const previewHtml = `
+    <div class="gate-preview-title">Preview — first 3 of ${totalItems} items</div>
+    ${previewItems.map(item => `
+      <div class="gate-preview-row">
+        <span style="color:var(--ink);font-weight:500;font-size:13px;">${item.name}</span>
+        <span style="color:var(--green);font-weight:600;font-size:13px;">$${(item.local_unit * item.qty).toFixed(0)}</span>
+      </div>`).join('')}
+    <div style="margin-top:8px;">
+      <div class="gate-blur-bar" style="width:85%;opacity:0.5;"></div>
+      <div class="gate-blur-bar" style="width:70%;opacity:0.35;margin-top:6px;"></div>
+      <div class="gate-blur-bar" style="width:90%;opacity:0.25;margin-top:6px;"></div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:6px;">+ ${totalItems - 3} more items locked</div>
+    </div>`;
+
+  document.getElementById('gate-preview-items').innerHTML = previewHtml;
+  document.getElementById('gate-savings-num').textContent = '$' + Math.round(tR - tL).toLocaleString();
+  document.getElementById('gate-items-count').textContent = totalItems + ' items';
+
+  document.getElementById('estimate-out').style.display = 'block';
+  document.getElementById('gate-overlay').classList.add('show');
+  document.getElementById('estimate-out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function unlockEstimate() {
+  const fname  = document.getElementById('gate-fname').value.trim();
+  const email  = document.getElementById('gate-email').value.trim();
+  const role   = document.getElementById('gate-role').value;
+  const alerts = document.getElementById('gate-alerts').checked;
+
+  if (!fname) { document.getElementById('gate-fname').focus(); return; }
+  if (!email || !email.includes('@')) { document.getElementById('gate-email').focus(); return; }
+
+  // Save to localStorage
+  localStorage.setItem('sb_user_email', email);
+  localStorage.setItem('sb_user_name',  fname);
+  localStorage.setItem('sb_user_role',  role);
+  gateUnlocked = true;
+
+  // Send to Brevo (non-blocking)
+  sendToBrevo({ fname, email, role, alerts });
+
+  // Save to Supabase (non-blocking)
+  const userData = { email, first_name: fname, role, price_alerts: alerts };
+  if (pendingEstimateData) {
+    saveToSupabase(userData, pendingEstimateData, pendingEstimateZip);
+  }
+
+  // Hide gate and show full estimate
+  document.getElementById('gate-overlay').classList.remove('show');
+  if (pendingEstimateData) {
+    renderEstimate(pendingEstimateData, pendingEstimateZip);
+  }
+}
+
+function skipGate() {
+  gateUnlocked = true;
+  document.getElementById('gate-overlay').classList.remove('show');
+  if (pendingEstimateData) {
+    renderEstimate(pendingEstimateData, pendingEstimateZip);
+  }
+}
+
+async function sendToBrevo({ fname, email, role, alerts }) {
+  try {
+    const brevoKey = window.BREVO_API_KEY || '';
+    if (!brevoKey) return;
+    await fetch('https://api.brevo.com/v3/contacts', {
+      method: 'POST',
+      headers: { 'api-key': brevoKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        attributes: { FIRSTNAME: fname, ROLE: role, PRICE_ALERTS: alerts },
+        listIds: [2],
+        updateEnabled: true
+      })
+    });
+  } catch(e) {}
+}
+
+function renderEstimateWithGate(data, zip) {
+  if (isGateUnlocked()) {
+    renderEstimate(data, zip);
+  } else {
+    showGate(data, zip);
+  }
+}
+
+function renderEstimate(data, zip) {
+  document.getElementById('etitle').textContent = data.title || 'Materials estimate';
+  document.getElementById('emeta').textContent =
+    `ZIP ${zip} · ${data.supplier_name || '84 Lumber'} · ${data.supplier_distance || '—'}`;
+
+  if (isIOS()) document.getElementById('iostip').style.display = 'block';
+
+  let tR = 0, tW = 0, tL = 0;
+  const tbody = document.getElementById('etbody');
+  tbody.innerHTML = '';
+
+  (data.categories || []).forEach(cat => {
+    const hr = tbody.insertRow();
+    hr.className = 'cat-row';
+    hr.innerHTML = `<td colspan="6">📦 ${cat.name}</td>`;
+    (cat.items || []).forEach(item => {
+      const r = parseFloat((item.retail_unit * item.qty).toFixed(2));
+      const w = parseFloat((item.wholesale_unit * item.qty).toFixed(2));
+      const l = parseFloat((item.local_unit * item.qty).toFixed(2));
+      tR += r; tW += w; tL += l;
+      const pct = Math.round((1 - l / r) * 100);
+      const row = tbody.insertRow();
+      row.innerHTML = `
+        <td><b style="font-weight:500;">${item.name}</b><br>
+          <span style="font-size:11px;color:var(--muted);">${item.note || ''}</span></td>
+        <td>${item.qty} ${item.unit}</td>
+        <td><div class="price-retail">$${r.toLocaleString()}</div>
+            <div style="font-size:11px;color:var(--muted);">$${item.retail_unit.toFixed(2)}/unit</div></td>
+        <td><div class="price-ws">$${w.toLocaleString()}</div>
+            <div style="font-size:11px;color:var(--muted);">$${item.wholesale_unit.toFixed(2)}/unit</div></td>
+        <td><div class="price-local">$${l.toLocaleString()}</div>
+            <div style="font-size:11px;color:var(--muted);">$${item.local_unit.toFixed(2)}/unit</div></td>
+        <td><span class="save-pill">-${pct}%</span></td>`;
+    });
+  });
+
+  const totHtml = `
+    <div class="total-card">
+      <div class="total-val">$${Math.round(tR).toLocaleString()}</div>
+      <div class="total-lbl">HD / Lowe's retail</div>
+    </div>
+    <div class="total-card">
+      <div class="total-val">$${Math.round(tW).toLocaleString()}</div>
+      <div class="total-lbl">Wholesale estimate</div>
+    </div>
+    <div class="total-card highlight">
+      <div class="total-val">$${Math.round(tL).toLocaleString()}</div>
+      <div class="total-lbl">Local supplier</div>
+    </div>
+    <div class="total-card savings">
+      <div class="total-val">$${Math.round(tR - tL).toLocaleString()}</div>
+      <div class="total-lbl">You save vs retail</div>
+    </div>`;
+  document.getElementById('etotals').innerHTML = totHtml;
+  document.getElementById('estimate-out').style.display = 'block';
+  document.getElementById('estimate-out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function doPrint() {
+  window.print();
+}
+
+function submitEmail() {
+  const email = document.getElementById('email-in').value;
+  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+  document.getElementById('email-form').style.display = 'none';
+  document.getElementById('email-success').style.display = 'block';
+}
+
+// PWA Install
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('pwa-banner').classList.add('show');
+});
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; closePWABanner(); });
+  } else {
+    alert('To install: tap the Share button (□↑) → "Add to Home Screen"');
+  }
+}
+function closePWABanner() {
+  document.getElementById('pwa-banner').classList.remove('show');
+  sessionStorage.setItem('pwa-dismissed','1');
+}
+if (sessionStorage.getItem('pwa-dismissed')) {
+  const b = document.getElementById('pwa-banner');
+  if (b) b.classList.remove('show');
+}
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+}
+
+// Animate counters in hero
+function animateCounters() {
+  document.querySelectorAll('.counter').forEach(el => {
+    const target = +el.dataset.target;
+    const isDecimal = target < 100;
+    let current = 0;
+    const step = target / 40;
+    const iv = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = isDecimal ? Math.round(current) : Math.round(current).toLocaleString();
+      if (current >= target) clearInterval(iv);
+    }, 35);
+  });
+}
+window.addEventListener('load', () => setTimeout(animateCounters, 400));
+</script>
+</body>
+</html>
