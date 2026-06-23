@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <rect width="120" height="120" rx="22" fill="#0C2340"/>
+  <!-- House outline -->
+  <polyline points="20,65 20,95 60,95 60,72 75,72 75,95 100,95 100,65" fill="none" stroke="#C9952A" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Roof -->
+  <polyline points="12,65 60,22 108,65" fill="none" stroke="#C9952A" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Bar chart inside house (left) -->
+  <rect x="28" y="78" width="8" height="17" rx="1.5" fill="#C9952A"/>
+  <rect x="40" y="70" width="8" height="25" rx="1.5" fill="#C9952A"/>
+  <rect x="52" y="62" width="8" height="33" rx="1.5" fill="#C9952A"/>
+  <!-- Arrow up-right -->
+  <polyline points="58,44 78,28 78,40" fill="none" stroke="#C9952A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="58" y1="44" x2="78" y2="28" stroke="#C9952A" stroke-width="4" stroke-linecap="round"/>
+</svg>
