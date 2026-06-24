@@ -1,13 +1,7 @@
-
 [build]
   publish = "."
 
 [[headers]]
-  for = "/*.html"
-  [headers.values]
-    Content-Type = "text/html; charset=UTF-8"
-
-[[headers]]
-  for = "/"
+  for = "/*"
   [headers.values]
     Content-Type = "text/html; charset=UTF-8"
