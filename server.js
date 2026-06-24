@@ -6,18 +6,10 @@ const url = require('url');
 const PORT = process.env.PORT || 3000;
 
 const handlers = {
- estimate: require('./netlify/functions/estimate'),
+  estimate: require('./netlify/functions/estimate'),
   permit: require('./netlify/functions/permit'),
   prices: require('./netlify/functions/prices'),
-  'save-estimate': require('./netlify/functions/save-estimate') 
-};
-
-const MIME = {
-  '.html': 'text/html; charset=UTF-8',
-  '.js': 'application/javascript',
-  '.svg': 'image/svg+xml',
-  '.json': 'application/json',
-  '.css': 'text/css'
+  'save-estimate': require('./netlify/functions/save-estimate')
 };
 
 const server = http.createServer(async (req, res) => {
@@ -37,9 +29,8 @@ const server = http.createServer(async (req, res) => {
     let body = '';
     req.on('data', d => body += d);
     req.on('end', async () => {
-      const event = { httpMethod: req.method, body, headers: req.headers, queryStringParameters: parsed.query };
       try {
-        const result = await handler.handler(event);
+        const result = await handler.handler({ httpMethod: req.method, body, headers: req.headers, queryStringParameters: parsed.query });
         res.writeHead(result.statusCode || 200, result.headers || {});
         res.end(result.body || '');
       } catch (e) { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); }
@@ -47,8 +38,23 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  let filePath = pathname === '/' ? '/index.html' : pathname;
-  filePath = path.join(__dirname, filePath);
+  const MIME = {
+    '.html': 'text/html; charset=UTF-8',
+    '.js': 'application/javascript',
+    '.svg': 'image/svg+xml',
+    '.json': 'application/json',
+    '.css': 'text/css',
+    '.png': 'image/png',
+    '.ico': 'image/x-icon'
+  };
+
+  let filePath;
+  if (pathname === '/' || pathname === '') {
+    filePath = path.join(__dirname, 'index.html');
+  } else {
+    filePath = path.join(__dirname, pathname);
+  }
+
   fs.readFile(filePath, (err, data) => {
     if (err) {
       fs.readFile(path.join(__dirname, 'index.html'), (e2, d2) => {
@@ -59,7 +65,8 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     const ext = path.extname(filePath);
-    res.writeHead(200, { 'Content-Type': MIME[ext] ||'text/html; charset=UTF-8'  });
+    const contentType = MIME[ext] || 'text/html; charset=UTF-8';
+    res.writeHead(200, { 'Content-Type': contentType });
     res.end(data);
   });
 });
