@@ -6,10 +6,10 @@ const url = require('url');
 const PORT = process.env.PORT || 3000;
 
 const handlers = {
-  estimate: require('./api/estimate'),
-  permit: require('./api/permit'),
-  prices: require('./api/prices'),
-  'save-estimate': require('./api/save-estimate')
+ estimate: require('./netlify/functions/estimate'),
+  permit: require('./netlify/functions/permit'),
+  prices: require('./netlify/functions/prices'),
+  'save-estimate': require('./netlify/functions/save-estimate') 
 };
 
 const MIME = {
