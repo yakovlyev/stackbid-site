@@ -59,7 +59,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     const ext = path.extname(filePath);
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'text/plain' });
+    res.writeHead(200, { 'Content-Type': MIME[ext] ||'text/html; charset=UTF-8'  });
     res.end(data);
   });
 });
