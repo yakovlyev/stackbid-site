@@ -81,7 +81,9 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(12,35,64,0.97); b
 }
 
 /* HERO */
-.hero { background: var(--ink); color: var(--white); padding: 80px 5% 72px; position: relative; overflow: hidden; }
+.hero { background: var(--ink); color: var(--white); padding: 80px 5% 72px; position: relative; overflow: hidden; background-image: url("/hero-bg.png"); background-size: cover; background-position: center top; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(12,35,64,0.92) 0%, rgba(12,35,64,0.70) 55%, rgba(12,35,64,0.25) 100%); pointer-events: none; z-index: 0; }
+.hero > * { position: relative; z-index: 1; }
 .hero::before { content: ''; position: absolute; right: -60px; top: -60px; width: 420px; height: 420px; border-radius: 50%; background: rgba(201,149,42,0.06); pointer-events: none; }
 .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(201,149,42,0.15); border: 1px solid rgba(201,149,42,0.3); color: var(--amber); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 24px; }
 .hero h1 { font-size: clamp(32px, 5.5vw, 62px); font-weight: 700; line-height: 1.08; letter-spacing: -1.5px; max-width: 780px; margin-bottom: 22px; }
@@ -285,6 +287,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   .tool-card { box-shadow: none; border: none; }
 }
 </style>
+<style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body { font-family: 'Inter', sans-serif; background: var(--white); color: var(--ink); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
@@ -302,7 +305,9 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(15,31,46,0.97); b
 .nav-mobile-hide { display: flex; }
 
 /* HERO */
-.hero { background: var(--ink); color: var(--white); padding: 80px 5% 72px; position: relative; overflow: hidden; }
+.hero { background: var(--ink); color: var(--white); padding: 80px 5% 72px; position: relative; overflow: hidden; background-image: url("/hero-bg.png"); background-size: cover; background-position: center top; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(12,35,64,0.92) 0%, rgba(12,35,64,0.70) 55%, rgba(12,35,64,0.25) 100%); pointer-events: none; z-index: 0; }
+.hero > * { position: relative; z-index: 1; }
 .hero::before { content: ''; position: absolute; right: -60px; top: -60px; width: 420px; height: 420px; border-radius: 50%; background: rgba(232,160,32,0.06); pointer-events: none; }
 .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(232,160,32,0.15); border: 1px solid rgba(232,160,32,0.3); color: var(--amber); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 24px; }
 .hero h1 { font-size: clamp(36px, 5.5vw, 62px); font-weight: 700; line-height: 1.08; letter-spacing: -1.5px; max-width: 780px; margin-bottom: 22px; }
@@ -490,7 +495,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
 <nav>
   <a href="/" class="nav-logo" aria-label="StackBid home">
-    <img src="/logo.svg" alt="StackBid icon" width="36" height="36">
+    <img src="/logo.png" alt="StackBid icon" width="36" height="36">
     <span class="nav-logo-text">Stack<span>Bid</span></span>
   </a>
   <div class="nav-links nav-mobile-hide">
