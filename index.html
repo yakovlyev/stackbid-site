@@ -1582,8 +1582,21 @@ function toggleVoice() {
       recognition.continuous = false;
       recognition.onresult = e => {
         const ta = document.getElementById('desc');
-        ta.value += (ta.value ? ' ' : '') + e.results[0][0].transcript;
+        const transcript = e.results[0][0].transcript;
+        ta.value += (ta.value ? ' ' : '') + transcript;
         resetVoice();
+        if (window.SUPABASE_URL && window.SUPABASE_KEY) {
+          fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
+            method: 'POST',
+            headers: {
+              'apikey': window.SUPABASE_KEY,
+              'Authorization': 'Bearer ' + window.SUPABASE_KEY,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({ transcript: transcript, created_at: new Date().toISOString() })
+          }).catch(() => {});
+        }
       };
       recognition.onerror = resetVoice;
       recognition.start();
