@@ -3,6 +3,6 @@
   functions = "netlify/functions"
 
 [[headers]]
-  for = "/*.html"
+  for = "/*"
   [headers.values]
     Content-Type = "text/html; charset=UTF-8"
