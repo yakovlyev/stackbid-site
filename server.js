@@ -71,6 +71,40 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
+  
+// Contact form handler
+async function handleContact(req, res) {
+  let body = '';
+  req.on('data', d => body += d);
+  req.on('end', async () => {
+    try {
+      const { name, email, message } = JSON.parse(body);
+      if (!name || !email || !message) { res.writeHead(400); res.end('{}'); return; }
+      
+      const resendKey = process.env.RESEND_API_KEY;
+      if (!resendKey) { res.writeHead(500); res.end('{}'); return; }
+
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'StackBid Contact <hello@stackbid.app>',
+          to: 'stackbid.hello@gmail.com',
+          subject: 'New message from ' + name,
+          html: '<p><b>From:</b> ' + name + ' (' + email + ')</p><p><b>Message:</b></p><p>' + message.replace(/\n/g,'<br>') + '</p>'
+        })
+      });
+
+      if (r.ok) { res.writeHead(200); res.end('{"ok":true}'); }
+      else { res.writeHead(500); res.end('{}'); }
+    } catch(e) { res.writeHead(500); res.end('{}'); }
+  });
+}
+
+  if (pathname === '/api/contact' && req.method === 'POST') {
+    return handleContact(req, res);
+  }
+
   // Brevo contact route
   if (pathname === '/api/brevo-contact' && req.method === 'POST') {
     return handleBrevoContact(req, res);
