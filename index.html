@@ -149,9 +149,11 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(12,35,64,0.97); b
 .tool-badge { background: rgba(201,149,42,0.2); color: var(--amber); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
 .tool-body { padding: 24px; }
 @media (max-width: 640px) { .tool-body { padding: 16px; } }
-.tool-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--offwhite); border-radius: var(--radius); padding: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.tool-tab { flex: 1; min-width: 100px; padding: 8px 6px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; background: none; border: none; border-radius: 7px; cursor: pointer; color: var(--muted); transition: all 0.2s; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
-.tool-tab.active { background: var(--white); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.tool-tabs { display: flex; gap: 6px; margin-bottom: 20px; padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tool-tab { flex: 1; min-width: 90px; padding: 10px 6px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; background: var(--white); border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--muted); transition: all 0.15s; white-space: nowrap; -webkit-tap-highlight-color: transparent; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.tool-tab:hover { border-color: var(--amber); color: var(--ink); }
+.tool-tab:active { transform: scale(0.95); background: var(--offwhite); }
+.tool-tab.active { background: var(--ink); color: var(--white); border-color: var(--ink); box-shadow: 0 2px 8px rgba(12,35,64,0.2); }
 .project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
 .ptype-btn { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 6px; text-align: center; cursor: pointer; background: var(--white); font-size: 12px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 5px; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
 .ptype-btn:hover, .ptype-btn:active { border-color: var(--amber); color: var(--ink); }
@@ -421,9 +423,11 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(15,31,46,0.97); b
 .tool-header-title { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: var(--white); }
 .tool-badge { background: rgba(232,160,32,0.2); color: var(--amber); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
 .tool-body { padding: 28px; }
-.tool-tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--offwhite); border-radius: var(--radius); padding: 4px; }
-.tool-tab { flex: 1; padding: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; background: none; border: none; border-radius: 7px; cursor: pointer; color: var(--muted); transition: all 0.2s; }
-.tool-tab.active { background: var(--white); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.tool-tabs { display: flex; gap: 6px; margin-bottom: 24px; padding: 0; }
+.tool-tab { flex: 1; padding: 10px 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; background: var(--white); border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--muted); transition: all 0.15s; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.tool-tab:hover { border-color: var(--amber); color: var(--ink); }
+.tool-tab:active { transform: scale(0.95); }
+.tool-tab.active { background: var(--ink); color: var(--white); border-color: var(--ink); box-shadow: 0 2px 8px rgba(12,35,64,0.2); }
 .project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
 .ptype-btn { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 8px; text-align: center; cursor: pointer; background: var(--white); font-size: 12px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all 0.15s; }
 .ptype-btn:hover { border-color: var(--amber); color: var(--ink); }
