@@ -974,7 +974,18 @@ const tagSets = {
   'Foundation': ['1,200 sq ft slab','4" concrete','crawl space','vapor barrier','rebar grid','monolithic pour']
 };
 
-function renderTags(type) {
+
+  // Security: HTML escape function to prevent XSS
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+
+  function renderTags(type) {
   const tags = tagSets[type] || tagSets['New home build'];
   document.getElementById('qtags').innerHTML = tags.map(t =>
     `<span class="qtag" onclick="addTag('${t}')">+ ${t}</span>`).join('');
@@ -1625,7 +1636,7 @@ function handleUpload(files) {
   Array.from(files).forEach(f => {
     const d = document.createElement('span');
     d.style.cssText = 'display:inline-flex;align-items:center;gap:5px;background:var(--offwhite);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted);';
-    d.innerHTML = `📄 ${f.name} <span style="cursor:pointer" onclick="this.parentElement.remove()">✕</span>`;
+    d.innerHTML = `📄 ${esc(f.name)} <span style="cursor:pointer" onclick="this.parentElement.remove()">✕</span>`;
     fl.appendChild(d);
   });
 }
@@ -1972,7 +1983,7 @@ function renderEstimate(data, zip) {
   (data.categories || []).forEach(cat => {
     const hr = tbody.insertRow();
     hr.className = 'cat-row';
-    hr.innerHTML = `<td colspan="6">📦 ${cat.name}</td>`;
+    hr.innerHTML = `<td colspan="6">📦 ${esc(cat.name)}</td>`;
     (cat.items || []).forEach(item => {
       const r = parseFloat((item.retail_unit * item.qty).toFixed(2));
       const w = parseFloat((item.wholesale_unit * item.qty).toFixed(2));
@@ -1981,8 +1992,8 @@ function renderEstimate(data, zip) {
       const pct = Math.round((1 - l / r) * 100);
       const row = tbody.insertRow();
       row.innerHTML = `
-        <td><b style="font-weight:500;">${item.name}</b><br>
-          <span style="font-size:11px;color:var(--muted);">${item.note || ''}</span></td>
+        <td><b style="font-weight:500;">${esc(item.name)}</b><br>
+          <span style="font-size:11px;color:var(--muted);">${esc(item.note)}</span></td>
         <td>${item.qty} ${item.unit}</td>
         <td><div class="price-retail">$${r.toLocaleString()}</div>
             <div style="font-size:11px;color:var(--muted);">$${item.retail_unit.toFixed(2)}/unit</div></td>
