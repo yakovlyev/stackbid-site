@@ -288,6 +288,25 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   .tool-section { background: white; padding: 0; }
   .tool-card { box-shadow: none; border: none; }
 }
+
+/* Voice recording animation */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.voice-btn.recording {
+  background: #e53935 !important;
+  color: #fff !important;
+  position: relative;
+}
+.voice-btn.recording::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 20px;
+  border: 2px solid rgba(229,57,53,0.6);
+  animation: pulse-ring 1s ease-out infinite;
+}
 </style>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -601,10 +620,10 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div class="section-label" style="font-size:11px; margin-bottom:8px;">Project type</div>
             <div class="project-grid">
               <div class="ptype-btn sel" onclick="setPtype(this,'New home build')"><div class="ptype-icon">🏠</div>New home</div>
-              <div class="ptype-btn" onclick="setPtype(this,'Deck or patio')"><div class="ptype-icon">🪵</div>Deck / patio</div>
-              <div class="ptype-btn" onclick="setPtype(this,'Fence')"><div class="ptype-icon">🪧</div>Fence</div>
-              <div class="ptype-btn" onclick="setPtype(this,'Roofing replacement')"><div class="ptype-icon">🏗️</div>Roofing</div>
-              <div class="ptype-btn" onclick="setPtype(this,'Siding or facade')"><div class="ptype-icon">🏚️</div>Siding</div>
+              <div class="ptype-btn" onclick="setPtype(this,'Deck or patio')"><div class="ptype-icon">🌿</div>Deck / patio</div>
+              <div class="ptype-btn" onclick="setPtype(this,'Fence')"><div class="ptype-icon">🔲</div>Fence</div>
+              <div class="ptype-btn" onclick="setPtype(this,'Roofing replacement')"><div class="ptype-icon">🏠</div>Roofing</div>
+              <div class="ptype-btn" onclick="setPtype(this,'Siding or facade')"><div class="ptype-icon">🧱</div>Siding</div>
               <div class="ptype-btn" onclick="setPtype(this,'Foundation')"><div class="ptype-icon">⬛</div>Foundation</div>
             </div>
           </div>
@@ -1660,8 +1679,8 @@ function toggleVoice() {
   const btn = document.getElementById('vbtn');
   isRec = !isRec;
   if (isRec) {
-    btn.classList.add('rec');
-    btn.textContent = '⏹ Stop';
+    btn.classList.add('rec', 'recording');
+    btn.innerHTML = '🔴 Recording...';
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SR) {
       recognition = new SR();
@@ -1701,8 +1720,8 @@ function toggleVoice() {
 function resetVoice() {
   isRec = false;
   const btn = document.getElementById('vbtn');
-  btn.classList.remove('rec');
-  btn.textContent = '🎙️ Speak';
+  btn.classList.remove('rec', 'recording');
+  btn.innerHTML = '🎙️ Speak';
 }
 
 function handleUpload(files) {
