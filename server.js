@@ -28,6 +28,31 @@ const handlers = {
   'save-estimate': require('./netlify/functions/save-estimate')
 };
 
+// Brevo contact proxy — keeps API key server-side
+async function handleBrevoContact(req, res) {
+  let body = '';
+  req.on('data', d => body += d);
+  req.on('end', async () => {
+    try {
+      const { fname, email, role, alerts } = JSON.parse(body);
+      const brevoKey = process.env.BREVO_API_KEY;
+      if (!brevoKey || !email) { res.writeHead(400); res.end('{}'); return; }
+      const r = await fetch('https://api.brevo.com/v3/contacts', {
+        method: 'POST',
+        headers: { 'api-key': brevoKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          attributes: { FIRSTNAME: fname, ROLE: role, PRICE_ALERTS: alerts },
+          listIds: [2],
+          updateEnabled: true
+        })
+      });
+      res.writeHead(r.status, { 'Content-Type': 'application/json' });
+      res.end('{}');
+    } catch(e) { res.writeHead(500); res.end('{}'); }
+  });
+}
+
 const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
   const pathname = parsed.pathname;
@@ -42,8 +67,14 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://xbxknpsqecwahxzwsvpt.supabase.co https://api.anthropic.com; frame-ancestors 'none';");
 
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+
+  // Brevo contact route
+  if (pathname === '/api/brevo-contact' && req.method === 'POST') {
+    return handleBrevoContact(req, res);
+  }
 
   const apiMatch = pathname.match(/^\/api\/(.+)$/);
   if (apiMatch) {
