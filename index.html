@@ -307,6 +307,57 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   border: 2px solid rgba(229,57,53,0.6);
   animation: pulse-ring 1s ease-out infinite;
 }
+/* Button tap/click feedback */
+.gen-btn { transition: transform 0.1s, opacity 0.2s, background 0.2s; }
+.gen-btn:active { transform: scale(0.97); opacity: 0.85; }
+.gen-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.gen-btn.loading { position: relative; color: transparent !important; }
+.gen-btn.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gen-btn.loading::before {
+  content: '⏳ Processing...';
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+/* Tab button press effect */
+.tool-tab { transition: all 0.15s; }
+.tool-tab:active { transform: scale(0.96); }
+
+/* Project type button press */
+.ptype-btn { transition: all 0.15s; }
+.ptype-btn:active { transform: scale(0.95); }
+
+/* Nav CTA button */
+.nav-cta:active { opacity: 0.8; transform: scale(0.97); }
+
+/* All clickable elements */
+button, .ptype-btn, .tool-tab, .nav-cta {
+  -webkit-tap-highlight-color: rgba(201,149,42,0.2);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
 </style>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1135,6 +1186,8 @@ function handlePhoto(file) {
 
 async function analyzePhoto() {
   if (!photoBase64) { alert('Please take or upload a photo first.'); return; }
+  const photoBtn = document.getElementById('photo-gen-btn');
+  setBtnLoading(photoBtn, true);
   const zip = document.getElementById('photo-zip').value.trim() || '77001';
   const qty = document.getElementById('photo-qty').value.trim();
 
@@ -1339,6 +1392,8 @@ function calcToEstimate() {
 
 /* ─── UPDATE setTab to include new tabs ─────────────── */
 async function checkPermit() {
+  const permitBtn = document.querySelector('#tab-permit .gen-btn');
+  if (permitBtn) setBtnLoading(permitBtn, true);
   const zip  = document.getElementById('permit-zip').value.trim() || '77001';
   const type = document.getElementById('permit-type').value;
   const size = document.getElementById('permit-size').value.trim();
@@ -1433,7 +1488,9 @@ function renderPermit(d, zip, type) {
   const docsHtml   = (d.required_docs||[]).map(e=>`<li style="font-size:13px;color:var(--muted);padding:2px 0;">📄 ${e}</li>`).join('');
   const rulesHtml  = (d.key_rules||[]).map(e=>`<li style="font-size:13px;color:var(--muted);padding:2px 0;">• ${e}</li>`).join('');
 
-  document.getElementById('permit-out').innerHTML = `
+  const _pb = document.querySelector('#tab-permit .gen-btn');
+    if (_pb) setBtnLoading(_pb, false, '🏛️ Check permit requirements');
+    document.getElementById('permit-out').innerHTML = `
     <div style="background:${bg};border-radius:12px;padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;">
       <div style="font-size:28px;">${icon}</div>
       <div>
@@ -1492,6 +1549,8 @@ function renderPermit(d, zip, type) {
 
 /* ─── HOME DEPOT LIVE PRICES ─────────────────────────────── */
 async function lookupHDPrices() {
+  const hdBtn = document.querySelector('#tab-hdprices .gen-btn');
+  if (hdBtn) setBtnLoading(hdBtn, true);
   const zip      = document.getElementById('hd-zip').value.trim() || '77001';
   const category = document.getElementById('hd-category').value;
   const product  = document.getElementById('hd-product').value.trim();
@@ -1622,7 +1681,9 @@ function renderHDPrices(d, liveData) {
     </tr>`;
   }).join('');
 
-  document.getElementById('hd-out').innerHTML = `
+  const _hb = document.querySelector('#tab-hdprices .gen-btn');
+    if (_hb) setBtnLoading(_hb, false, '🏷️ Get current HD prices + wholesale comparison');
+    document.getElementById('hd-out').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
       <div>
         <div style="font-size:15px;font-weight:700;color:var(--ink);">${d.category_name} — ZIP ${d.zip}</div>
@@ -1717,6 +1778,35 @@ function toggleVoice() {
     resetVoice();
   }
 }
+
+// Button loading state helper
+function setBtnLoading(btn, loading, originalText) {
+  if (loading) {
+    btn.disabled = true;
+    btn.dataset.orig = btn.innerHTML;
+    btn.innerHTML = '<span class="btn-spinner"></span> Processing...';
+    btn.style.opacity = '0.85';
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = originalText || btn.dataset.orig || btn.innerHTML;
+    btn.style.opacity = '';
+  }
+}
+
+// Auto-apply loading state to all gen-btn clicks
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.gen-btn').forEach(btn => {
+    btn.addEventListener('touchstart', () => {
+      btn.style.transform = 'scale(0.97)';
+      btn.style.opacity = '0.85';
+    }, {passive: true});
+    btn.addEventListener('touchend', () => {
+      btn.style.transform = '';
+      btn.style.opacity = '';
+    }, {passive: true});
+  });
+});
+
 function resetVoice() {
   isRec = false;
   const btn = document.getElementById('vbtn');
