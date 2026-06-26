@@ -72,7 +72,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
   
-// Contact form handler
+// Contact form handler — saves to Supabase + sends email
 async function handleContact(req, res) {
   let body = '';
   req.on('data', d => body += d);
@@ -80,24 +80,60 @@ async function handleContact(req, res) {
     try {
       const { name, email, message } = JSON.parse(body);
       if (!name || !email || !message) { res.writeHead(400); res.end('{}'); return; }
-      
+
+      const SUPABASE_URL = process.env.SUPABASE_URL;
+      const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
       const resendKey = process.env.RESEND_API_KEY;
-      if (!resendKey) { res.writeHead(500); res.end('{}'); return; }
 
-      const r = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: 'StackBid Contact <hello@stackbid.app>',
-          to: 'stackbid.hello@gmail.com',
-          subject: 'New message from ' + name,
-          html: '<p><b>From:</b> ' + name + ' (' + email + ')</p><p><b>Message:</b></p><p>' + message.replace(/\n/g,'<br>') + '</p>'
-        })
-      });
+      // 1. Save to Supabase contact_messages table
+      if (SUPABASE_URL && SUPABASE_KEY) {
+        await fetch(`${SUPABASE_URL}/rest/v1/contact_messages`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ name, email, message, created_at: new Date().toISOString() })
+        });
 
-      if (r.ok) { res.writeHead(200); res.end('{"ok":true}'); }
-      else { res.writeHead(500); res.end('{}'); }
-    } catch(e) { res.writeHead(500); res.end('{}'); }
+        // 2. Also upsert into users table to grow our contact base
+        await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates,return=minimal'
+          },
+          body: JSON.stringify({
+            email,
+            first_name: name.split(' ')[0],
+            last_seen: new Date().toISOString()
+          })
+        });
+      }
+
+      // 3. Send email notification via Resend
+      if (resendKey) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'StackBid Contact <hello@stackbid.app>',
+            to: 'stackbid.hello@gmail.com',
+            subject: 'New message from ' + name,
+            html: '<p><b>From:</b> ' + name + ' (' + email + ')</p><p><b>Message:</b></p><p>' + message.replace(/\n/g,'<br>') + '</p>'
+          })
+        });
+      }
+
+      res.writeHead(200); res.end('{"ok":true}');
+    } catch(e) {
+      console.error('Contact handler error:', e.message);
+      res.writeHead(500); res.end('{}');
+    }
   });
 }
 
