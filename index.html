@@ -1945,18 +1945,12 @@ function skipGate() {
 }
 
 async function sendToBrevo({ fname, email, role, alerts }) {
+  // Brevo API key protected server-side — proxied via /api/brevo-contact
   try {
-    const brevoKey = window.BREVO_API_KEY || '';
-    if (!brevoKey) return;
-    await fetch('https://api.brevo.com/v3/contacts', {
+    await fetch('/api/brevo-contact', {
       method: 'POST',
-      headers: { 'api-key': brevoKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        attributes: { FIRSTNAME: fname, ROLE: role, PRICE_ALERTS: alerts },
-        listIds: [2],
-        updateEnabled: true
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fname, email, role, alerts })
     });
   } catch(e) {}
 }
