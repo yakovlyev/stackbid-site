@@ -5,6 +5,22 @@ const url = require('url');
 
 const PORT = process.env.PORT || 3000;
 
+// Rate limiting — max 10 AI requests per IP per minute
+const rateMap = new Map();
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const hits = (rateMap.get(ip) || []).filter(t => now - t < 60000);
+  if (hits.length >= 10) return false;
+  rateMap.set(ip, [...hits, now]);
+  return true;
+}
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, hits] of rateMap.entries()) {
+    if (hits.every(t => now - t > 60000)) rateMap.delete(ip);
+  }
+}, 300000);
+
 const handlers = {
   estimate: require('./netlify/functions/estimate'),
   permit: require('./netlify/functions/permit'),
@@ -16,9 +32,16 @@ const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
   const pathname = parsed.pathname;
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Security headers
+  const allowed = ['https://stackbid.app', 'https://www.stackbid.app', 'https://stackbid-app.onrender.com'];
+  const origin = req.headers['origin'];
+  res.setHeader('Access-Control-Allow-Origin', allowed.includes(origin) ? origin : 'https://stackbid.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
@@ -26,6 +49,15 @@ const server = http.createServer(async (req, res) => {
   if (apiMatch) {
     const handler = handlers[apiMatch[1]];
     if (!handler) { res.writeHead(404); res.end('Not found'); return; }
+    // Rate limiting on AI endpoints
+    if (['estimate', 'permit'].includes(apiMatch[1])) {
+      const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+      if (!checkRateLimit(ip)) {
+        res.writeHead(429, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Too many requests. Please wait a minute.' }));
+        return;
+      }
+    }
     let body = '';
     req.on('data', d => body += d);
     req.on('end', async () => {
@@ -33,7 +65,7 @@ const server = http.createServer(async (req, res) => {
         const result = await handler.handler({ httpMethod: req.method, body, headers: req.headers, queryStringParameters: parsed.query });
         res.writeHead(result.statusCode || 200, result.headers || {});
         res.end(result.body || '');
-      } catch (e) { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); }
+      } catch (e) { console.error('Handler error:', e.message); res.writeHead(500); res.end(JSON.stringify({ error: 'Internal server error' })); }
     });
     return;
   }
