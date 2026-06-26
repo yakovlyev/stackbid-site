@@ -14,7 +14,7 @@ exports.handler = async (event) => {
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
-    const BREVO_KEY = process.env.BREVO_API_KEY;
+    const RESEND_KEY = process.env.RESEND_API_KEY;
 
     // 1. Save to Supabase
     await fetch(`${SUPABASE_URL}/rest/v1/contact_messages`, {
@@ -25,33 +25,26 @@ exports.handler = async (event) => {
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify({
-        name,
-        email,
-        message,
-        created_at: new Date().toISOString()
-      })
+      body: JSON.stringify({ name, email, message, created_at: new Date().toISOString() })
     });
 
-    // 2. Send notification email via Brevo
-    if (BREVO_KEY) {
-      await fetch('https://api.brevo.com/v3/smtp/email', {
+    // 2. Send notification via Resend
+    if (RESEND_KEY) {
+      await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'api-key': BREVO_KEY,
+          'Authorization': `Bearer ${RESEND_KEY}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          sender: { name: 'StackBid Contact Form', email: 'stackbid.app@gmail.com' },
-          to: [{ email: 'stackbid.app@gmail.com', name: 'StackBid Team' }],
+          from: 'StackBid <onboarding@resend.dev>',
+          to: ['stackbid.app@gmail.com'],
           subject: `New message from ${name}`,
-          htmlContent: `
-            <h2>New contact form message</h2>
+          html: `<h2>New contact form message</h2>
             <p><strong>Name:</strong> ${name}</p>
             <p><strong>Email:</strong> ${email}</p>
             <p><strong>Message:</strong></p>
-            <p>${message}</p>
-          `
+            <p>${message}</p>`
         })
       });
     }
