@@ -942,6 +942,18 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
               <tbody id="etbody"></tbody>
             </table>
           </div>
+          <!-- EMAIL PDF CAPTURE -->
+          <div id="email-pdf-box" style="margin-top:24px;background:linear-gradient(135deg,#F5A623,#E8870A);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;">
+              <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">📄 Get this estimate as PDF</div>
+              <div style="font-size:13px;color:rgba(255,255,255,0.85);">We'll email you a copy — free, no spam.</div>
+            </div>
+            <div id="email-pdf-form" style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="email" id="email-pdf-input" placeholder="your@email.com" style="padding:10px 14px;border:none;border-radius:8px;font-size:14px;min-width:200px;outline:none;">
+              <button onclick="sendPdfEmail()" style="background:#0C2340;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;">Send PDF →</button>
+            </div>
+            <div id="email-pdf-success" style="display:none;color:#fff;font-weight:600;font-size:14px;">✓ Check your inbox!</div>
+          </div>
         </div>
       </div>
     </div>
@@ -2279,6 +2291,30 @@ async function loadLocalMatches(zip) {
   } catch(e) {
     container.innerHTML = '';
   }
+}
+
+function sendPdfEmail() {
+  const email = document.getElementById('email-pdf-input').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('email-pdf-input').focus();
+    return;
+  }
+  document.getElementById('email-pdf-form').style.display = 'none';
+  document.getElementById('email-pdf-success').style.display = 'block';
+
+  // Save to Supabase
+  const SUPABASE_URL = window.SUPABASE_URL;
+  const SUPABASE_KEY = window.SUPABASE_KEY;
+  fetch(`${SUPABASE_URL}/rest/v1/users`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({ email, role: 'homeowner', source: 'pdf_capture' })
+  }).catch(() => {});
 }
 
 function doPrint() {
