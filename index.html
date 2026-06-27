@@ -885,8 +885,8 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div class="export-row">
               <button class="exp-btn" onclick="doPrint()">📄 Save PDF</button>
               <button class="exp-btn" onclick="alert('Excel export — coming soon!')">📊 Excel</button>
-              <button class="exp-btn" onclick="shareWhatsApp()">💬 WhatsApp</button>
-              <button class="exp-btn" onclick="shareTelegram()">✈️ Telegram</button>
+              <button class="exp-btn" onclick="shareEmail()">📧 Email</button>
+              <button class="exp-btn" onclick="shareiMessage()">💬 iMessage</button>
             </div>
           </div>
           <div class="ios-tip" id="iostip">📱 On iPhone/iPad: tap "Save PDF" → tap the Share icon → "Save to Files" or "Print"</div>
@@ -1686,6 +1686,20 @@ function renderHDPrices(d, liveData) {
 }
 
 /* ─── SHARE BUTTONS ─────────────────────────────────────── */
+function shareEmail() {
+  const title = document.getElementById('etitle') ? document.getElementById('etitle').textContent : 'Materials estimate';
+  const retail = document.getElementById('total-retail') ? document.getElementById('total-retail').textContent : '';
+  const subject = encodeURIComponent('StackBid Materials Estimate: ' + title);
+  const body = encodeURIComponent('Here is my materials estimate from StackBid:\n\nProject: ' + title + '\n\nGet your free estimate at: https://stackbid.app');
+  window.open('mailto:?subject=' + subject + '&body=' + body);
+}
+
+function shareiMessage() {
+  const title = document.getElementById('etitle') ? document.getElementById('etitle').textContent : 'Materials estimate';
+  const text = encodeURIComponent('Check out my materials estimate for ' + title + ' from StackBid! https://stackbid.app');
+  window.open('sms:&body=' + text);
+}
+
 function shareWhatsApp() {
   const title = document.getElementById('etitle').textContent;
   const meta  = document.getElementById('emeta').textContent;
@@ -2178,7 +2192,25 @@ async function loadLocalMatches(zip) {
 
   const container = document.getElementById('local-matches');
   if (!container) return;
-  container.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">Finding local pros near you...</div>';
+  // Build two-column grid for supplier + contractor
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;';
+  grid.id = 'local-grid';
+  container.innerHTML = '';
+  container.appendChild(grid);
+
+  // Supplier card from estimate meta
+  const metaEl = document.getElementById('emeta');
+  const metaText = metaEl ? metaEl.textContent : '';
+  const supplierMatch = metaText.match(/·\s*(.+?)\s*·/);
+  const supplierName = supplierMatch ? supplierMatch[1].trim() : 'Local Supplier';
+  const distMatch = metaText.match(/·\s*[^·]+·\s*(.+)/);
+  const supplierDist = distMatch ? distMatch[1].trim() : '';
+
+  const supplierCard = document.createElement('div');
+  supplierCard.style.cssText = 'background:#fff;border:2px solid #2E86AB;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);';
+  supplierCard.innerHTML = '<div style="font-size:11px;font-weight:600;color:#2E86AB;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🏪 Nearest Supplier</div><div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:6px;">' + supplierName + '</div><div style="font-size:13px;color:var(--muted);margin-bottom:4px;">📍 ZIP ' + zip + (supplierDist ? ' · ' + supplierDist : '') + '</div><div style="font-size:13px;color:var(--muted);">Wholesale pricing available</div>';
+  grid.appendChild(supplierCard);
 
   // ZIP prefix → state mapping
   const zipStateMap = {
@@ -2246,10 +2278,9 @@ async function loadLocalMatches(zip) {
       const header = document.createElement('div');
       header.style.cssText = 'font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;';
       header.textContent = '🔨 Local Contractor Near You';
-      container.appendChild(header);
-
+      const grid = document.getElementById('local-grid') || container;
       const card = document.createElement('div');
-      card.style.cssText = 'background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);max-width:480px;';
+      card.style.cssText = 'background:#fff;border:2px solid #F5A623;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);';
       const companyName = contractor.company_name || '';
       const city = contractor.city || '';
       const state = contractor.state || '';
