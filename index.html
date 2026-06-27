@@ -2292,16 +2292,13 @@ async function loadLocalMatches(zip) {
 
       const card = document.createElement('div');
       card.style.cssText = 'background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);max-width:480px;';
-      card.innerHTML = `
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-          <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#F5A623,#E8870A);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏗️</div>
-          <div>
-            <div style="font-size:16px;font-weight:700;color:var(--ink);">${s(contractor.company_name)}</div>
-            <div style="font-size:13px;color:var(--muted);">📍 ${s(contractor.city)}, ${s(contractor.state)}</div>
-          </div>
-        </div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">🔧 ${s(specialization)} &nbsp;·&nbsp; License: ${s(contractor.license_number || '—')}</div>
-        <a href="tel:${contractor.phone}" style="display:flex;align-items:center;gap:8px;margin-top:12px;background:var(--gold);color:#fff;padding:11px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;width:fit-content;">📞 ${contractor.phone}</a>`;
+      const companyName = contractor.company_name || '';
+      const city = contractor.city || '';
+      const state = contractor.state || '';
+      const phone = contractor.phone || '';
+      const license = contractor.license_number || '—';
+      const spec = Array.isArray(contractor.specializations) ? contractor.specializations[0] : (contractor.specializations || 'General Contractor');
+      card.innerHTML = '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#F5A623,#E8870A);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏗️</div><div><div style="font-size:16px;font-weight:700;color:var(--ink);">' + companyName + '</div><div style="font-size:13px;color:var(--muted);">📍 ' + city + ', ' + state + '</div></div></div><div style="font-size:13px;color:var(--muted);margin-bottom:16px;">🔧 ' + spec + ' · License: ' + license + '</div><a href="tel:' + phone + '" style="display:inline-block;margin-top:8px;background:var(--gold);color:#fff;padding:11px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">📞 ' + phone + '</a>';
       container.appendChild(card);
     }
 
