@@ -2050,6 +2050,7 @@ function isGateUnlocked() {
 function showGate(data, zip) {
   pendingEstimateData = data;
   pendingEstimateZip  = zip;
+  loadLocalMatches(zip);
 
   // Count total items
   let totalItems = 0, tR = 0, tL = 0;
