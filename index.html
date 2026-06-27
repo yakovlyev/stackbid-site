@@ -322,6 +322,54 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   align-items: center;
   justify-content: center;
 }
+/* GLOBAL CLICKABLE BUTTON STYLES */
+a[href], button, [onclick], .exp-btn, .gen-btn, .gate-submit {
+  cursor: pointer !important;
+}
+/* Make all inline action buttons obvious */
+a[style*="background"][style*="border-radius"] {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s !important;
+}
+a[style*="background"][style*="border-radius"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2) !important;
+  opacity: 0.92 !important;
+}
+a[style*="background"][style*="border-radius"]:active {
+  transform: translateY(0) scale(0.98) !important;
+}
+/* Export buttons */
+.exp-btn {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s !important;
+  font-weight: 600 !important;
+}
+.exp-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+  border-color: var(--ink) !important;
+  color: var(--ink) !important;
+}
+/* Main generate button pulse on load */
+.gen-btn {
+  box-shadow: 0 4px 16px rgba(12,35,64,0.3) !important;
+}
+.gen-btn:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 24px rgba(12,35,64,0.4) !important;
+  opacity: 1 !important;
+}
+/* Send PDF button */
+#email-pdf-box button {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+  transition: transform 0.15s, box-shadow 0.15s !important;
+}
+#email-pdf-box button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
+}
+
 .gen-btn.loading::before {
   content: '⏳ Processing...';
   position: absolute;
