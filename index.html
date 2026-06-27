@@ -2249,13 +2249,13 @@ async function loadLocalMatches(zip) {
 
     // Try exact ZIP first
     let contractor = null;
-    const exactResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?zip_code=eq.${zip}&limit=1`, { headers });
+    const exactResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,contact_name,phone,city,state,specializations,license_number&zip_code=eq.${zip}&limit=1`, { headers });
     const exactData = await exactResp.json();
     contractor = exactData[0];
 
     // Try primary state
     if (!contractor) {
-      const stateResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?state=eq.${primaryState}&limit=1`, { headers });
+      const stateResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,contact_name,phone,city,state,specializations,license_number&state=eq.${primaryState}&limit=1`, { headers });
       const stateData = await stateResp.json();
       contractor = stateData[0];
     }
@@ -2264,7 +2264,7 @@ async function loadLocalMatches(zip) {
     if (!contractor) {
       for (const state of states) {
         if (state === primaryState) continue;
-        const stateResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?state=eq.${state}&limit=1`, { headers });
+        const stateResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,contact_name,phone,city,state,specializations,license_number&state=eq.${state}&limit=1`, { headers });
         const stateData = await stateResp.json();
         if (stateData[0]) { contractor = stateData[0]; break; }
       }
@@ -2272,7 +2272,7 @@ async function loadLocalMatches(zip) {
 
     // Last resort: any contractor
     if (!contractor) {
-      const anyResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?limit=1`, { headers });
+      const anyResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,contact_name,phone,city,state,specializations,license_number&limit=1`, { headers });
       const anyData = await anyResp.json();
       contractor = anyData[0];
     }
