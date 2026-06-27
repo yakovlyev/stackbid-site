@@ -916,6 +916,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             </div>
             <div id="email-pdf-success" style="display:none;color:#fff;font-weight:600;font-size:14px;">✓ Check your inbox!</div>
           </div>
+          <div id="local-matches" style="margin-top:24px;"></div>
         </div>
       </div>
     </div>
@@ -2175,13 +2176,8 @@ async function loadLocalMatches(zip) {
   const SUPABASE_KEY = window.SUPABASE_KEY;
   const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` };
 
-  const existing = document.getElementById('local-matches');
-  if (existing) existing.remove();
-
-  const container = document.createElement('div');
-  container.id = 'local-matches';
-  container.style.cssText = 'margin-top:24px;';
-  document.getElementById('estimate-out').appendChild(container);
+  const container = document.getElementById('local-matches');
+  if (!container) return;
   container.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">Finding local pros near you...</div>';
 
   // ZIP prefix → state mapping
