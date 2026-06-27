@@ -985,6 +985,53 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
 
 
+<!-- FAQ SECTION -->
+<section id="faq" style="background:#f8f9fa;padding:56px 5%;">
+  <div style="max-width:760px;margin:0 auto;">
+    <div style="font-size:12px;font-weight:600;color:#F5A623;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">FAQ</div>
+    <h2 style="font-size:28px;font-weight:800;color:#0C2340;margin-bottom:40px;">Frequently Asked Questions</h2>
+
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">How accurate are StackBid estimates? <span style="color:#F5A623;font-size:20px;">+</span></summary>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Our estimates are based on 2026 wholesale market data and are typically within 10-15% of actual supplier quotes. Prices vary by region, supplier, and season. We always recommend getting at least 2-3 quotes from local suppliers before purchasing.</p>
+      </details>
+
+      <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">What is the difference between the three price columns? <span style="color:#F5A623;font-size:20px;">+</span></summary>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;"><strong>HD / Lowe's Retail</strong> — standard walk-in shelf price at big box stores. The most expensive option.<br><br><strong>Wholesale Estimate</strong> — typical contractor/trade pricing, approximately 25% below retail. Available to contractors and some homeowners with accounts.<br><br><strong>Local Supplier</strong> — price from the nearest local building materials supplier in your ZIP code area. Often the best value for larger projects.</p>
+      </details>
+
+      <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">Is StackBid free to use? <span style="color:#F5A623;font-size:20px;">+</span></summary>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Yes, StackBid is completely free for homeowners. You can generate unlimited estimates, save PDFs, and access local supplier and contractor information at no cost.</p>
+      </details>
+
+      <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">Does the estimate include labor costs? <span style="color:#F5A623;font-size:20px;">+</span></summary>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">No — StackBid estimates cover materials only. Labor costs vary widely by contractor, region, and project complexity. Use our contractor cards to contact local professionals for labor quotes.</p>
+      </details>
+
+      <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">Are the contractors listed on StackBid verified? <span style="color:#F5A623;font-size:20px;">+</span></summary>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Contractors in our database have provided license numbers. However, we strongly recommend independently verifying any contractor's license through your state licensing board before hiring. StackBid does not endorse specific contractors.</p>
+      </details>
+
+      <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">How do I get the best price on materials? <span style="color:#F5A623;font-size:20px;">+</span></summary>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Use your StackBid estimate as a baseline, then: (1) Contact your local supplier shown in the third column, (2) Ask about bulk discounts for large orders, (3) Consider buying during off-season when prices are lower, (4) Ask your contractor if they can use their trade account for better pricing.</p>
+      </details>
+
+      <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">I am a contractor. How do I get listed on StackBid? <span style="color:#F5A623;font-size:20px;">+</span></summary>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Contact us at <a href="mailto:stackbid.hello@gmail.com" style="color:#F5A623;">stackbid.hello@gmail.com</a> to join our contractor network. Pro listings ($49/month) include priority placement, verified badge, and direct lead notifications.</p>
+      </details>
+
+    </div>
+  </div>
+</section>
+
 <!-- CONTACT SECTION -->
 <section id="contact" style="background:#0C2340;padding:56px 5%;">
   <div style="max-width:560px;margin:0 auto;">
@@ -1065,8 +1112,9 @@ async function submitContactForm() {
   </div>
   <div style="font-size:13px;">© 2026 StackBid · Materials estimates for US homeowners</div>
   <div class="footer-links">
-    <a href="#">Privacy</a>
-    <a href="#">Terms</a>
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <a href="#faq">FAQ</a>
     <a href="#contact">Contact</a>
   </div>
 </footer>
