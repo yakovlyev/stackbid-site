@@ -2236,25 +2236,41 @@ async function loadLocalMatches(zip) {
     '9':['AK','CA','HI','OR','WA']
   };
 
+  // More precise ZIP → primary state
+  const zipPrimaryState = {
+    '0':'CT','1':'NY','2':'VA','3':'FL','4':'OH',
+    '5':'MN','6':'IL','7':'TX','8':'CO','9':'CA'
+  };
+
   try {
     const firstDigit = zip ? zip[0] : '1';
+    const primaryState = zipPrimaryState[firstDigit] || 'TX';
     const states = zipStateMap[firstDigit] || ['TX'];
 
-    // Try exact ZIP first, then by state
+    // Try exact ZIP first
     let contractor = null;
     const exactResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?zip_code=eq.${zip}&limit=1`, { headers });
     const exactData = await exactResp.json();
     contractor = exactData[0];
 
+    // Try primary state
+    if (!contractor) {
+      const stateResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?state=eq.${primaryState}&limit=1`, { headers });
+      const stateData = await stateResp.json();
+      contractor = stateData[0];
+    }
+
+    // Try other states in region
     if (!contractor) {
       for (const state of states) {
+        if (state === primaryState) continue;
         const stateResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?state=eq.${state}&limit=1`, { headers });
         const stateData = await stateResp.json();
         if (stateData[0]) { contractor = stateData[0]; break; }
       }
     }
 
-    // Fallback: any contractor
+    // Last resort: any contractor
     if (!contractor) {
       const anyResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?limit=1`, { headers });
       const anyData = await anyResp.json();
@@ -2296,9 +2312,11 @@ async function loadLocalMatches(zip) {
 function sendPdfEmail() {
   const email = document.getElementById('email-pdf-input').value.trim();
   if (!email || !email.includes('@')) {
+    document.getElementById('email-pdf-input').style.border = '2px solid red';
     document.getElementById('email-pdf-input').focus();
     return;
   }
+  document.getElementById('email-pdf-input').style.border = 'none';
   document.getElementById('email-pdf-form').style.display = 'none';
   document.getElementById('email-pdf-success').style.display = 'block';
 
@@ -2314,6 +2332,17 @@ function sendPdfEmail() {
       'Prefer': 'return=minimal'
     },
     body: JSON.stringify({ email, role: 'homeowner', source: 'pdf_capture' })
+  }).catch(() => {});
+
+  // Send notification to stackbid
+  fetch('/api/contact', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'PDF Request',
+      email: email,
+      message: `User requested PDF estimate. ZIP: ${document.getElementById('zip-input') ? document.getElementById('zip-input').value : 'unknown'}`
+    })
   }).catch(() => {});
 }
 
