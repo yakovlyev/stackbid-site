@@ -880,7 +880,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div>
               <div class="estimate-title" id="etitle">—</div>
               <div class="estimate-meta" id="emeta">—</div>
-              <div style="font-size:11px; color:var(--muted); margin-top:2px;">Prices: current 2026 wholesale market</div>
+              <div style="font-size:11px; color:var(--muted); margin-top:2px;">Prices: estimated 2026 wholesale market rates — actual prices may vary</div>
             </div>
             <div class="export-row">
               <button class="exp-btn" onclick="doPrint()">📄 Save PDF</button>
@@ -2256,6 +2256,15 @@ async function loadLocalMatches(zip) {
 
   } catch(e) {
     container.innerHTML = '';
+  }
+
+  // Add disclaimer
+  const disclaimer = document.getElementById('local-matches');
+  if (disclaimer) {
+    const disc = document.createElement('p');
+    disc.style.cssText = 'font-size:11px;color:#999;margin-top:12px;line-height:1.5;';
+    disc.innerHTML = '⚠️ Contractors and suppliers listed are not endorsed by StackBid. Listings are for informational purposes only. Always get multiple quotes. Prices are estimates based on 2026 wholesale market data and may vary by location and supplier.';
+    disclaimer.appendChild(disc);
   }
 }
 
