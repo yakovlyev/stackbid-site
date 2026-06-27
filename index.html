@@ -2301,10 +2301,8 @@ async function loadLocalMatches(zip) {
           </div>
         </div>
         <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">🔧 ${s(specialization)} &nbsp;·&nbsp; License: ${s(contractor.license_number || '—')}</div>
-        <div style="margin-top:8px;font-size:14px;font-weight:600;color:var(--ink);">📞 ${contractor.phone}</div>
-        <a href="tel:${contractor.phone}" style="display:inline-block;margin-top:8px;background:var(--gold);color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Call Now</a>`;
+        <a href="tel:${contractor.phone}" style="display:flex;align-items:center;gap:8px;margin-top:12px;background:var(--gold);color:#fff;padding:11px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;width:fit-content;">📞 ${contractor.phone}</a>`;
       container.appendChild(card);
-      console.log('Contractor phone:', contractor.phone, 'Full data:', JSON.stringify(contractor));
     }
 
   } catch(e) {
