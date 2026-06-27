@@ -2192,104 +2192,67 @@ async function loadLocalMatches(zip) {
 
   const container = document.getElementById('local-matches');
   if (!container) return;
-  // Build two-column grid for supplier + contractor
-  const grid = document.createElement('div');
-  grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;';
-  grid.id = 'local-grid';
-  container.innerHTML = '';
-  container.appendChild(grid);
 
-  // Supplier card from estimate meta
+  // Get supplier info from estimate meta
   const metaEl = document.getElementById('emeta');
   const metaText = metaEl ? metaEl.textContent : '';
   const supplierMatch = metaText.match(/·\s*(.+?)\s*·/);
-  const supplierName = supplierMatch ? supplierMatch[1].trim() : 'Local Supplier';
+  const supplierName = supplierMatch ? supplierMatch[1].trim() : '84 Lumber';
   const distMatch = metaText.match(/·\s*[^·]+·\s*(.+)/);
   const supplierDist = distMatch ? distMatch[1].trim() : '';
 
-  const supplierCard = document.createElement('div');
-  supplierCard.style.cssText = 'background:#fff;border:2px solid #2E86AB;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);';
-  supplierCard.innerHTML = '<div style="font-size:11px;font-weight:600;color:#2E86AB;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🏪 Nearest Supplier</div><div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:6px;">' + supplierName + '</div><div style="font-size:13px;color:var(--muted);margin-bottom:4px;">📍 ZIP ' + zip + (supplierDist ? ' · ' + supplierDist : '') + '</div><div style="font-size:13px;color:var(--muted);">Wholesale pricing available</div>';
-  grid.appendChild(supplierCard);
-
-  // ZIP prefix → state mapping
-  const zipStateMap = {
-    '0':['CT','MA','ME','NH','NJ','NY','RI','VT'],
-    '1':['DE','MD','NJ','NY','PA'],
-    '2':['DC','MD','NC','SC','VA','WV'],
-    '3':['AL','FL','GA','MS','TN'],
-    '4':['IN','KY','MI','OH'],
-    '5':['IA','MN','MT','ND','SD','WI'],
-    '6':['IL','KS','MO','NE'],
-    '7':['AR','LA','OK','TX'],
-    '8':['AZ','CO','ID','NM','NV','UT','WY'],
-    '9':['AK','CA','HI','OR','WA']
-  };
-
-  // More precise ZIP → primary state
+  // ZIP → primary state
   const zipPrimaryState = {
     '0':'CT','1':'NY','2':'VA','3':'FL','4':'OH',
     '5':'MN','6':'IL','7':'TX','8':'CO','9':'CA'
   };
+  const firstDigit = zip ? zip[0] : '9';
+  const primaryState = zipPrimaryState[firstDigit] || 'CA';
 
   try {
-    const firstDigit = zip ? zip[0] : '1';
-    const primaryState = zipPrimaryState[firstDigit] || 'TX';
-    const states = zipStateMap[firstDigit] || ['TX'];
-
-    // Try exact ZIP first
+    // Get contractor
     let contractor = null;
-    const exactResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,contact_name,phone,city,state,specializations,license_number&zip_code=eq.${zip}&limit=1`, { headers });
-    const exactData = await exactResp.json();
-    contractor = exactData[0];
+    let resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,phone,city,state,specializations,license_number&zip_code=eq.${zip}&limit=1`, { headers });
+    let data = await resp.json();
+    contractor = data[0];
 
-    // Try primary state
     if (!contractor) {
-      const stateResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,contact_name,phone,city,state,specializations,license_number&state=eq.${primaryState}&limit=1`, { headers });
-      const stateData = await stateResp.json();
-      contractor = stateData[0];
+      resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,phone,city,state,specializations,license_number&state=eq.${primaryState}&limit=1`, { headers });
+      data = await resp.json();
+      contractor = data[0];
     }
 
-    // Try other states in region
     if (!contractor) {
-      for (const state of states) {
-        if (state === primaryState) continue;
-        const stateResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,contact_name,phone,city,state,specializations,license_number&state=eq.${state}&limit=1`, { headers });
-        const stateData = await stateResp.json();
-        if (stateData[0]) { contractor = stateData[0]; break; }
-      }
+      resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,phone,city,state,specializations,license_number&limit=1`, { headers });
+      data = await resp.json();
+      contractor = data[0];
     }
 
-    // Last resort: any contractor
-    if (!contractor) {
-      const anyResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=company_name,contact_name,phone,city,state,specializations,license_number&limit=1`, { headers });
-      const anyData = await anyResp.json();
-      contractor = anyData[0];
-    }
+    // Build HTML
+    const phone = contractor ? (contractor.phone || '') : '';
+    const companyName = contractor ? (contractor.company_name || '') : '';
+    const city = contractor ? (contractor.city || '') : '';
+    const state = contractor ? (contractor.state || '') : '';
+    const license = contractor ? (contractor.license_number || '—') : '—';
+    const spec = contractor ? (Array.isArray(contractor.specializations) ? contractor.specializations[0] : (contractor.specializations || 'General Contractor')) : 'General Contractor';
 
-    container.innerHTML = '';
-
-    if (contractor) {
-      const s = str => String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      const specialization = Array.isArray(contractor.specializations) 
-        ? contractor.specializations[0] 
-        : (contractor.specializations || 'General Contractor');
-      
-      const header = document.createElement('div');
-      header.style.cssText = 'font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;';
-      header.textContent = '🔨 Local Contractor Near You';
-      const grid = document.getElementById('local-grid') || container;
-      const card = document.createElement('div');
-      card.style.cssText = 'background:#fff;border:2px solid #F5A623;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);';
-      const companyName = contractor.company_name || '';
-      const city = contractor.city || '';
-      const state = contractor.state || '';
-      const phone = contractor.phone || '';
-      const license = contractor.license_number || '—';
-      const spec = Array.isArray(contractor.specializations) ? contractor.specializations[0] : (contractor.specializations || 'General Contractor');
-      card.innerHTML = '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#F5A623,#E8870A);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏗️</div><div><div style="font-size:16px;font-weight:700;color:var(--ink);">' + companyName + '</div><div style="font-size:13px;color:var(--muted);">📍 ' + city + ', ' + state + '</div></div></div><div style="font-size:13px;color:var(--muted);margin-bottom:16px;">🔧 ' + spec + ' · License: ' + license + '</div><a href="tel:' + phone + '" style="display:inline-block;margin-top:8px;background:var(--gold);color:#fff;padding:11px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">📞 ' + phone + '</a>';
-      container.appendChild(card);
-    }
+    container.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">' +
+        '<div style="background:#fff;border:2px solid #2E86AB;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
+          '<div style="font-size:11px;font-weight:600;color:#2E86AB;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🏪 Nearest Supplier</div>' +
+          '<div style="font-size:16px;font-weight:700;color:#0C2340;margin-bottom:6px;">' + supplierName + '</div>' +
+          '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ZIP ' + zip + (supplierDist ? ' · ' + supplierDist : '') + '</div>' +
+          '<div style="font-size:13px;color:#666;">Wholesale pricing available</div>' +
+        '</div>' +
+        (contractor ?
+        '<div style="background:#fff;border:2px solid #F5A623;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
+          '<div style="font-size:11px;font-weight:600;color:#E8870A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🔨 Local Contractor</div>' +
+          '<div style="font-size:16px;font-weight:700;color:#0C2340;margin-bottom:4px;">' + companyName + '</div>' +
+          '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ' + city + ', ' + state + '</div>' +
+          '<div style="font-size:13px;color:#666;margin-bottom:12px;">🔧 ' + spec + ' · License: ' + license + '</div>' +
+          '<a href="tel:' + phone + '" style="display:inline-block;background:#F5A623;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">📞 ' + phone + '</a>' +
+        '</div>' : '') +
+      '</div>';
 
   } catch(e) {
     container.innerHTML = '';
