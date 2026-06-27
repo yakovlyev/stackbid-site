@@ -2038,7 +2038,6 @@ function isGateUnlocked() {
 function showGate(data, zip) {
   pendingEstimateData = data;
   pendingEstimateZip  = zip;
-  loadLocalMatches(zip);
 
   // Count total items
   let totalItems = 0, tR = 0, tL = 0;
@@ -2079,6 +2078,7 @@ function showGate(data, zip) {
   document.getElementById('estimate-out').style.display = 'block';
   document.getElementById('gate-overlay').classList.add('show');
   document.getElementById('estimate-out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  loadLocalMatches(zip);
 }
 
 async function unlockEstimate() {
