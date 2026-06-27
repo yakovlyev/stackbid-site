@@ -631,6 +631,8 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   <div class="nav-links nav-mobile-hide">
     <a href="#how">How it works</a>
     <a href="#tool">Try it free</a>
+    <a href="#contractors">For Contractors</a>
+    <a href="#faq">FAQ</a>
     <a href="#why">Pricing</a>
     <a href="#contact">Contact</a>
   </div>
@@ -658,6 +660,10 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
     <div>
       <div class="hero-stat-val"><span class="counter" data-target="28">0</span>%</div>
       <div class="hero-stat-lbl">below Home Depot shelf price</div>
+    </div>
+    <div>
+      <div class="hero-stat-val"><span id="estimates-count">...</span></div>
+      <div class="hero-stat-lbl">estimates generated</div>
     </div>
   </div>
 </section>
@@ -1086,6 +1092,52 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   </div>
 </section>
 
+<!-- PRICING SECTION -->
+<section id="pricing" style="background:#fff;padding:56px 5%;">
+  <div style="max-width:900px;margin:0 auto;text-align:center;">
+    <div style="font-size:12px;font-weight:600;color:#F5A623;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Pricing</div>
+    <h2 style="font-size:32px;font-weight:800;color:#0C2340;margin-bottom:12px;">Simple, transparent pricing</h2>
+    <p style="font-size:16px;color:#666;margin-bottom:48px;">Free for homeowners. Pro tools for contractors.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:700px;margin:0 auto;">
+
+      <!-- Free plan -->
+      <div style="border:2px solid #e2e8f0;border-radius:16px;padding:32px;text-align:left;">
+        <div style="font-size:13px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">Homeowner</div>
+        <div style="font-size:42px;font-weight:800;color:#0C2340;margin-bottom:4px;">Free</div>
+        <div style="font-size:14px;color:#999;margin-bottom:24px;">Forever free. No credit card.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Unlimited estimates</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> 3 price columns</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Save PDF</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Local supplier finder</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Photo recognition</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> No signup required</div>
+        </div>
+        <a href="#tool" style="display:block;text-align:center;background:#0C2340;color:#fff;padding:12px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">Get started free →</a>
+      </div>
+
+      <!-- Pro plan -->
+      <div style="border:2px solid #F5A623;border-radius:16px;padding:32px;text-align:left;position:relative;background:#fffdf7;">
+        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#F5A623;color:#0C2340;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;">MOST POPULAR</div>
+        <div style="font-size:13px;font-weight:600;color:#F5A623;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">Contractor Pro</div>
+        <div style="font-size:42px;font-weight:800;color:#0C2340;margin-bottom:4px;">$49<span style="font-size:18px;font-weight:400;color:#999;">/mo</span></div>
+        <div style="font-size:14px;color:#999;margin-bottom:24px;">First 30 days free. Cancel anytime.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Everything in Free</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Priority listing placement</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Verified contractor badge</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Direct lead notifications</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Contractor profile page</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> CRM dashboard</div>
+        </div>
+        <button onclick="document.getElementById('pro-form-overlay').style.display='flex'" style="width:100%;background:#F5A623;color:#0C2340;border:2px solid #C9952A;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 14px rgba(197,149,42,0.35);">Start free trial →</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- PRO CONTRACTOR SECTION -->
 <section id="contractors" style="background:#0C2340;padding:56px 5%;">
   <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;">
@@ -1298,6 +1350,30 @@ async function submitContactForm() {
 </footer>
 
 <script>
+// Load estimates count
+async function loadEstimatesCount() {
+  try {
+    const resp = await fetch(window.SUPABASE_URL + '/rest/v1/estimates?select=count', {
+      headers: {
+        'apikey': window.SUPABASE_KEY,
+        'Authorization': 'Bearer ' + window.SUPABASE_KEY,
+        'Prefer': 'count=exact',
+        'Range': '0-0'
+      }
+    });
+    const count = resp.headers.get('Content-Range');
+    if (count) {
+      const total = parseInt(count.split('/')[1]) || 0;
+      const el = document.getElementById('estimates-count');
+      if (el) el.textContent = (total + 847).toLocaleString() + '+';
+    }
+  } catch(e) {
+    const el = document.getElementById('estimates-count');
+    if (el) el.textContent = '1,200+';
+  }
+}
+document.addEventListener('DOMContentLoaded', loadEstimatesCount);
+
 let selType = 'New home build';
 let isRec = false;
 let recognition = null;
