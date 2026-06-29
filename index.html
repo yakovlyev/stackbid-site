@@ -157,9 +157,9 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(12,35,64,0.97); b
 .tool-badge { background: rgba(201,149,42,0.2); color: var(--amber); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
 .tool-body { padding: 24px; }
 @media (max-width: 640px) { .tool-body { padding: 16px; } }
-.tool-tabs-wrap { position: relative; margin-bottom: 20px; }
-.tool-tabs-wrap::after { content: '›'; position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 22px; color: var(--amber); pointer-events: none; background: linear-gradient(to right, transparent, white 40%); padding: 8px 4px 8px 20px; }
-.tool-tabs { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; padding-right: 24px; }
+.tool-tabs-wrap { position: relative; margin-bottom: 4px; }
+.tool-tabs-scroll-hint { font-size: 11px; color: var(--amber); text-align: right; margin-bottom: 12px; }
+.tool-tabs { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; }
 .tool-tabs::-webkit-scrollbar { display: none; }
 .tool-tab { flex: 0 0 auto; min-width: 80px; padding: 10px 12px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; background: var(--white); border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--muted); transition: all 0.15s; white-space: nowrap; -webkit-tap-highlight-color: transparent; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .tool-tab:hover { border-color: var(--amber); color: var(--ink); }
@@ -731,7 +731,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <div class="tool-badge">Free · 2026 Prices</div>
       </div>
       <div class="tool-body">
-        <div class="tool-tabs-wrap"><div class="tool-tabs">
+        <div class="tool-tabs-wrap"><div class="tool-tabs-scroll-hint">swipe › </div><div class="tool-tabs">
           <button class="tool-tab active" onclick="setTab('text')">✏️ Type</button>
           <button class="tool-tab" onclick="setTab('photo')">📷 Photo</button>
           <button class="tool-tab" onclick="setTab('calc')">📐 Area</button>
