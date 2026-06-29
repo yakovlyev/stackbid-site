@@ -87,15 +87,16 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(12,35,64,0.97); b
   nav { padding: 0 4%; height: 54px; }
   .nav-logo img { height: 30px; }
   .nav-logo-text { font-size: 17px; }
-  .nav-cta { padding: 6px 12px; font-size: 12px; border-radius: 6px; white-space: nowrap; max-width: 140px; text-align: center; }
+  .nav-cta { padding: 6px 12px; font-size: 12px; border-radius: 6px; white-space: nowrap; }
 }
-/* LANDSCAPE MOBILE - hide nav links */
+/* LANDSCAPE MOBILE */
 @media (max-height: 500px) and (orientation: landscape) {
-  .nav-mobile-hide { display: none !important; }
-  nav { height: 44px; padding: 0 4%; }
-  .nav-logo img { height: 26px; }
-  .nav-logo-text { font-size: 15px; }
-  .nav-cta { padding: 5px 10px; font-size: 11px; max-width: 120px; white-space: nowrap; }
+  nav { height: 44px; padding: 0 3%; }
+  .nav-logo img { height: 24px; }
+  .nav-logo-text { font-size: 14px; }
+  .nav-links a { font-size: 11px; }
+  .nav-links { gap: 14px; }
+  .nav-cta { padding: 5px 10px; font-size: 11px; white-space: nowrap; }
 }
 
 /* HERO */
