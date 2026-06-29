@@ -170,7 +170,7 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(12,35,64,0.97); b
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
 @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
 .tf label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
-.tf input, .tf select, .tf textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 15px; font-family: 'Inter', sans-serif; color: var(--ink); background: var(--white); outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
+.tf input, .tf select, .tf textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 16px; font-family: 'Inter', sans-serif; color: var(--ink); background: var(--white); outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
 .tf input:focus, .tf select:focus, .tf textarea:focus { border-color: var(--amber); }
 .tf textarea { resize: vertical; min-height: 80px; }
 .voice-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
@@ -758,7 +758,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
           <div class="tf" style="margin-bottom:12px;">
             <label>Project description</label>
-            <textarea id="desc" placeholder="Example: 20×24 ft pressure-treated deck attached to the back of the house, composite decking boards, 4×4 posts, cable railing, single level, no stairs."></textarea>
+            <textarea id="desc" rows="5" style="min-height:120px;font-size:16px;" placeholder="Example: 20×24 ft pressure-treated deck attached to the back of the house, composite decking boards, 4×4 posts, cable railing, single level, no stairs."></textarea>
           </div>
 
           <div class="tag-row" id="qtags"></div>
