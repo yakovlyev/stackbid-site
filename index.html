@@ -729,12 +729,12 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       </div>
       <div class="tool-body">
         <div class="tool-tabs">
-          <button class="tool-tab active" onclick="setTab('text')">✏️ Type / speak</button>
+          <button class="tool-tab active" onclick="setTab('text')">✏️ Type</button>
           <button class="tool-tab" onclick="setTab('photo')">📷 Photo</button>
-          <button class="tool-tab" onclick="setTab('calc')">📐 Area calc</button>
+          <button class="tool-tab" onclick="setTab('calc')">📐 Area</button>
           <button class="tool-tab" onclick="setTab('upload')">📎 Upload</button>
           <button class="tool-tab" onclick="setTab('permit')">🏛️ Permit</button>
-          <button class="tool-tab" onclick="setTab('hdprices')">🏷️ HD prices</button>
+          <button class="tool-tab" onclick="setTab('hdprices')">🏷️ Prices</button>
         </div>
 
         <!-- TEXT TAB -->
@@ -786,7 +786,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <!-- PHOTO TAB -->
         <div id="tab-photo" style="display:none;">
           <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
-            📷 Point your camera at any building material — lumber, roofing, siding, concrete — and we'll identify it and show you three prices instantly.
+            📷 Take a photo or upload an image of a building material — lumber, roofing, siding, concrete — and we'll identify it and show you three prices instantly.
           </div>
           <div id="photo-capture-area">
             <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:32px 20px;text-align:center;cursor:pointer;margin-bottom:14px;position:relative;" onclick="triggerCamera()">
@@ -1503,9 +1503,13 @@ async function analyzePhoto() {
             },
             {
               type: 'text',
-              text: `You are a US construction materials pricing expert. Analyze this photo of a building material.
+              text: `You are a US construction materials pricing expert. Analyze this photo carefully.
 ZIP: ${zip}. Quantity needed: ${qty || 'not specified'}.
-Return ONLY valid JSON:
+
+IMPORTANT: First check if this is a construction/building material (lumber, drywall, roofing, siding, concrete, flooring, insulation, hardware, pipes, tiles, etc).
+If NOT a construction material (furniture, people, food, animals, cars, etc), return: {"error": "not_construction_material", "detected": "describe what you see", "message": "Please upload a photo of a construction material like lumber, drywall, roofing, or flooring."}
+
+If it IS a construction material, return ONLY valid JSON:
 {
   "identified": "exact product name as sold in US",
   "category": "material category",
