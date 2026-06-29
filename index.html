@@ -89,6 +89,14 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(12,35,64,0.97); b
   .nav-logo-text { font-size: 17px; }
   .nav-cta { padding: 7px 14px; font-size: 13px; }
 }
+/* LANDSCAPE MOBILE - hide nav links */
+@media (max-height: 500px) and (orientation: landscape) {
+  .nav-mobile-hide { display: none; }
+  nav { height: 48px; padding: 0 4%; }
+  .nav-logo img { height: 28px; }
+  .nav-logo-text { font-size: 16px; }
+  .nav-cta { padding: 6px 12px; font-size: 12px; }
+}
 
 /* HERO */
 .hero { background: #0C2340; color: var(--white); padding: 80px 5% 72px; position: relative; overflow: hidden; background-image: url("/hero-bg.png"); background-size: cover; background-position: center top; }
