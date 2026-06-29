@@ -84,19 +84,18 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(12,35,64,0.97); b
 /* MOBILE NAV */
 @media (max-width: 640px) {
   .nav-mobile-hide { display: none; }
-  nav { padding: 0 4%; height: 54px; }
-  .nav-logo img { height: 30px; }
-  .nav-logo-text { font-size: 17px; }
-  .nav-cta { padding: 6px 12px; font-size: 12px; border-radius: 6px; white-space: nowrap; }
+  nav { padding: 0 4%; height: 50px; }
+  .nav-logo img { height: 28px; }
+  .nav-logo-text { font-size: 16px; }
+  .nav-cta { padding: 7px 14px; font-size: 12px; border-radius: 6px; white-space: nowrap; }
 }
 /* LANDSCAPE MOBILE */
 @media (max-height: 500px) and (orientation: landscape) {
-  nav { height: 44px; padding: 0 3%; }
+  .nav-mobile-hide { display: none; }
+  nav { height: 42px; padding: 0 4%; }
   .nav-logo img { height: 24px; }
   .nav-logo-text { font-size: 14px; }
-  .nav-links a { font-size: 11px; }
-  .nav-links { gap: 14px; }
-  .nav-cta { padding: 5px 10px; font-size: 11px; white-space: nowrap; }
+  .nav-cta { padding: 5px 12px; font-size: 11px; white-space: nowrap; }
 }
 
 /* HERO */
@@ -745,7 +744,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <div class="tool-badge">Free · 2026 Prices</div>
       </div>
       <div class="tool-body">
-        <div class="tool-tabs-wrap"><div class="tool-tabs-scroll-hint">👆 swipe › </div><div class="tool-tabs">
+        <div class="tool-tabs-scroll-hint">👆 swipe to see more tabs › </div><div class="tool-tabs-wrap"><div class="tool-tabs">
           <button class="tool-tab active" onclick="setTab('text')">✏️ Type</button>
           <button class="tool-tab" onclick="setTab('photo')">📷 Photo</button>
           <button class="tool-tab" onclick="setTab('calc')">📐 Area</button>
