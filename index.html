@@ -2059,66 +2059,73 @@ function shareTelegram() {
   window.open(`https://t.me/share/url?url=https://stackbid.app&text=${encodeURIComponent(text)}`, '_blank');
 }
 
+let voiceSessionId = 0;
 function toggleVoice() {
   const btn = document.getElementById('vbtn');
-  isRec = !isRec;
+  // If already recording — stop
   if (isRec) {
-    btn.classList.add('rec', 'recording');
-    btn.innerHTML = '🔴 Recording...';
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SR) {
-      recognition = new SR();
-      recognition.lang = 'en-US';
-      recognition.continuous = false;
-      recognition.maxAlternatives = 1;
-      let resultReceived = false;
-      recognition.onresult = e => {
-        resultReceived = true;
-        const ta = document.getElementById('desc');
-        const transcript = e.results[0][0].transcript;
-        ta.value += (ta.value ? ' ' : '') + transcript;
-        resetVoice();
-        if (window.SUPABASE_URL && window.SUPABASE_KEY) {
-          fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
-            method: 'POST',
-            headers: {
-              'apikey': window.SUPABASE_KEY,
-              'Authorization': 'Bearer ' + window.SUPABASE_KEY,
-              'Content-Type': 'application/json',
-              'Prefer': 'return=minimal'
-            },
-            body: JSON.stringify({ transcript: transcript, created_at: new Date().toISOString() })
-          }).catch(() => {});
-        }
-      };
-      recognition.onerror = e => {
-        if (e.error === 'not-allowed' || e.error === 'permission-denied') {
-          alert('Microphone access denied. Please allow microphone in your browser settings and try again.');
-        } else if (e.error === 'no-speech') {
-          // silently reset — user just didn't speak
-        } else if (e.error === 'network') {
-          alert('Voice recognition requires an internet connection. Please check your connection and try again.');
-        }
-        resetVoice();
-      };
-      recognition.onend = () => {
-        // Always reset button when recognition ends, regardless of result
-        resetVoice();
-      };
-      try {
-        recognition.start();
-      } catch(err) {
-        resetVoice();
-      }
-    } else {
-      setTimeout(() => {
-        document.getElementById('desc').value += ' 20x24 ft composite deck, cable railing, attached to house';
-        resetVoice();
-      }, 2000);
-    }
-  } else {
     if (recognition) { try { recognition.stop(); } catch(e) {} }
     resetVoice();
+    return;
+  }
+  isRec = true;
+  const sessionId = ++voiceSessionId;
+  btn.classList.add('rec', 'recording');
+  btn.innerHTML = '🔴 Recording...';
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    recognition = new SR();
+    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = e => {
+      if (sessionId !== voiceSessionId) return;
+      const ta = document.getElementById('desc');
+      const transcript = e.results[0][0].transcript;
+      ta.value += (ta.value ? ' ' : '') + transcript;
+      resetVoice();
+      if (window.SUPABASE_URL && window.SUPABASE_KEY) {
+        fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
+          method: 'POST',
+          headers: {
+            'apikey': window.SUPABASE_KEY,
+            'Authorization': 'Bearer ' + window.SUPABASE_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ transcript: transcript, created_at: new Date().toISOString() })
+        }).catch(() => {});
+      }
+    };
+    recognition.onerror = e => {
+      if (sessionId !== voiceSessionId) return;
+      if (e.error === 'not-allowed' || e.error === 'permission-denied') {
+        resetVoice();
+        setTimeout(() => alert('Microphone access denied. Please allow microphone in your browser settings and try again.'), 50);
+      } else if (e.error === 'no-speech') {
+        resetVoice();
+      } else if (e.error === 'network') {
+        resetVoice();
+        setTimeout(() => alert('Voice recognition requires an internet connection. Please check your connection and try again.'), 50);
+      } else {
+        resetVoice();
+      }
+    };
+    recognition.onend = () => {
+      if (sessionId !== voiceSessionId) return;
+      resetVoice();
+    };
+    try {
+      recognition.start();
+    } catch(err) {
+      resetVoice();
+    }
+  } else {
+    setTimeout(() => {
+      if (sessionId !== voiceSessionId) return;
+      document.getElementById('desc').value += ' 20x24 ft composite deck, cable railing, attached to house';
+      resetVoice();
+    }, 2000);
   }
 }
 
