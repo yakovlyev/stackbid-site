@@ -2062,7 +2062,6 @@ function shareTelegram() {
 let voiceSessionId = 0;
 function toggleVoice() {
   const btn = document.getElementById('vbtn');
-  // If already recording — stop
   if (isRec) {
     if (recognition) { try { recognition.stop(); } catch(e) {} }
     resetVoice();
@@ -2074,52 +2073,50 @@ function toggleVoice() {
   btn.innerHTML = '🔴 Recording...';
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (SR) {
-    recognition = new SR();
-    recognition.lang = 'en-US';
-    recognition.continuous = false;
-    recognition.maxAlternatives = 1;
-    recognition.onresult = e => {
-      if (sessionId !== voiceSessionId) return;
-      const ta = document.getElementById('desc');
-      const transcript = e.results[0][0].transcript;
-      ta.value += (ta.value ? ' ' : '') + transcript;
-      resetVoice();
-      if (window.SUPABASE_URL && window.SUPABASE_KEY) {
-        fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
-          method: 'POST',
-          headers: {
-            'apikey': window.SUPABASE_KEY,
-            'Authorization': 'Bearer ' + window.SUPABASE_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({ transcript: transcript, created_at: new Date().toISOString() })
-        }).catch(() => {});
-      }
-    };
-    recognition.onerror = e => {
-      if (sessionId !== voiceSessionId) return;
-      if (e.error === 'not-allowed' || e.error === 'permission-denied') {
+    // First explicitly request mic permission via getUserMedia
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        // Permission granted — stop the stream and start SpeechRecognition
+        stream.getTracks().forEach(t => t.stop());
+        if (sessionId !== voiceSessionId) return;
+        recognition = new SR();
+        recognition.lang = 'en-US';
+        recognition.continuous = false;
+        recognition.maxAlternatives = 1;
+        recognition.onresult = e => {
+          if (sessionId !== voiceSessionId) return;
+          const ta = document.getElementById('desc');
+          const transcript = e.results[0][0].transcript;
+          ta.value += (ta.value ? ' ' : '') + transcript;
+          resetVoice();
+          if (window.SUPABASE_URL && window.SUPABASE_KEY) {
+            fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
+              method: 'POST',
+              headers: {
+                'apikey': window.SUPABASE_KEY,
+                'Authorization': 'Bearer ' + window.SUPABASE_KEY,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+              },
+              body: JSON.stringify({ transcript: transcript, created_at: new Date().toISOString() })
+            }).catch(() => {});
+          }
+        };
+        recognition.onerror = e => {
+          if (sessionId !== voiceSessionId) return;
+          resetVoice();
+        };
+        recognition.onend = () => {
+          if (sessionId !== voiceSessionId) return;
+          resetVoice();
+        };
+        try { recognition.start(); } catch(err) { resetVoice(); }
+      })
+      .catch(err => {
+        if (sessionId !== voiceSessionId) return;
         resetVoice();
         setTimeout(() => alert('Microphone access denied. Please allow microphone in your browser settings and try again.'), 50);
-      } else if (e.error === 'no-speech') {
-        resetVoice();
-      } else if (e.error === 'network') {
-        resetVoice();
-        setTimeout(() => alert('Voice recognition requires an internet connection. Please check your connection and try again.'), 50);
-      } else {
-        resetVoice();
-      }
-    };
-    recognition.onend = () => {
-      if (sessionId !== voiceSessionId) return;
-      resetVoice();
-    };
-    try {
-      recognition.start();
-    } catch(err) {
-      resetVoice();
-    }
+      });
   } else {
     setTimeout(() => {
       if (sessionId !== voiceSessionId) return;
