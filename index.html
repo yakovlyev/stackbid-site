@@ -2120,7 +2120,7 @@ function toggleVoice() {
   } else {
     setTimeout(() => {
       if (sessionId !== voiceSessionId) return;
-      document.getElementById('desc').value += ' 20x24 ft composite deck, cable railing, attached to house';
+      // SpeechRecognition not supported in this browser
       resetVoice();
     }, 2000);
   }
