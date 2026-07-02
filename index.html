@@ -789,7 +789,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
               <option value="hi-IN">हिन्दी</option>
               <option value="vi-VN">Tiếng Việt</option>
             </select>
-            <span style="font-size:13px; color:var(--muted); align-self:center;">or type your project details below</span>
+            <span id="voiceStatus" style="font-size:13px; color:var(--muted); align-self:center;">or type your project details below</span>
           </div>
 
           <div class="tf" style="margin-bottom:12px;">
@@ -2094,6 +2094,12 @@ function shareTelegram() {
 }
 
 let voiceSessionId = 0;
+function setVoiceStatus(msg, color) {
+  const s = document.getElementById('voiceStatus');
+  if (!s) return;
+  s.textContent = msg;
+  s.style.color = color || 'var(--muted)';
+}
 function toggleVoice() {
   const btn = document.getElementById('vbtn');
   if (isRec) {
@@ -2105,6 +2111,7 @@ function toggleVoice() {
   const sessionId = ++voiceSessionId;
   btn.classList.add('rec', 'recording');
   btn.innerHTML = '🔴 Recording...';
+  setVoiceStatus('Listening… speak now', '#C0392B');
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (SR) {
     // First explicitly request mic permission via getUserMedia
@@ -2122,7 +2129,13 @@ function toggleVoice() {
           if (sessionId !== voiceSessionId) return;
           const ta = document.getElementById('desc');
           const transcript = e.results[0][0].transcript;
+          if (!transcript || !transcript.trim()) {
+            setVoiceStatus('Didn\'t catch that — try again', '#C0392B');
+            resetVoice();
+            return;
+          }
           ta.value += (ta.value ? ' ' : '') + transcript;
+          setVoiceStatus('Added: "' + transcript + '"', '#2E7D32');
           resetVoice();
           if (window.SUPABASE_URL && window.SUPABASE_KEY) {
             fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
@@ -2140,20 +2153,34 @@ function toggleVoice() {
         recognition.onerror = e => {
           console.error('[StackBid voice debug] recognition error:', e.error, '| lang used:', recognition.lang);
           if (sessionId !== voiceSessionId) return;
+          const msgs = {
+            'no-speech': 'No speech detected — try speaking closer to the mic',
+            'audio-capture': 'No microphone found — check your device',
+            'not-allowed': 'Microphone blocked — allow it in browser settings',
+            'network': 'Network error — check your connection and try again',
+            'aborted': ''
+          };
+          const m = msgs.hasOwnProperty(e.error) ? msgs[e.error] : ('Voice error: ' + e.error + ' — try again');
+          if (m) setVoiceStatus(m, '#C0392B');
           resetVoice();
         };
         recognition.onend = () => {
           if (sessionId !== voiceSessionId) return;
           resetVoice();
         };
-        try { recognition.start(); } catch(err) { resetVoice(); }
+        try { recognition.start(); } catch(err) {
+          setVoiceStatus('Could not start recording — try again', '#C0392B');
+          resetVoice();
+        }
       })
       .catch(err => {
         if (sessionId !== voiceSessionId) return;
         resetVoice();
+        setVoiceStatus('Microphone access denied', '#C0392B');
         setTimeout(() => alert('Microphone access denied. Please allow microphone in your browser settings and try again.'), 50);
       });
   } else {
+    setVoiceStatus('Voice input not supported in this browser — try Chrome', '#C0392B');
     setTimeout(() => {
       if (sessionId !== voiceSessionId) return;
       // SpeechRecognition not supported in this browser
