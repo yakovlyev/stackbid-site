@@ -2080,7 +2080,7 @@ function toggleVoice() {
         stream.getTracks().forEach(t => t.stop());
         if (sessionId !== voiceSessionId) return;
         recognition = new SR();
-        recognition.lang = 'en-US';
+        recognition.lang = navigator.language || 'en-US';
         recognition.continuous = false;
         recognition.maxAlternatives = 1;
         recognition.onresult = e => {
