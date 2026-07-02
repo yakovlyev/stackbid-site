@@ -2081,6 +2081,7 @@ function toggleVoice() {
         if (sessionId !== voiceSessionId) return;
         recognition = new SR();
         recognition.lang = navigator.language || 'en-US';
+        console.log('[StackBid voice debug] navigator.language =', navigator.language, '| recognition.lang set to =', recognition.lang);
         recognition.continuous = false;
         recognition.maxAlternatives = 1;
         recognition.onresult = e => {
@@ -2103,6 +2104,7 @@ function toggleVoice() {
           }
         };
         recognition.onerror = e => {
+          console.error('[StackBid voice debug] recognition error:', e.error, '| lang used:', recognition.lang);
           if (sessionId !== voiceSessionId) return;
           resetVoice();
         };
