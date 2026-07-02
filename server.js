@@ -170,7 +170,7 @@ const server = http.createServer(async (req, res) => {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src https://fonts.gstatic.com; " +
     "img-src 'self' data: blob: https:; " +
-    "connect-src 'self' https://xbxknpsqecwahxzwsvpt.supabase.co https://api.anthropic.com https://api.resend.com https://api.brevo.com https://www.google.com; " +
+    "connect-src 'self' https://xbxknpsqecwahxzwsvpt.supabase.co https://api.anthropic.com https://api.resend.com https://api.brevo.com https://www.google.com https://www.google-analytics.com https://region1.google-analytics.com; " +
     "frame-ancestors 'none';"
   );
 
