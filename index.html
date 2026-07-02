@@ -770,6 +770,25 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
           <div class="voice-row">
             <button class="voice-btn" id="vbtn" onclick="toggleVoice()">🎙️ Speak</button>
+            <select id="voiceLang" style="padding:6px 8px;border-radius:8px;border:1px solid var(--border);font-size:13px;">
+              <option value="en-US">English (US)</option>
+              <option value="ru-RU">Русский</option>
+              <option value="uk-UA">Українська</option>
+              <option value="es-ES">Español</option>
+              <option value="zh-CN">中文</option>
+              <option value="ja-JP">日本語</option>
+              <option value="ko-KR">한국어</option>
+              <option value="az-AZ">Azərbaycan</option>
+              <option value="ky-KG">Кыргызча</option>
+              <option value="tr-TR">Türkçe</option>
+              <option value="de-DE">Deutsch</option>
+              <option value="fr-FR">Français</option>
+              <option value="pt-BR">Português</option>
+              <option value="pl-PL">Polski</option>
+              <option value="ar-SA">العربية</option>
+              <option value="hi-IN">हिन्दी</option>
+              <option value="vi-VN">Tiếng Việt</option>
+            </select>
             <span style="font-size:13px; color:var(--muted); align-self:center;">or type your project details below</span>
           </div>
 
@@ -777,6 +796,21 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <label>Project description</label>
             <textarea id="desc" rows="5" style="min-height:120px;font-size:16px;" placeholder="Example: 20×24 ft pressure-treated deck attached to the back of the house, composite decking boards, 4×4 posts, cable railing, single level, no stairs."></textarea>
           </div>
+
+          <script>
+          (function(){
+            var langSel = document.getElementById('voiceLang');
+            if (!langSel) return;
+            var saved = null;
+            try { saved = localStorage.getItem('stackbid_voice_lang'); } catch(e) {}
+            var guess = (navigator.language || 'en-US');
+            var match = Array.prototype.find.call(langSel.options, function(o){ return o.value === guess || o.value.split('-')[0] === guess.split('-')[0]; });
+            langSel.value = saved || (match ? match.value : 'en-US');
+            langSel.addEventListener('change', function(){
+              try { localStorage.setItem('stackbid_voice_lang', langSel.value); } catch(e) {}
+            });
+          })();
+          </script>
 
           <div class="tag-row" id="qtags"></div>
 
@@ -2080,8 +2114,8 @@ function toggleVoice() {
         stream.getTracks().forEach(t => t.stop());
         if (sessionId !== voiceSessionId) return;
         recognition = new SR();
-        recognition.lang = navigator.language || 'en-US';
-        console.log('[StackBid voice debug] navigator.language =', navigator.language, '| recognition.lang set to =', recognition.lang);
+        recognition.lang = (document.getElementById('voiceLang') && document.getElementById('voiceLang').value) || navigator.language || 'en-US';
+        console.log('[StackBid voice debug] selected voice language =', recognition.lang);
         recognition.continuous = false;
         recognition.maxAlternatives = 1;
         recognition.onresult = e => {
