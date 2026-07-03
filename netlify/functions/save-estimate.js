@@ -12,7 +12,34 @@ exports.handler = async (event) => {
       const d = await r.json();
       userId = d[0]?.id;
     }
-    return { statusCode: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true, user_id: userId }) };
+
+    let estimateId = null;
+    let estimateError = null;
+    if (estimate) {
+      const estResp = await fetch(`${SUPABASE_URL}/rest/v1/estimates`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          user_id: userId,
+          title: estimate.title || null,
+          project_type: estimate.project_type || null,
+          zip: estimate.zip || null,
+          description: estimate.description || null,
+          total_retail: estimate.total_retail ?? null,
+          total_wholesale: estimate.total_wholesale ?? null,
+          total_local: estimate.total_local ?? null,
+          items: estimate.items || null
+        })
+      });
+      if (estResp.ok) {
+        const ed = await estResp.json();
+        estimateId = ed[0]?.id || null;
+      } else {
+        estimateError = await estResp.text();
+      }
+    }
+
+    return { statusCode: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true, user_id: userId, estimate_id: estimateId, estimate_error: estimateError }) };
   } catch (err) {
     return { statusCode: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: err.message }) };
   }
