@@ -2237,7 +2237,7 @@ function dedupeRepeatedPhrases(text) {
   // Collapse immediately-repeating runs of 1 to 4 words (handles both single-word
   // stutter like "системні системні" and 2-word phrase loops like
   // "системні пожалуйста системні пожалуйста").
-  for (let winSize = 4; winSize >= 1; winSize--) {
+  for (let winSize = 15; winSize >= 1; winSize--) {
     const out = [];
     let i = 0;
     while (i < words.length) {
@@ -2336,8 +2336,10 @@ function toggleVoice() {
         // Browser cut the session on its own (common on Android) — the user hasn't tapped stop,
         // so keep listening seamlessly instead of assuming they're done talking.
         carriedText = finalText;
-        try { recognition.start(); } catch(err) { /* fall through to finalize below if restart fails */ }
-        if (recognition) return;
+        let restarted = true;
+        try { recognition.start(); } catch(err) { restarted = false; }
+        if (restarted) return;
+        // Restart failed — fall through and finalize with what we have instead of going silent.
       }
       if (finalText.trim()) {
         const t = finalText.trim();
