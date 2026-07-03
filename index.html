@@ -901,6 +901,10 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <input type="file" id="fup" style="display:none" multiple accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload(this.files)">
           </div>
           <div id="flist" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;"></div>
+          <div class="tf" style="margin-bottom:16px;">
+            <label>Briefly describe the project (files are attached for your contractor's reference — describe scope here so we can price it accurately)</label>
+            <textarea id="desc2" rows="4" style="min-height:90px;font-size:16px;" placeholder="Example: 20×24 ft pressure-treated deck attached to the back of the house, composite decking boards, 4×4 posts, cable railing."></textarea>
+          </div>
           <div class="field-row">
             <div class="tf">
               <label>ZIP code</label>
@@ -2265,7 +2269,9 @@ function isIOS() {
 
 async function generate() {
   const activeTab = document.getElementById('tab-upload').style.display === 'none' ? 'text' : 'upload';
-  const desc = document.getElementById('desc').value.trim();
+  const desc = activeTab === 'upload'
+    ? document.getElementById('desc2').value.trim()
+    : document.getElementById('desc').value.trim();
   const zip = (document.getElementById('zip').value || document.getElementById('zip2').value || '77001').trim();
   const supp = document.getElementById('supp').value;
   const ptype2 = document.getElementById('ptype2').value;
