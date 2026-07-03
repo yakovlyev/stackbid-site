@@ -178,7 +178,7 @@ const server = http.createServer(async (req, res) => {
 
   // Block oversized requests
   const contentLength = parseInt(req.headers['content-length'] || '0');
-  if (contentLength > 50000) { res.writeHead(413); res.end('Request too large'); return; }
+  if (contentLength > 10 * 1024 * 1024) { res.writeHead(413, {'Content-Type':'application/json'}); res.end(JSON.stringify({error:'Request too large'})); return; }
 
   // Routes
   if (pathname === '/api/contact' && req.method === 'POST') {
