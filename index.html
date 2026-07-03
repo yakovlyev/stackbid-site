@@ -1555,7 +1555,7 @@ async function analyzePhoto() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
+        max_tokens: 4000,
         messages: [{
           role: 'user',
           content: [
@@ -1594,7 +1594,13 @@ If it IS a construction material, return ONLY valid JSON:
     const data = await resp.json();
     if (!resp.ok || data.type === 'error' || !data.content) { console.error('[StackBid] API error/unexpected shape at line 1595:', resp.status, data); throw new Error('api_error'); }
     const txt = data.content.map(b => b.text || '').join('');
-    const json = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    let json;
+    try {
+      json = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    } catch (parseErr) {
+      console.error('[StackBid] Failed to parse AI JSON response (likely truncated). Raw text:', txt);
+      throw parseErr;
+    }
     clearInterval(iv);
     pfill.style.width = '100%';
     setTimeout(() => {
@@ -1805,14 +1811,20 @@ Return ONLY valid JSON:
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
+        max_tokens: 4000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
     const data = await resp.json();
     if (!resp.ok || data.type === 'error' || !data.content) { console.error('[StackBid] API error/unexpected shape at line 1812:', resp.status, data); throw new Error('api_error'); }
     const txt  = data.content.map(b => b.text || '').join('');
-    const json = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    let json;
+    try {
+      json = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    } catch (parseErr) {
+      console.error('[StackBid] Failed to parse AI JSON response (likely truncated). Raw text:', txt);
+      throw parseErr;
+    }
     clearInterval(iv);
     pfill.style.width = '100%';
     setTimeout(() => {
@@ -2004,14 +2016,20 @@ wholesale_price = 20-28% below HD. local_price = 5-10% below wholesale. Return J
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
+        max_tokens: 4000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
     const data = await resp.json();
     if (!resp.ok || data.type === 'error' || !data.content) { console.error('[StackBid] API error/unexpected shape at line 2010:', resp.status, data); throw new Error('api_error'); }
     const txt  = data.content.map(b => b.text || '').join('');
-    const json = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    let json;
+    try {
+      json = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    } catch (parseErr) {
+      console.error('[StackBid] Failed to parse AI JSON response (likely truncated). Raw text:', txt);
+      throw parseErr;
+    }
     clearInterval(iv);
     pfill.style.width = '100%';
     setTimeout(() => {
@@ -2360,14 +2378,20 @@ Rules:
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
+        max_tokens: 4000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
     const data = await resp.json();
     if (!resp.ok || data.type === 'error' || !data.content) { console.error('[StackBid] API error/unexpected shape at line 2365:', resp.status, data); throw new Error('api_error'); }
     const txt = data.content.map(b => b.text || '').join('');
-    const json = JSON.parse(txt.replace(/```json|```/g, '').trim());
+    let json;
+    try {
+      json = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    } catch (parseErr) {
+      console.error('[StackBid] Failed to parse AI JSON response (likely truncated). Raw text:', txt);
+      throw parseErr;
+    }
     clearInterval(iv);
     pfill.style.width = '100%';
     setTimeout(async () => {
