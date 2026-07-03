@@ -1520,10 +1520,31 @@ function handlePhoto(file) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    photoBase64 = e.target.result.split(',')[1];
-    document.getElementById('photo-img').src = e.target.result;
-    document.getElementById('photo-preview').style.display = 'block';
-    document.getElementById('photo-gen-btn').style.display = 'flex';
+    const img = new Image();
+    img.onload = () => {
+      const MAX_DIM = 1600;
+      let w = img.width, h = img.height;
+      if (w > MAX_DIM || h > MAX_DIM) {
+        if (w > h) { h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
+        else { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const compressed = canvas.toDataURL('image/jpeg', 0.82);
+      photoBase64 = compressed.split(',')[1];
+      document.getElementById('photo-img').src = compressed;
+      document.getElementById('photo-preview').style.display = 'block';
+      document.getElementById('photo-gen-btn').style.display = 'flex';
+    };
+    img.onerror = () => {
+      // Fallback: use original if resizing fails for some reason
+      photoBase64 = e.target.result.split(',')[1];
+      document.getElementById('photo-img').src = e.target.result;
+      document.getElementById('photo-preview').style.display = 'block';
+      document.getElementById('photo-gen-btn').style.display = 'flex';
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
