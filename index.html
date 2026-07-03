@@ -1592,6 +1592,7 @@ If it IS a construction material, return ONLY valid JSON:
       })
     });
     const data = await resp.json();
+    if (!resp.ok || data.type === 'error' || !data.content) { console.error('[StackBid] API error/unexpected shape at line 1595:', resp.status, data); throw new Error('api_error'); }
     const txt = data.content.map(b => b.text || '').join('');
     const json = JSON.parse(txt.replace(/```json|```/g,'').trim());
     clearInterval(iv);
@@ -1809,6 +1810,7 @@ Return ONLY valid JSON:
       })
     });
     const data = await resp.json();
+    if (!resp.ok || data.type === 'error' || !data.content) { console.error('[StackBid] API error/unexpected shape at line 1812:', resp.status, data); throw new Error('api_error'); }
     const txt  = data.content.map(b => b.text || '').join('');
     const json = JSON.parse(txt.replace(/```json|```/g,'').trim());
     clearInterval(iv);
@@ -2007,6 +2009,7 @@ wholesale_price = 20-28% below HD. local_price = 5-10% below wholesale. Return J
       })
     });
     const data = await resp.json();
+    if (!resp.ok || data.type === 'error' || !data.content) { console.error('[StackBid] API error/unexpected shape at line 2010:', resp.status, data); throw new Error('api_error'); }
     const txt  = data.content.map(b => b.text || '').join('');
     const json = JSON.parse(txt.replace(/```json|```/g,'').trim());
     clearInterval(iv);
@@ -2362,6 +2365,7 @@ Rules:
       })
     });
     const data = await resp.json();
+    if (!resp.ok || data.type === 'error' || !data.content) { console.error('[StackBid] API error/unexpected shape at line 2365:', resp.status, data); throw new Error('api_error'); }
     const txt = data.content.map(b => b.text || '').join('');
     const json = JSON.parse(txt.replace(/```json|```/g, '').trim());
     clearInterval(iv);
