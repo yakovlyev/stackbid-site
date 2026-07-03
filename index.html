@@ -1653,6 +1653,21 @@ If it IS a construction material, return ONLY valid JSON:
 }
 
 function renderPhotoResult(d, zip) {
+  const photoBtn = document.getElementById('photo-gen-btn');
+  if (photoBtn) setBtnLoading(photoBtn, false, '🔍 Identify & price this material');
+
+  if (d.error === 'not_construction_material') {
+    document.getElementById('photo-out').innerHTML = `
+      <div style="background:var(--offwhite);border-radius:var(--radius);padding:20px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:10px;">🤔</div>
+        <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;color:var(--ink);margin-bottom:6px;">That doesn't look like a construction material</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">We detected: ${esc(d.detected || 'something else')}</div>
+        <div style="font-size:13px;color:var(--muted);">${esc(d.message || 'Please upload a photo of a construction material like lumber, drywall, roofing, or flooring.')}</div>
+      </div>`;
+    document.getElementById('photo-out').style.display = 'block';
+    return;
+  }
+
   const confColor = d.confidence === 'high' ? 'var(--green)' : d.confidence === 'medium' ? 'var(--amber)' : 'var(--muted)';
   const totalHD = (d.hd_unit * d.qty_suggested).toFixed(2);
   const totalWS = (d.wholesale_unit * d.qty_suggested).toFixed(2);
