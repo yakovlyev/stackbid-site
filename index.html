@@ -2094,6 +2094,7 @@ function shareTelegram() {
 }
 
 let voiceSessionId = 0;
+let voiceBaseValue = '';
 function setVoiceStatus(msg, color) {
   const s = document.getElementById('voiceStatus');
   if (!s) return;
@@ -2112,6 +2113,8 @@ function toggleVoice() {
   btn.classList.add('rec', 'recording');
   btn.innerHTML = '🔴 Recording...';
   setVoiceStatus('Listening… speak now', '#C0392B');
+  const ta0 = document.getElementById('desc');
+  voiceBaseValue = ta0 ? ta0.value : '';
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (SR) {
     // First explicitly request mic permission via getUserMedia
@@ -2123,32 +2126,26 @@ function toggleVoice() {
         recognition = new SR();
         recognition.lang = (document.getElementById('voiceLang') && document.getElementById('voiceLang').value) || navigator.language || 'en-US';
         console.log('[StackBid voice debug] selected voice language =', recognition.lang);
-        recognition.continuous = false;
+        recognition.continuous = true;
+        recognition.interimResults = true;
         recognition.maxAlternatives = 1;
+        let finalText = '';
         recognition.onresult = e => {
           if (sessionId !== voiceSessionId) return;
           const ta = document.getElementById('desc');
-          const transcript = e.results[0][0].transcript;
-          if (!transcript || !transcript.trim()) {
-            setVoiceStatus('Didn\'t catch that — try again', '#C0392B');
-            resetVoice();
-            return;
+          let interim = '';
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            const chunk = e.results[i][0].transcript;
+            if (e.results[i].isFinal) {
+              finalText += (finalText ? ' ' : '') + chunk.trim();
+            } else {
+              interim += chunk;
+            }
           }
-          ta.value += (ta.value ? ' ' : '') + transcript;
-          setVoiceStatus('Added: "' + transcript + '"', '#2E7D32');
-          resetVoice();
-          if (window.SUPABASE_URL && window.SUPABASE_KEY) {
-            fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
-              method: 'POST',
-              headers: {
-                'apikey': window.SUPABASE_KEY,
-                'Authorization': 'Bearer ' + window.SUPABASE_KEY,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
-              },
-              body: JSON.stringify({ transcript: transcript, created_at: new Date().toISOString() })
-            }).catch(() => {});
-          }
+          // Live-update the field as words come in, even before the phrase is finalized
+          const prefix = voiceBaseValue ? voiceBaseValue + ' ' : '';
+          ta.value = prefix + finalText + (interim ? (finalText ? ' ' : '') + interim : '');
+          setVoiceStatus('Listening… "' + (finalText + ' ' + interim).trim().slice(-40) + '"', '#C0392B');
         };
         recognition.onerror = e => {
           console.error('[StackBid voice debug] recognition error:', e.error, '| lang used:', recognition.lang);
@@ -2166,6 +2163,25 @@ function toggleVoice() {
         };
         recognition.onend = () => {
           if (sessionId !== voiceSessionId) return;
+          if (finalText.trim()) {
+            setVoiceStatus('Added: "' + finalText.trim() + '"', '#2E7D32');
+            if (window.SUPABASE_URL && window.SUPABASE_KEY) {
+              fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
+                method: 'POST',
+                headers: {
+                  'apikey': window.SUPABASE_KEY,
+                  'Authorization': 'Bearer ' + window.SUPABASE_KEY,
+                  'Content-Type': 'application/json',
+                  'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({ transcript: finalText.trim(), created_at: new Date().toISOString() })
+              }).catch(() => {});
+            }
+          } else if (!isRec) {
+            // status already set by onerror
+          } else {
+            setVoiceStatus('Didn\'t catch that — try again', '#C0392B');
+          }
           resetVoice();
         };
         try { recognition.start(); } catch(err) {
