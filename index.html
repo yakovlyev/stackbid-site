@@ -2637,19 +2637,19 @@ function renderEstimate(data, zip) {
 
   const totHtml = `
     <div class="total-card">
-      <div class="total-val">$${Math.round(tR).toLocaleString()}</div>
+      <div class="total-val" id="total-retail">$${Math.round(tR).toLocaleString()}</div>
       <div class="total-lbl">HD / Lowe's retail</div>
     </div>
     <div class="total-card">
-      <div class="total-val">$${Math.round(tW).toLocaleString()}</div>
+      <div class="total-val" id="total-wholesale">$${Math.round(tW).toLocaleString()}</div>
       <div class="total-lbl">Wholesale estimate</div>
     </div>
     <div class="total-card highlight">
-      <div class="total-val">$${Math.round(tL).toLocaleString()}</div>
+      <div class="total-val" id="total-local">$${Math.round(tL).toLocaleString()}</div>
       <div class="total-lbl">Local supplier</div>
     </div>
     <div class="total-card savings">
-      <div class="total-val">$${Math.round(tR - tL).toLocaleString()}</div>
+      <div class="total-val" id="total-savings">$${Math.round(tR - tL).toLocaleString()}</div>
       <div class="total-lbl">You save vs retail</div>
     </div>`;
   document.getElementById('etotals').innerHTML = totHtml;
