@@ -1489,6 +1489,7 @@ document.addEventListener('DOMContentLoaded', loadEstimatesCount);
 let selType = 'New home build';
 let isRec = false;
 let recognition = null;
+let manualStop = false;
 
 const tagSets = {
   'New home build': ['~1,200 sq ft','3 bed / 2 bath','slab foundation','asphalt shingle roof','vinyl siding','2-car garage'],
@@ -2232,11 +2233,15 @@ function setVoiceStatus(msg, color) {
 function toggleVoice() {
   const btn = document.getElementById('vbtn');
   if (isRec) {
+    manualStop = true;
     if (recognition) { try { recognition.stop(); } catch(e) {} }
     resetVoice();
     return;
   }
   isRec = true;
+  manualStop = false;
+  let finalText = '';
+  let carriedText = '';
   const sessionId = ++voiceSessionId;
   btn.classList.add('rec', 'recording');
   btn.innerHTML = '🔴 Recording...';
@@ -2244,85 +2249,105 @@ function toggleVoice() {
   const ta0 = document.getElementById('desc');
   voiceBaseValue = ta0 ? ta0.value : '';
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  function startRecognitionSession() {
+    if (sessionId !== voiceSessionId) return;
+    recognition = new SR();
+    recognition.lang = (document.getElementById('voiceLang') && document.getElementById('voiceLang').value) || navigator.language || 'en-US';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = e => {
+      if (sessionId !== voiceSessionId) return;
+      const ta = document.getElementById('desc');
+      // Rebuild final/interim text from ALL results each time (not append-only) —
+      // some Android browsers re-send already-final chunks, which caused duplicated/stuttering text.
+      let rebuiltFinal = '', interim = '';
+      for (let i = 0; i < e.results.length; i++) {
+        const chunk = e.results[i][0].transcript;
+        if (e.results[i].isFinal) {
+          rebuiltFinal += (rebuiltFinal ? ' ' : '') + chunk.trim();
+        } else {
+          interim += chunk;
+        }
+      }
+      finalText = (carriedText ? carriedText + ' ' : '') + rebuiltFinal;
+      const prefix = voiceBaseValue ? voiceBaseValue + ' ' : '';
+      ta.value = prefix + finalText + (interim ? (finalText ? ' ' : '') + interim : '');
+      setVoiceStatus('Listening… "' + (finalText + ' ' + interim).trim().slice(-40) + '"', '#C0392B');
+    };
+
+    recognition.onerror = e => {
+      if (sessionId !== voiceSessionId) return;
+      console.error('[StackBid voice debug] recognition error:', e.error, '| lang used:', recognition.lang);
+      // 'no-speech' during a natural pause is common on Android even with continuous:true —
+      // restart quietly instead of ending the session, unless the user explicitly stopped.
+      if (e.error === 'no-speech' && !manualStop && isRec) {
+        try { recognition.stop(); } catch(err) {}
+        return; // onend will handle the restart
+      }
+      const msgs = {
+        'audio-capture': 'No microphone found — check your device',
+        'not-allowed': 'Microphone blocked — allow it in browser settings',
+        'network': 'Network error — check your connection and try again',
+        'aborted': ''
+      };
+      const m = msgs.hasOwnProperty(e.error) ? msgs[e.error] : ('Voice error: ' + e.error + ' — try again');
+      if (m) setVoiceStatus(m, '#C0392B');
+      resetVoice();
+    };
+
+    recognition.onend = () => {
+      if (sessionId !== voiceSessionId) return;
+      if (!manualStop && isRec) {
+        // Browser cut the session on its own (common on Android) — the user hasn't tapped stop,
+        // so keep listening seamlessly instead of assuming they're done talking.
+        carriedText = finalText;
+        try { recognition.start(); } catch(err) { /* fall through to finalize below if restart fails */ }
+        if (recognition) return;
+      }
+      if (finalText.trim()) {
+        const t = finalText.trim();
+        if (window.SUPABASE_URL && window.SUPABASE_KEY) {
+          fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
+            method: 'POST',
+            headers: {
+              'apikey': window.SUPABASE_KEY,
+              'Authorization': 'Bearer ' + window.SUPABASE_KEY,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({ transcript: t, created_at: new Date().toISOString() })
+          }).catch(() => {});
+        }
+        if (t.length >= 15) {
+          setVoiceStatus('Got it! Building your estimate…', '#2E7D32');
+          setTimeout(() => { try { generate(); } catch(e) {} }, 1100);
+        } else {
+          setVoiceStatus('Added: "' + t + '" — say more or tap Generate', '#2E7D32');
+        }
+      } else if (!isRec) {
+        // status already set by onerror
+      } else {
+        setVoiceStatus('Didn\'t catch that — try again', '#C0392B');
+      }
+      resetVoice();
+    };
+
+    try { recognition.start(); } catch(err) {
+      setVoiceStatus('Could not start recording — try again', '#C0392B');
+      resetVoice();
+    }
+  }
+
   if (SR) {
     // First explicitly request mic permission via getUserMedia
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
-        // Permission granted — stop the stream and start SpeechRecognition
         stream.getTracks().forEach(t => t.stop());
         if (sessionId !== voiceSessionId) return;
-        recognition = new SR();
-        recognition.lang = (document.getElementById('voiceLang') && document.getElementById('voiceLang').value) || navigator.language || 'en-US';
-        console.log('[StackBid voice debug] selected voice language =', recognition.lang);
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.maxAlternatives = 1;
-        let finalText = '';
-        recognition.onresult = e => {
-          if (sessionId !== voiceSessionId) return;
-          const ta = document.getElementById('desc');
-          let interim = '';
-          for (let i = e.resultIndex; i < e.results.length; i++) {
-            const chunk = e.results[i][0].transcript;
-            if (e.results[i].isFinal) {
-              finalText += (finalText ? ' ' : '') + chunk.trim();
-            } else {
-              interim += chunk;
-            }
-          }
-          // Live-update the field as words come in, even before the phrase is finalized
-          const prefix = voiceBaseValue ? voiceBaseValue + ' ' : '';
-          ta.value = prefix + finalText + (interim ? (finalText ? ' ' : '') + interim : '');
-          setVoiceStatus('Listening… "' + (finalText + ' ' + interim).trim().slice(-40) + '"', '#C0392B');
-        };
-        recognition.onerror = e => {
-          console.error('[StackBid voice debug] recognition error:', e.error, '| lang used:', recognition.lang);
-          if (sessionId !== voiceSessionId) return;
-          const msgs = {
-            'no-speech': 'No speech detected — try speaking closer to the mic',
-            'audio-capture': 'No microphone found — check your device',
-            'not-allowed': 'Microphone blocked — allow it in browser settings',
-            'network': 'Network error — check your connection and try again',
-            'aborted': ''
-          };
-          const m = msgs.hasOwnProperty(e.error) ? msgs[e.error] : ('Voice error: ' + e.error + ' — try again');
-          if (m) setVoiceStatus(m, '#C0392B');
-          resetVoice();
-        };
-        recognition.onend = () => {
-          if (sessionId !== voiceSessionId) return;
-          if (finalText.trim()) {
-            const t = finalText.trim();
-            if (window.SUPABASE_URL && window.SUPABASE_KEY) {
-              fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
-                method: 'POST',
-                headers: {
-                  'apikey': window.SUPABASE_KEY,
-                  'Authorization': 'Bearer ' + window.SUPABASE_KEY,
-                  'Content-Type': 'application/json',
-                  'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify({ transcript: t, created_at: new Date().toISOString() })
-              }).catch(() => {});
-            }
-            // Enough detail captured — build the estimate automatically, no extra click needed
-            if (t.length >= 15) {
-              setVoiceStatus('Got it! Building your estimate…', '#2E7D32');
-              setTimeout(() => { try { generate(); } catch(e) {} }, 1100);
-            } else {
-              setVoiceStatus('Added: "' + t + '" — say more or tap Generate', '#2E7D32');
-            }
-          } else if (!isRec) {
-            // status already set by onerror
-          } else {
-            setVoiceStatus('Didn\'t catch that — try again', '#C0392B');
-          }
-          resetVoice();
-        };
-        try { recognition.start(); } catch(err) {
-          setVoiceStatus('Could not start recording — try again', '#C0392B');
-          resetVoice();
-        }
+        startRecognitionSession();
       })
       .catch(err => {
         if (sessionId !== voiceSessionId) return;
@@ -2334,7 +2359,6 @@ function toggleVoice() {
     setVoiceStatus('Voice input not supported in this browser — try Chrome', '#C0392B');
     setTimeout(() => {
       if (sessionId !== voiceSessionId) return;
-      // SpeechRecognition not supported in this browser
       resetVoice();
     }, 2000);
   }
