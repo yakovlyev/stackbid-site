@@ -1516,6 +1516,17 @@ function triggerCamera() {
   document.getElementById('photo-input').click();
 }
 
+function resetPhoto() {
+  photoBase64 = null;
+  document.getElementById('photo-out').style.display = 'none';
+  document.getElementById('photo-out').innerHTML = '';
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('photo-gen-btn').style.display = 'none';
+  document.getElementById('photo-input').value = '';
+  document.getElementById('photo-capture-area').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  triggerCamera();
+}
+
 function handlePhoto(file) {
   if (!file) return;
   const reader = new FileReader();
@@ -1663,6 +1674,7 @@ function renderPhotoResult(d, zip) {
         <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;color:var(--ink);margin-bottom:6px;">That doesn't look like a construction material</div>
         <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">We detected: ${esc(d.detected || 'something else')}</div>
         <div style="font-size:13px;color:var(--muted);">${esc(d.message || 'Please upload a photo of a construction material like lumber, drywall, roofing, or flooring.')}</div>
+        <button class="exp-btn" style="margin-top:14px;" onclick="resetPhoto()">📷 Try another photo</button>
       </div>`;
     document.getElementById('photo-out').style.display = 'block';
     return;
@@ -1711,6 +1723,7 @@ function renderPhotoResult(d, zip) {
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
       <button class="exp-btn" onclick="shareWhatsApp()">💬 Share</button>
       <button class="exp-btn" onclick="doPrint()">📄 PDF</button>
+      <button class="exp-btn" onclick="resetPhoto()">📷 Try another photo</button>
     </div>
   `;
   document.getElementById('photo-out').style.display = 'block';
