@@ -999,7 +999,43 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <!-- RESULT -->
         <div id="estimate-out" style="margin-top:24px;">
 
+          <div id="gate-overlay" class="gate-overlay" style="position:relative;flex-direction:column;">
+            <div style="background:#fff;border-radius:16px;padding:24px;max-width:420px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,0.25);">
+              <div style="text-align:center;margin-bottom:16px;">
+                <div style="font-size:28px;margin-bottom:6px;">🔓</div>
+                <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:17px;color:var(--ink);">Your estimate is ready</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:4px;">Enter your details to unlock the full breakdown</div>
+              </div>
+              <div id="gate-preview-items" style="background:var(--offwhite);border-radius:10px;padding:12px 14px;margin-bottom:16px;"></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:16px;padding:0 2px;">
+                <span id="gate-items-count">— items</span>
+                <span>Save up to <strong id="gate-savings-num" style="color:var(--green);">$0</strong></span>
+              </div>
+              <div class="tf" style="margin-bottom:10px;">
+                <input type="text" id="gate-fname" placeholder="Your first name" style="width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+              </div>
+              <div class="tf" style="margin-bottom:10px;">
+                <input type="email" id="gate-email" placeholder="you@email.com" style="width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+              </div>
+              <div class="tf" style="margin-bottom:10px;">
+                <select id="gate-role" style="width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                  <option value="homeowner">I'm a homeowner</option>
+                  <option value="contractor">I'm a contractor</option>
+                  <option value="investor">I'm an investor</option>
+                  <option value="realtor">I'm a realtor</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);margin-bottom:14px;cursor:pointer;">
+                <input type="checkbox" id="gate-alerts" checked style="margin-top:2px;">
+                <span>Email me when local material prices drop</span>
+              </label>
+              <button class="gen-btn" style="width:100%;" onclick="unlockEstimate()">🔓 Unlock full estimate — free</button>
+              <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;">No spam. Unsubscribe anytime.</div>
+            </div>
+          </div>
 
+          <div id="estimate-content">
           <div class="estimate-header">
             <div>
               <div class="estimate-title" id="etitle">—</div>
@@ -1041,6 +1077,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div id="email-pdf-success" style="display:none;color:#fff;font-weight:600;font-size:14px;">✓ Saved! Opening your PDF…</div>
           </div>
           <div id="local-matches" style="margin-top:24px;"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -2602,7 +2639,7 @@ function showGate(data, zip) {
     <div class="gate-preview-title">Preview — first 3 of ${totalItems} items</div>
     ${previewItems.map(item => `
       <div class="gate-preview-row">
-        <span style="color:var(--ink);font-weight:500;font-size:13px;">${item.name}</span>
+        <span style="color:var(--ink);font-weight:500;font-size:13px;">${esc(item.name)}</span>
         <span style="color:var(--green);font-weight:600;font-size:13px;">$${(item.local_unit * item.qty).toFixed(0)}</span>
       </div>`).join('')}
     <div style="margin-top:8px;">
@@ -2616,10 +2653,10 @@ function showGate(data, zip) {
   document.getElementById('gate-savings-num').textContent = '$' + Math.round(tR - tL).toLocaleString();
   document.getElementById('gate-items-count').textContent = totalItems + ' items';
 
+  document.getElementById('estimate-content').style.display = 'none';
   document.getElementById('estimate-out').style.display = 'block';
   document.getElementById('gate-overlay').classList.add('show');
   document.getElementById('estimate-out').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  loadLocalMatches(zip);
 }
 
 async function unlockEstimate() {
@@ -2648,8 +2685,10 @@ async function unlockEstimate() {
 
   // Hide gate and show full estimate
   document.getElementById('gate-overlay').classList.remove('show');
+  document.getElementById('estimate-content').style.display = 'block';
   if (pendingEstimateData) {
     renderEstimate(pendingEstimateData, pendingEstimateZip);
+    loadLocalMatches(pendingEstimateZip);
   }
 }
 
@@ -2673,7 +2712,11 @@ async function sendToBrevo({ fname, email, role, alerts }) {
 }
 
 function renderEstimateWithGate(data, zip) {
-  renderEstimate(data, zip);
+  if (isGateUnlocked()) {
+    renderEstimate(data, zip);
+  } else {
+    showGate(data, zip);
+  }
 }
 
 function renderEstimate(data, zip) {
