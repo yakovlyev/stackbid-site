@@ -2126,7 +2126,7 @@ function toggleVoice() {
         recognition = new SR();
         recognition.lang = (document.getElementById('voiceLang') && document.getElementById('voiceLang').value) || navigator.language || 'en-US';
         console.log('[StackBid voice debug] selected voice language =', recognition.lang);
-        recognition.continuous = true;
+        recognition.continuous = false;
         recognition.interimResults = true;
         recognition.maxAlternatives = 1;
         let finalText = '';
