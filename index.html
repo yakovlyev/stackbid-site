@@ -1631,8 +1631,8 @@ function renderPhotoResult(d, zip) {
     <div style="background:var(--offwhite);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
         <div>
-          <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--ink);">${d.identified}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${d.spec} ${d.brand_detected ? '· ' + d.brand_detected : ''}</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--ink);">${esc(d.identified)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${esc(d.spec)} ${d.brand_detected ? '· ' + esc(d.brand_detected) : ''}</div>
         </div>
         <span style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:${d.confidence==='high'?'var(--green-light)':'var(--amber-light)'};color:${confColor};">
           ${d.confidence} confidence
@@ -1829,7 +1829,7 @@ function renderPermit(d, zip, type) {
   const icon  = required ? '⚠️' : '✅';
 
   const exemptHtml = (d.exemptions||[]).map(e=>`<li style="font-size:13px;color:var(--muted);padding:2px 0;">→ ${e}</li>`).join('');
-  const docsHtml   = (d.required_docs||[]).map(e=>`<li style="font-size:13px;color:var(--muted);padding:2px 0;">📄 ${e}</li>`).join('');
+  const docsHtml   = (d.required_docs||[]).map(e=>`<li style="font-size:13px;color:var(--muted);padding:2px 0;">📄 ${esc(e)}</li>`).join('');
   const rulesHtml  = (d.key_rules||[]).map(e=>`<li style="font-size:13px;color:var(--muted);padding:2px 0;">• ${e}</li>`).join('');
 
   const _pb = document.querySelector('#tab-permit .gen-btn');
@@ -1839,11 +1839,11 @@ function renderPermit(d, zip, type) {
       <div style="font-size:28px;">${icon}</div>
       <div>
         <div style="font-size:16px;font-weight:700;color:${color};">${required ? 'Permit REQUIRED' : 'No permit required'}</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:2px;">${d.city}, ${d.state} · ZIP ${zip} · Confidence: ${d.confidence}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;">${esc(d.city)}, ${esc(d.state)} · ZIP ${esc(zip)} · Confidence: ${esc(d.confidence)}</div>
       </div>
     </div>
 
-    ${d.warning ? `<div style="background:#FDF3E0;border-left:3px solid var(--amber);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#7a4800;">⚠️ ${d.warning}</div>` : ''}
+    ${d.warning ? `<div style="background:#FDF3E0;border-left:3px solid var(--amber);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#7a4800;">⚠️ ${esc(d.warning)}</div>` : ''}
 
     ${required ? `
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;">
@@ -2014,10 +2014,10 @@ function renderHDPrices(d, liveData) {
     const save = Math.round((1 - item.local_price / item.hd_price) * 100);
     const stockColor = item.stock_status === 'In Stock' ? '#1A7F5A' : item.stock_status === 'Limited' ? '#C0392B' : '#6B7A8D';
     return `<tr>
-      <td><div style="font-weight:500;font-size:13px;">${item.name}</div>
-          <div style="font-size:11px;color:var(--muted);">${item.brand} · ${item.spec} · SKU ${item.sku}</div>
-          <div style="font-size:11px;color:${stockColor};margin-top:2px;">${item.stock_status}</div></td>
-      <td style="font-size:12px;color:var(--muted);">${item.unit}</td>
+      <td><div style="font-weight:500;font-size:13px;">${esc(item.name)}</div>
+          <div style="font-size:11px;color:var(--muted);">${esc(item.brand)} · ${esc(item.spec)} · SKU ${esc(item.sku)}</div>
+          <div style="font-size:11px;color:${stockColor};margin-top:2px;">${esc(item.stock_status)}</div></td>
+      <td style="font-size:12px;color:var(--muted);">${esc(item.unit)}</td>
       <td><div style="text-decoration:line-through;color:var(--muted);font-size:12px;">$${item.hd_price.toFixed(2)}</div></td>
       <td><div style="color:#1A7F5A;font-weight:500;">$${item.wholesale_price.toFixed(2)}</div></td>
       <td><div style="color:#1A4F9C;font-weight:600;">$${item.local_price.toFixed(2)}</div></td>
@@ -2030,13 +2030,13 @@ function renderHDPrices(d, liveData) {
     document.getElementById('hd-out').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
       <div>
-        <div style="font-size:15px;font-weight:700;color:var(--ink);">${d.category_name} — ZIP ${d.zip}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">${d.hd_store} · ${d.region} · Updated: ${d.last_updated}</div>
+        <div style="font-size:15px;font-weight:700;color:var(--ink);">${esc(d.category_name)} — ZIP ${esc(d.zip)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">${esc(d.hd_store)} · ${esc(d.region)} · Updated: ${esc(d.last_updated)}</div>
       </div>
       ${srcBadge}
     </div>
 
-    ${d.price_note ? `<div style="background:#FDF3E0;border-radius:8px;padding:9px 13px;font-size:12px;color:#7a4800;margin-bottom:12px;">📍 ${d.price_note}</div>` : ''}
+    ${d.price_note ? `<div style="background:#FDF3E0;border-radius:8px;padding:9px 13px;font-size:12px;color:#7a4800;margin-bottom:12px;">📍 ${esc(d.price_note)}</div>` : ''}
 
     <div style="overflow-x:auto;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
