@@ -2164,7 +2164,7 @@ function toggleVoice() {
         recognition.onend = () => {
           if (sessionId !== voiceSessionId) return;
           if (finalText.trim()) {
-            setVoiceStatus('Added: "' + finalText.trim() + '"', '#2E7D32');
+            const t = finalText.trim();
             if (window.SUPABASE_URL && window.SUPABASE_KEY) {
               fetch(window.SUPABASE_URL + '/rest/v1/voice_queries', {
                 method: 'POST',
@@ -2174,8 +2174,15 @@ function toggleVoice() {
                   'Content-Type': 'application/json',
                   'Prefer': 'return=minimal'
                 },
-                body: JSON.stringify({ transcript: finalText.trim(), created_at: new Date().toISOString() })
+                body: JSON.stringify({ transcript: t, created_at: new Date().toISOString() })
               }).catch(() => {});
+            }
+            // Enough detail captured — build the estimate automatically, no extra click needed
+            if (t.length >= 15) {
+              setVoiceStatus('Got it! Building your estimate…', '#2E7D32');
+              setTimeout(() => { try { generate(); } catch(e) {} }, 1100);
+            } else {
+              setVoiceStatus('Added: "' + t + '" — say more or tap Generate', '#2E7D32');
             }
           } else if (!isRec) {
             // status already set by onerror
