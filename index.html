@@ -2230,6 +2230,38 @@ function setVoiceStatus(msg, color) {
   s.textContent = msg;
   s.style.color = color || 'var(--muted)';
 }
+
+function dedupeRepeatedPhrases(text) {
+  if (!text) return text;
+  let words = text.split(/\s+/);
+  // Collapse immediately-repeating runs of 1 to 4 words (handles both single-word
+  // stutter like "системні системні" and 2-word phrase loops like
+  // "системні пожалуйста системні пожалуйста").
+  for (let winSize = 4; winSize >= 1; winSize--) {
+    const out = [];
+    let i = 0;
+    while (i < words.length) {
+      const window = words.slice(i, i + winSize);
+      const next = words.slice(i + winSize, i + winSize * 2);
+      if (window.length === winSize && next.length === winSize &&
+          window.every((w, idx) => w.toLowerCase() === next[idx].toLowerCase())) {
+        // Skip forward past all consecutive repeats of this window
+        out.push(...window);
+        i += winSize;
+        while (i + winSize <= words.length &&
+               words.slice(i, i + winSize).every((w, idx) => w.toLowerCase() === window[idx].toLowerCase())) {
+          i += winSize;
+        }
+      } else {
+        out.push(words[i]);
+        i++;
+      }
+    }
+    words = out;
+  }
+  return words.join(' ');
+}
+
 function toggleVoice() {
   const btn = document.getElementById('vbtn');
   if (isRec) {
@@ -2272,7 +2304,7 @@ function toggleVoice() {
           interim += chunk;
         }
       }
-      finalText = (carriedText ? carriedText + ' ' : '') + rebuiltFinal;
+      finalText = dedupeRepeatedPhrases((carriedText ? carriedText + ' ' : '') + rebuiltFinal);
       const prefix = voiceBaseValue ? voiceBaseValue + ' ' : '';
       ta.value = prefix + finalText + (interim ? (finalText ? ' ' : '') + interim : '');
       setVoiceStatus('Listening… "' + (finalText + ' ' + interim).trim().slice(-40) + '"', '#C0392B');
