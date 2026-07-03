@@ -1728,6 +1728,7 @@ function calcToEstimate() {
   if (!lastCalcResult) return;
   const type = document.getElementById('calc-type').value;
   const labels = { deck:'deck',roof:'roofing replacement',fence:'fence',siding:'siding',flooring:'flooring',drywall:'drywall',concrete:'concrete slab' };
+  const ptypeLabels = { deck:'Deck or patio', roof:'Roofing replacement', fence:'Fence', siding:'Siding or facade', concrete:'Foundation' };
   const nums = Object.values(lastCalcResult.result);
   const unitLabels = calcConfigs[type].units;
   const desc = nums.map((n,i)=>`${n.toLocaleString()} ${unitLabels[i]}`).join(', ');
@@ -1735,7 +1736,22 @@ function calcToEstimate() {
   document.querySelectorAll('.tool-tab')[0].click();
   document.getElementById('desc').value = `${labels[type] || type} — ${desc}`;
   document.querySelectorAll('.ptype-btn').forEach(b => b.classList.remove('sel'));
-  document.querySelector('.ptype-btn')?.classList.add('sel');
+  const matchedType = ptypeLabels[type];
+  let matched = false;
+  if (matchedType) {
+    document.querySelectorAll('.ptype-btn').forEach(b => {
+      if (b.getAttribute('onclick') === `setPtype(this,'${matchedType}')`) {
+        b.classList.add('sel');
+        matched = true;
+      }
+    });
+    selType = matchedType;
+  }
+  if (!matched) {
+    // No matching quick-select button (e.g. flooring, drywall) — keep no button highlighted
+    // but still send the correct project type text to the estimate engine.
+    selType = labels[type] || type;
+  }
 }
 
 /* ─── UPDATE setTab to include new tabs ─────────────── */
