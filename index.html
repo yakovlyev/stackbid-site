@@ -894,7 +894,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           <button class="gen-btn" id="calc-to-estimate" onclick="calcToEstimate()" style="display:none;margin-top:10px;background:var(--amber);color:var(--white);">⚡ Get prices for this quantity →</button>
         </div>
         <div id="tab-upload" style="display:none;">
-          <div style="border:2px dashed var(--border); border-radius:var(--radius); padding:40px 20px; text-align:center; cursor:pointer; margin-bottom:16px;" onclick="document.getElementById('fup').click()">
+          <div id="upload-dropzone" style="border:2px dashed var(--border); border-radius:var(--radius); padding:40px 20px; text-align:center; cursor:pointer; margin-bottom:16px; transition:background 0.15s, border-color 0.15s;" onclick="document.getElementById('fup').click()" ondragover="event.preventDefault(); event.stopPropagation(); this.style.background='var(--offwhite)'; this.style.borderColor='var(--amber)';" ondragleave="event.preventDefault(); event.stopPropagation(); this.style.background=''; this.style.borderColor='var(--border)';" ondrop="event.preventDefault(); event.stopPropagation(); this.style.background=''; this.style.borderColor='var(--border)'; handleUpload(event.dataTransfer.files);">
             <div style="font-size:32px; margin-bottom:10px;">📄</div>
             <div style="font-family:'DM Sans',sans-serif; font-weight:700; color:var(--ink); margin-bottom:6px;">Drop your plans here</div>
             <div style="font-size:13px; color:var(--muted);">PDF blueprints, photos, hand sketches · PDF JPG PNG</div>
