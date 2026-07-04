@@ -612,6 +612,8 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   .tool-card { box-shadow: none; border: none; }
 }
 
+.local-matches-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
 /* RESPONSIVE */
 @media (max-width: 640px) {
   .nav-mobile-hide { display: none; }
@@ -622,6 +624,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   .field-row { grid-template-columns: 1fr; }
   .gate-row2 { grid-template-columns: 1fr !important; }
   .project-grid { grid-template-columns: repeat(3, 1fr); }
+  .local-matches-grid { grid-template-columns: 1fr; }
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -2892,7 +2895,7 @@ async function loadLocalMatches(zip) {
     const spec = contractor ? (Array.isArray(contractor.specializations) ? contractor.specializations[0] : (contractor.specializations || 'General Contractor')) : 'General Contractor';
 
     container.innerHTML =
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">' +
+      '<div class="local-matches-grid">' +
         '<div style="background:#fff;border:2px solid #2E86AB;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
           '<div style="font-size:11px;font-weight:600;color:#2E86AB;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🏪 Nearest Supplier</div>' +
           '<div style="font-size:16px;font-weight:700;color:#0C2340;margin-bottom:6px;">' + supplierName + '</div>' +
