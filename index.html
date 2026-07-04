@@ -2586,7 +2586,7 @@ function fallback(type) {
   };
 }
 
-/* ─── SUPABASE PRICE ENRICHMENT ──────────────────────── */
+/* ─── SUPABASE PRICE FALLBACK (fills gaps only, never overrides AI) ── */
 async function enrichWithDBPrices(data, zip) {
   try {
     // Collect all material names from AI estimate
@@ -2611,10 +2611,18 @@ async function enrichWithDBPrices(data, zip) {
       priceMap[r.search_term.toLowerCase()] = r;
     });
 
-    // Overwrite AI prices with real DB prices where match found
+    // Only fill in DB prices when the AI didn't provide a usable price for
+    // this item. The DB table is a small manually-seeded list that can go
+    // stale, so a live AI price always takes priority over it — this
+    // function now backs up the AI, it no longer overwrites it.
     let dbMatches = 0;
     (data.categories || []).forEach(cat => {
       (cat.items || []).forEach(item => {
+        const hasAiPrice = ['retail_unit','wholesale_unit','local_unit'].every(
+          k => typeof item[k] === 'number' && isFinite(item[k]) && item[k] > 0
+        );
+        if (hasAiPrice) return; // trust the live AI price, leave it alone
+
         const key = item.name.toLowerCase();
         // Try exact then partial match
         const match = priceMap[key] ||
@@ -2627,6 +2635,7 @@ async function enrichWithDBPrices(data, zip) {
           item.wholesale_unit = match.wholesale_price;
           item.local_unit     = match.local_price;
           item.from_db        = true;
+          item.db_fallback     = true; // used only because AI had no price
           dbMatches++;
         }
       });
