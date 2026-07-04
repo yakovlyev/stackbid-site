@@ -232,7 +232,9 @@ const server = http.createServer(async (req, res) => {
     '.png':  'image/png',
     '.ico':  'image/x-icon',
     '.webp': 'image/webp',
-    '.webmanifest': 'application/manifest+json'
+    '.webmanifest': 'application/manifest+json',
+    '.xml':  'application/xml; charset=UTF-8',
+    '.txt':  'text/plain; charset=UTF-8'
   };
 
   let filePath;
