@@ -1,0 +1,23 @@
+# StackBid
+
+> Free AI-powered construction materials cost estimator for US homeowners. Get wholesale-level pricing by ZIP code in minutes, compare against big-box retail (Home Depot, Lowe's), and find local suppliers and licensed contractors.
+
+StackBid helps US homeowners estimate the real cost of construction materials — decks, roofing, flooring, siding, drywall, and more — before starting a project. It shows three price points side by side: big-box retail shelf price, typical contractor/wholesale price (~25% below retail), and the nearest local supplier's price by ZIP code.
+
+## Key facts
+- Free for homeowners, no signup required, unlimited estimates
+- Covers 64+ material types with 80+ price points, sourced from 2026 wholesale market data
+- Estimates are materials-only and do not include labor
+- Estimates are typically within 10-15% of actual supplier quotes
+- Contractor Pro plan is $49/month, for licensed contractors seeking homeowner leads
+- Contractors in the database provide license numbers, but StackBid does not verify or endorse them — users should confirm licensing with their state board
+
+## Pages
+- Homepage and estimator tool: https://stackbid.app
+- FAQ: https://stackbid.app/#faq
+- Privacy Policy: https://stackbid.app/privacy
+- Contact: stackbid.hello@gmail.com
+
+## Contact
+- General: stackbid.hello@gmail.com
+- Contractor inquiries: stackbid.hello@gmail.com
