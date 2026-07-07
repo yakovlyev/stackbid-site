@@ -37,6 +37,8 @@
 - **Impact.com Marketplace** — заявка (StackBid Materials, ID 7454757) отклонена официально 05.07.2026 (недостаточно трафика). Решение: не переподавать сейчас, ждать 1-1.5 месяца роста контента/трафика
 - **Монетизация homeowners** — решение принято: НЕ делать обязательную подписку на входе. Freemium: первая смета бесплатно (крючок для вирусности/GEO), Pro $9.99/мес для сохранения истории/price alerts/приоритетного матчинга с контракторами/расширенного PDF. Основная монетизация — не подписка homeowners, а контракторы Pro + affiliate
 
+- **Voice input dedup bug (07.07.2026):** `dedupeRepeatedPhrases()` had a hardcoded max window of 15 words — Android continuous recognition sometimes resends the entire prior final utterance after auto-restart, and if that duplicated block exceeds 15 words it slipped through as visible looping/stuttering text. Fixed: window size now scales dynamically (`Math.floor(words.length/2)`) instead of a fixed cap.
+
 ## Соглашения и важные детали
 
 - **GitHub API workflow-ограничение:** нельзя пушить файлы в `.github/workflows/` через API токеном без явного scope `workflow` (текущий токен имеет только `repo`) — поэтому автоматизация price-agent сделана через Render Cron (render.yaml), а не GitHub Actions
