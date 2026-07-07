@@ -7,8 +7,29 @@ exports.handler = async (event) => {
     const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
     const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
     let userId = null;
+    let freeEstimateUsed = false;
     if (user?.email) {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/users`, { method: 'POST', headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ email: user.email, first_name: user.first_name, role: user.role, price_alerts: user.price_alerts ?? true, last_seen: new Date().toISOString() }) });
+      // Сначала проверяем текущее состояние пользователя
+      const checkR = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(user.email)}&select=id,free_estimate_used,is_pro`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      const existingRows = await checkR.json();
+      const existing = existingRows && existingRows[0];
+      freeEstimateUsed = existing ? !!existing.free_estimate_used : false;
+
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+        method: 'POST',
+        headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=representation' },
+        body: JSON.stringify({
+          email: user.email,
+          first_name: user.first_name,
+          role: user.role,
+          price_alerts: user.price_alerts ?? true,
+          last_seen: new Date().toISOString(),
+          // Помечаем бесплатную смету использованной, если это первый раз
+          free_estimate_used: true
+        })
+      });
       const d = await r.json();
       userId = d[0]?.id;
     }
