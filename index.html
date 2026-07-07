@@ -2275,10 +2275,12 @@ function setVoiceStatus(msg, color) {
 function dedupeRepeatedPhrases(text) {
   if (!text) return text;
   let words = text.split(/\s+/);
-  // Collapse immediately-repeating runs of 1 to 4 words (handles both single-word
-  // stutter like "системні системні" and 2-word phrase loops like
-  // "системні пожалуйста системні пожалуйста").
-  for (let winSize = 15; winSize >= 1; winSize--) {
+  // Collapse immediately-repeating runs of words. Window size scales with input length
+  // (not capped at a small fixed number) because Android's continuous recognition can
+  // resend an entire previously-final utterance again after a restart — that duplicated
+  // block can be much longer than a short fixed cap would catch.
+  const maxWin = Math.max(1, Math.floor(words.length / 2));
+  for (let winSize = maxWin; winSize >= 1; winSize--) {
     const out = [];
     let i = 0;
     while (i < words.length) {
