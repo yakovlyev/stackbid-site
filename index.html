@@ -1050,6 +1050,32 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             </div>
           </div>
 
+          <div id="paywall-overlay" class="gate-overlay" style="position:relative;flex-direction:column;">
+            <div style="background:#fff;border-radius:16px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,0.25);">
+              <div style="text-align:center;margin-bottom:18px;">
+                <div style="font-size:28px;margin-bottom:6px;">⭐</div>
+                <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:18px;color:var(--ink);">You've used your free estimate</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:6px;">Subscribe to StackBid Pro to keep estimating and unlock more</div>
+              </div>
+              <div style="background:var(--offwhite);border-radius:10px;padding:16px;margin-bottom:18px;">
+                <div style="display:flex;align-items:baseline;gap:6px;justify-content:center;margin-bottom:10px;">
+                  <span style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:28px;color:var(--ink);">$9.99</span>
+                  <span style="font-size:13px;color:var(--muted);">/ month</span>
+                </div>
+                <ul style="list-style:none;padding:0;margin:0;font-size:13px;color:var(--ink);display:flex;flex-direction:column;gap:8px;">
+                  <li>✓ Unlimited material estimates</li>
+                  <li>✓ Save your project history</li>
+                  <li>✓ Price drop alerts</li>
+                  <li>✓ Priority contractor matching</li>
+                  <li>✓ Detailed supplier PDF reports</li>
+                </ul>
+              </div>
+              <button class="gen-btn" style="width:100%;" onclick="handleSubscribeClick()">Subscribe to StackBid Pro</button>
+              <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;">Cancel anytime. Questions? <a href="mailto:stackbid.hello@gmail.com" style="color:var(--muted);">stackbid.hello@gmail.com</a></div>
+            </div>
+          </div>
+
+
           <div id="estimate-content">
           <div class="estimate-header">
             <div>
@@ -2695,6 +2721,35 @@ function isGateUnlocked() {
   return gateUnlocked || !!localStorage.getItem('sb_user_email');
 }
 
+/* ─── ACCESS CHECK — first estimate free, then subscription required ── */
+async function checkAccess(email) {
+  try {
+    const resp = await fetch('/api/check-access', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    return await resp.json();
+  } catch (e) {
+    // При сбое проверки не блокируем пользователя (fail-open)
+    return { access_granted: true };
+  }
+}
+
+function showPaywall(data, zip) {
+  pendingEstimateData = data;
+  pendingEstimateZip  = zip;
+  document.getElementById('estimate-content').style.display = 'none';
+  document.getElementById('estimate-out').style.display = 'block';
+  document.getElementById('paywall-overlay').classList.add('show');
+  document.getElementById('estimate-out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function handleSubscribeClick() {
+  // TODO: заменить на реальный Stripe Checkout, как только будет готов расчётный счёт/аккаунт
+  alert('Subscriptions are launching very soon! We\'ll email you at ' + (localStorage.getItem('sb_user_email') || 'your address') + ' the moment StackBid Pro is live.');
+}
+
 function showGate(data, zip) {
   pendingEstimateData = data;
   pendingEstimateZip  = zip;
@@ -2793,11 +2848,21 @@ async function sendToBrevo({ fname, email, role, alerts }) {
   } catch(e) {}
 }
 
-function renderEstimateWithGate(data, zip) {
-  if (isGateUnlocked()) {
+async function renderEstimateWithGate(data, zip) {
+  const storedEmail = localStorage.getItem('sb_user_email');
+
+  // Ещё нет email в этом браузере — обычный первый гейт (сбор имени/email), бесплатно
+  if (!storedEmail) {
+    showGate(data, zip);
+    return;
+  }
+
+  // Email уже известен — проверяем на сервере, использована ли бесплатная смета
+  const access = await checkAccess(storedEmail);
+  if (access.access_granted) {
     renderEstimate(data, zip);
   } else {
-    showGate(data, zip);
+    showPaywall(data, zip);
   }
 }
 
