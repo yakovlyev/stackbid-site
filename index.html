@@ -786,6 +786,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
           <div class="voice-row">
             <button class="voice-btn" id="vbtn" onclick="toggleVoice()">🎙️ Speak</button>
+            <span style="font-size:11px;color:var(--muted);">up to 2 min</span>
             <select id="voiceLang" style="padding:6px 8px;border-radius:8px;border:1px solid var(--border);font-size:13px;">
               <option value="en-US">English (US)</option>
               <option value="ru-RU">Русский</option>
@@ -1531,6 +1532,8 @@ let selType = 'New home build';
 let isRec = false;
 let recognition = null;
 let manualStop = false;
+let voiceTimeoutHandle = null;
+const VOICE_MAX_MS = 120000; // 2 minutes — auto-stop so short, curt speakers know the limit upfront
 
 const tagSets = {
   'New home build': ['~1,200 sq ft','3 bed / 2 bath','slab foundation','asphalt shingle roof','vinyl siding','2-car garage'],
@@ -2309,12 +2312,20 @@ function toggleVoice() {
   const btn = document.getElementById('vbtn');
   if (isRec) {
     manualStop = true;
+    if (voiceTimeoutHandle) { clearTimeout(voiceTimeoutHandle); voiceTimeoutHandle = null; }
     if (recognition) { try { recognition.stop(); } catch(e) {} }
     resetVoice();
     return;
   }
   isRec = true;
   manualStop = false;
+  voiceTimeoutHandle = setTimeout(() => {
+    if (!isRec) return;
+    manualStop = true;
+    try { recognition.stop(); } catch(e) {}
+    resetVoice();
+    setVoiceStatus('Reached the 2 min limit — tap Speak to add more', '#C0392B');
+  }, VOICE_MAX_MS);
   let finalText = '';
   let carriedText = '';
   const sessionId = ++voiceSessionId;
@@ -2471,6 +2482,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function resetVoice() {
   isRec = false;
+  if (voiceTimeoutHandle) { clearTimeout(voiceTimeoutHandle); voiceTimeoutHandle = null; }
   const btn = document.getElementById('vbtn');
   btn.classList.remove('rec', 'recording');
   btn.innerHTML = '🎙️ Speak';
