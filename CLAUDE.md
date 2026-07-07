@@ -29,6 +29,7 @@
 - `price-agent.js` — Node-скрипт, использует Anthropic API + web_search, раз в неделю обновляет цены материалов, валидирует аномалии >30% (не применяет автоматически, логирует), пишет в Supabase
 - `render.yaml` обновлён — добавлен Cron Job сервис `stackbid-price-agent` (расписание "0 9 * * 1", каждый понедельник)
 - `supabase-price-log.sql` — SQL для таблицы `price_update_log`
+- **Freemium-модель для homeowners (07.07.2026):** первая смета бесплатна (текущий email-гейт), со второй сметы — paywall с подпиской $9.99/мес. Реализовано: `supabase-subscription.sql` (поля users.free_estimate_used, is_pro, pro_since, stripe_customer_id), `netlify/functions/check-access.js` (новый endpoint проверки доступа по email), `save-estimate.js` обновлён (помечает free_estimate_used=true после первой сметы), `index.html` обновлён (renderEstimateWithGate теперь async, проверяет сервер перед показом полной сметы повторным посетителям, новый paywall-overlay UI с ценой $9.99/мес). Кнопка Subscribe пока placeholder (alert) — реальный Stripe Checkout подключить, когда будет готов расчётный счёт (ожидается в течение недели)
 
 ### В процессе / известные проблемы
 - **Make.com сценарий:** после пересборки модуля Facebook Pages (удалили/пересоздали для смены действия с "Create a Post" на "Upload a Video") возникла ошибка "references inaccessible module" — связи между модулями 8 (Google Drive Download) → 9 (YouTube) и 12 (Facebook Pages) нужно пересоздать вручную (открыть поле Data в каждом модуле, заново выбрать переменную из выпадающего списка, не оставлять как есть)
