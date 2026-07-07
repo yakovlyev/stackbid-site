@@ -2468,6 +2468,13 @@ function setBtnLoading(btn, loading, originalText) {
 
 // Auto-apply loading state to all gen-btn clicks
 document.addEventListener('DOMContentLoaded', () => {
+  // If this browser already has a saved email, don't promise "free" — they may have
+  // already used their one free estimate (checked precisely server-side on submit).
+  const mainBtn = document.getElementById('main-gen-btn');
+  if (mainBtn && localStorage.getItem('sb_user_email')) {
+    mainBtn.innerHTML = '⚡ Generate my estimate';
+  }
+
   document.querySelectorAll('.gen-btn').forEach(btn => {
     btn.addEventListener('touchstart', () => {
       btn.style.transform = 'scale(0.97)';
