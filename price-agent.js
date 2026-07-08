@@ -14,6 +14,22 @@
  */
 
 const ANOMALY_THRESHOLD_PCT = 30;
+
+/**
+ * Определяет процент изменения цены и является ли оно аномальным.
+ * Вынесено в отдельную чистую функцию специально, чтобы её можно было
+ * протестировать напрямую (см. price-agent.test.js), не запуская весь агент.
+ */
+function evaluatePriceChange(oldPrice, newPrice, thresholdPct = ANOMALY_THRESHOLD_PCT) {
+  if (oldPrice === null || oldPrice === undefined || oldPrice === 0) {
+    return { pctChange: null, isAnomaly: false };
+  }
+  const pctChange = ((newPrice - oldPrice) / oldPrice) * 100;
+  const isAnomaly = Math.abs(pctChange) > thresholdPct;
+  return { pctChange, isAnomaly };
+}
+
+module.exports = { evaluatePriceChange, ANOMALY_THRESHOLD_PCT };
 const MAX_RUNTIME_MS = 5 * 60 * 1000; // 5 минут — жёсткий потолок на весь прогон, чтобы не висеть бесконечно
 const runId = new Date().toISOString();
 const startedAt = Date.now();
@@ -181,8 +197,7 @@ async function main() {
 
       const oldPrice = last ? Number(last.price) : null;
       const newPrice = Number(result.price);
-      const pctChange = oldPrice ? ((newPrice - oldPrice) / oldPrice) * 100 : null;
-      const isAnomaly = pctChange !== null && Math.abs(pctChange) > ANOMALY_THRESHOLD_PCT;
+      const { pctChange, isAnomaly } = evaluatePriceChange(oldPrice, newPrice);
 
       if (isAnomaly) {
         // Аномалия — логируем, но НЕ применяем автоматически, чтобы не поломать цены ошибкой агента
@@ -236,8 +251,12 @@ async function main() {
   }
 }
 
-main().catch(async (e) => {
-  console.error('Fatal error in price agent:', e);
-  await sendAlertEmail('StackBid Price Agent — FATAL ERROR', `<pre>${e.stack || e.message}</pre>`);
-  process.exit(1);
-});
+// Запускаем агента только при прямом вызове (node price-agent.js), а не при
+// require() из тестов — иначе тесты случайно триггерят реальный прогон агента.
+if (require.main === module) {
+  main().catch(async (e) => {
+    console.error('Fatal error in price agent:', e);
+    await sendAlertEmail('StackBid Price Agent — FATAL ERROR', `<pre>${e.stack || e.message}</pre>`);
+    process.exit(1);
+  });
+}
