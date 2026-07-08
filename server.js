@@ -93,7 +93,7 @@ async function handleContact(req, res) {
           headers: { 'Authorization': 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             from: 'StackBid <hello@stackbid.app>',
-            to: ['stackbid.app@gmail.com', 'yakovlyev62@gmail.com'],
+            to: ['hello@stackbid.app', 'yakovlyev62@gmail.com'],
             subject: 'New message from ' + name,
             html: '<p><b>From:</b> ' + name + ' (' + email + ')</p><p><b>Message:</b></p><p>' + message.replace(/\n/g,'<br>') + '</p>'
           })
