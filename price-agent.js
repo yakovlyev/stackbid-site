@@ -61,7 +61,12 @@ async function supabaseFetch(path, options = {}) {
 }
 
 async function getActiveMaterials() {
-  return supabaseFetch('materials?active=eq.true&select=id,name,name_short,sku_hd,unit,brand,specs');
+  // manual_pricing_only=true — товары, которых физически нет в рознице HD/Lowe's
+  // (спец. заказ, дистрибьюторские бренды и т.п.). Агент их не трогает вообще,
+  // чтобы не жечь API-вызовы на заведомо безрезультатный поиск.
+  return supabaseFetch(
+    'materials?active=eq.true&manual_pricing_only=eq.false&select=id,name,name_short,sku_hd,unit,brand,specs'
+  );
 }
 
 async function getLastPrice(materialId) {
@@ -79,23 +84,32 @@ Brand: ${material.brand || 'any major brand'}
 Specs: ${material.specs || 'n/a'}
 Unit: ${material.unit}
 
-Search the web for current pricing. Respond with ONLY a JSON object, no other text, no markdown fences:
-{"price": <number, USD, per unit specified>, "confidence": "<high|medium|low>", "note": "<one short sentence, e.g. which retailer/source>"}
+Steps:
+1. Use web_search to find the specific product page(s) at homedepot.com and/or lowes.com.
+2. Use web_fetch to open the most likely product page(s) and read the actual listed price. Search snippets alone rarely contain the price — you must fetch the page.
+3. Make sure the price you report is per exactly one ${material.unit} (not per pack, pallet, bundle, or case). If the page lists a multi-unit price, divide it down to the per-${material.unit} price and say so in the note.
 
-If you cannot find a reliable current price, respond with {"price": null, "confidence": "low", "note": "not found"}`;
+Do all searching and fetching first. Your FINAL message must contain ONLY a JSON object and nothing else — no markdown fences, no explanation before or after it:
+{"price": <number, USD, per ${material.unit}>, "confidence": "<high|medium|low>", "note": "<one short sentence: retailer, and whether you divided a multi-unit price>"}
+
+If you cannot find a reliable current price after searching and fetching, respond with exactly {"price": null, "confidence": "low", "note": "not found"}`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'x-api-key': required('ANTHROPIC_API_KEY'),
       'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'web-fetch-2025-09-10',
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 500,
+      max_tokens: 1500,
       messages: [{ role: 'user', content: prompt }],
-      tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 2 }],
+      tools: [
+        { type: 'web_search_20250305', name: 'web_search', max_uses: 3 },
+        { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 3, max_content_tokens: 3000 },
+      ],
     }),
   });
 
@@ -110,18 +124,28 @@ If you cannot find a reliable current price, respond with {"price": null, "confi
   try {
     return JSON.parse(cleaned);
   } catch (e) {
+    // Модель иногда добавляет пояснение до/после JSON — пробуем вытащить сам объект,
+    // прежде чем сдаваться и записывать parse_error.
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch (e2) {
+        // falls through
+      }
+    }
     return { price: null, confidence: 'low', note: 'parse_error' };
   }
 }
 
-async function insertPrice(materialId, price) {
+async function insertPrice(materialId, price, unit) {
   return supabaseFetch('prices', {
     method: 'POST',
     body: JSON.stringify({
       material_id: materialId,
       supplier_id: null, // общая рыночная цена, не привязана к конкретному поставщику
       price,
-      unit: 'ea',
+      unit: unit || 'ea',
       source: 'api',
       valid_from: new Date().toISOString().slice(0, 10),
     }),
@@ -218,7 +242,7 @@ async function main() {
         continue;
       }
 
-      await insertPrice(material.id, newPrice);
+      await insertPrice(material.id, newPrice, material.unit);
       await logUpdate({
         material_id: material.id,
         old_price: oldPrice,
@@ -260,3 +284,4 @@ if (require.main === module) {
     process.exit(1);
   });
 }
+
