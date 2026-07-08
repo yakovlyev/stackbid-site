@@ -41,6 +41,8 @@
 
 ## Соглашения и важные детали
 
+- **Официальный контактный email:** `hello@stackbid.app` (Zoho Mail alias на yakovlyev@stackbid.app, настроено 07.07.2026). Использовать везде в коде/контенте — НЕ `stackbid.hello@gmail.com` или `stackbid.app@gmail.com` (старые адреса, полностью выведены из употребления 07.07.2026).
+
 - **GitHub API workflow-ограничение:** нельзя пушить файлы в `.github/workflows/` через API токеном без явного scope `workflow` (текущий токен имеет только `repo`) — поэтому автоматизация price-agent сделана через Render Cron (render.yaml), а не GitHub Actions
 - **Все GitHub API PUT-запросы** требуют свежий SHA файла перед каждым коммитом
 - **Копирайт:** никогда не хардкодить цены-заглушки — цены либо из Supabase (fallback), либо из AI-агента (приоритет). Коммит `ee0ea2e` зафиксировал это поведение
