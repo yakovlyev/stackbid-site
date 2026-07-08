@@ -39,6 +39,14 @@
 
 - **Voice input dedup bug (07.07.2026):** `dedupeRepeatedPhrases()` had a hardcoded max window of 15 words — Android continuous recognition sometimes resends the entire prior final utterance after auto-restart, and if that duplicated block exceeds 15 words it slipped through as visible looping/stuttering text. Fixed: window size now scales dynamically (`Math.floor(words.length/2)`) instead of a fixed cap.
 
+## Инструменты разработки (добавлено 07.07.2026)
+
+- **biome** — линтинг + форматирование (`npm run lint`, `npm run lint:fix`). Конфиг: `biome.json`
+- **vitest** — тесты (`npm test`). Первый реальный тест: `price-agent.test.js` — покрывает `evaluatePriceChange()` (детект аномалий цен), 7 тестов
+- **Dependabot** — авто-PR на уязвимости в зависимостях, конфиг `.github/dependabot.yml`, еженедельно
+- **Важно:** `price-agent.js` теперь экспортирует `evaluatePriceChange` через `module.exports`, а вызов `main()` обёрнут в `if (require.main === module)` — это специально, чтобы `require()` файла в тестах не запускал реальный агент (баг, который сразу поймали и починили при первой установке vitest)
+- **Осознанно НЕ установлено сейчас** (см. обсуждение с Игорем 07.07.2026): TypeScript/tsc (требует миграции всего кода), husky/lint-staged (git-хуки не сработают при пуше через GitHub API, актуально станет при переходе на Claude Code с локальным git), gitleaks (Go-бинарник/Action, не npm-пакет — та же проблема со scope `workflow`, что и раньше), pino (требует переписать все `console.log`, делать постепенно), semgrep/fast-check/playwright/clinic.js/semantic-release (ситуативные, не нужны на этом этапе проекта)
+
 ## Соглашения и важные детали
 
 - **Официальный контактный email:** `hello@stackbid.app` (Zoho Mail alias на yakovlyev@stackbid.app, настроено 07.07.2026). Использовать везде в коде/контенте — НЕ `stackbid.hello@gmail.com` или `stackbid.app@gmail.com` (старые адреса, полностью выведены из употребления 07.07.2026).
