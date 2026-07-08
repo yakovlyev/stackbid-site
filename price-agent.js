@@ -14,7 +14,9 @@
  */
 
 const ANOMALY_THRESHOLD_PCT = 30;
+const MAX_RUNTIME_MS = 5 * 60 * 1000; // 5 минут — жёсткий потолок на весь прогон, чтобы не висеть бесконечно
 const runId = new Date().toISOString();
+const startedAt = Date.now();
 
 function required(name) {
   const v = process.env[name];
@@ -77,7 +79,7 @@ If you cannot find a reliable current price, respond with {"price": null, "confi
       model: 'claude-sonnet-4-6',
       max_tokens: 500,
       messages: [{ role: 'user', content: prompt }],
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 2 }],
     }),
   });
 
@@ -147,9 +149,19 @@ async function main() {
 
   const anomalies = [];
   const failures = [];
+  const skipped = [];
   let updated = 0;
 
-  for (const material of materials) {
+  for (let i = 0; i < materials.length; i++) {
+    const material = materials[i];
+
+    if (Date.now() - startedAt > MAX_RUNTIME_MS) {
+      const remaining = materials.slice(i).map(m => m.name);
+      skipped.push(...remaining);
+      console.log(`Time budget (${MAX_RUNTIME_MS / 60000} min) reached. Stopping early. Skipped ${remaining.length} materials — they'll be picked up next run.`);
+      break;
+    }
+
     try {
       const last = await getLastPrice(material.id);
       const result = await askAgentForPrice(material);
@@ -207,17 +219,18 @@ async function main() {
     }
   }
 
-  console.log(`Done. Updated: ${updated}, Anomalies: ${anomalies.length}, Failures: ${failures.length}`);
+  console.log(`Done. Updated: ${updated}, Anomalies: ${anomalies.length}, Failures: ${failures.length}, Skipped (time budget): ${skipped.length}`);
 
-  if (anomalies.length || failures.length) {
+  if (anomalies.length || failures.length || skipped.length) {
     const html = `
       <h2>StackBid Price Agent — Run ${runId}</h2>
       <p>Updated: ${updated} / ${materials.length}</p>
+      ${skipped.length ? `<h3>⏱️ Skipped (time budget reached, will retry next run)</h3><ul>${skipped.map(m => `<li>${m}</li>`).join('')}</ul>` : ''}
       ${anomalies.length ? `<h3>⚠️ Anomalies (not applied, need review)</h3><ul>${anomalies.map(a => `<li>${a.material}: $${a.oldPrice} → $${a.newPrice} (${a.pctChange}%)</li>`).join('')}</ul>` : ''}
       ${failures.length ? `<h3>❌ Failures</h3><ul>${failures.map(f => `<li>${f.material}: ${f.reason}</li>`).join('')}</ul>` : ''}
     `;
     await sendAlertEmail(
-      `StackBid Price Agent: ${anomalies.length} anomalies, ${failures.length} failures`,
+      `StackBid Price Agent: ${updated} updated, ${anomalies.length} anomalies, ${failures.length} failures, ${skipped.length} skipped`,
       html
     );
   }
