@@ -16,8 +16,8 @@ StackBid helps US homeowners estimate the real cost of construction materials â€
 - Homepage and estimator tool: https://stackbid.app
 - FAQ: https://stackbid.app/#faq
 - Privacy Policy: https://stackbid.app/privacy
-- Contact: stackbid.hello@gmail.com
+- Contact: hello@stackbid.app
 
 ## Contact
-- General: stackbid.hello@gmail.com
-- Contractor inquiries: stackbid.hello@gmail.com
+- General: hello@stackbid.app
+- Contractor inquiries: hello@stackbid.app
