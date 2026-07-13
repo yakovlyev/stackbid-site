@@ -84,15 +84,20 @@ Brand: ${material.brand || 'any major brand'}
 Specs: ${material.specs || 'n/a'}
 Unit: ${material.unit}
 
-Steps:
-1. Use web_search to find the specific product page(s) at homedepot.com and/or lowes.com.
-2. Use web_fetch to open the most likely product page(s) and read the actual listed price. Search snippets alone rarely contain the price — you must fetch the page.
-3. Make sure the price you report is per exactly one ${material.unit} (not per pack, pallet, bundle, or case). If the page lists a multi-unit price, divide it down to the per-${material.unit} price and say so in the note.
+IMPORTANT — how to find the actual price:
+Individual product pages (homedepot.com/p/... and lowes.com/pd/...) load their price via JavaScript AFTER the page loads, so a fetch of that page will NOT contain a price — you will see navigation, descriptions, and specs, but no dollar amount, even though the product is real and in stock. Do not rely on product pages for the price.
+
+Category/listing pages (homedepot.com/b/... and lowes.com/pl/...) DO show prices as plain text, because they render a grid of products with prices for browsing/filtering. This is where you should look:
+1. Use web_search to find the category or listing page for this type of material (e.g. search "site:homedepot.com [material] " or "site:lowes.com [material]" together with terms like "lumber", "dimensional lumber", etc. — aim for a /b/ or /pl/ URL, not a /p/ or /pd/ URL).
+2. Use web_fetch to open that listing page and read the prices shown for each product in the grid.
+3. Match the listed product that best fits the brand/specs given above, and report its price. If multiple close matches exist, prefer the one most consistent with the given specs, and note in your answer which specific product you matched.
+4. Make sure the price you report is per exactly one ${material.unit} (not per pack, pallet, bundle, or case). Listing pages sometimes show "$X/package" — if so, divide by the pack quantity shown and say so in the note.
+5. If a listing page redirects you to a single product with no visible price, try a broader or different category search rather than giving up immediately.
 
 Do all searching and fetching first. Your FINAL message must contain ONLY a JSON object and nothing else — no markdown fences, no explanation before or after it:
-{"price": <number, USD, per ${material.unit}>, "confidence": "<high|medium|low>", "note": "<one short sentence: retailer, and whether you divided a multi-unit price>"}
+{"price": <number, USD, per ${material.unit}>, "confidence": "<high|medium|low>", "note": "<one short sentence: retailer, which product you matched, and whether you divided a multi-unit price>"}
 
-If you cannot find a reliable current price after searching and fetching, respond with exactly {"price": null, "confidence": "low", "note": "not found"}`;
+If you cannot find a reliable current price after searching and fetching listing pages, respond with exactly {"price": null, "confidence": "low", "note": "not found"}`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -107,8 +112,8 @@ If you cannot find a reliable current price after searching and fetching, respon
       max_tokens: 1500,
       messages: [{ role: 'user', content: prompt }],
       tools: [
-        { type: 'web_search_20250305', name: 'web_search', max_uses: 3 },
-        { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 3, max_content_tokens: 3000 },
+        { type: 'web_search_20250305', name: 'web_search', max_uses: 4 },
+        { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 4, max_content_tokens: 3000 },
       ],
     }),
   });
@@ -284,4 +289,5 @@ if (require.main === module) {
     process.exit(1);
   });
 }
+
 
