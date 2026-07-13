@@ -2,6 +2,17 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const crypto = require('crypto');
+const { createClient } = require('@supabase/supabase-js');
+const { Resend } = require('resend');
+
+const UNSUB_SECRET = process.env.UNSUB_SECRET || '';
+function unsubscribeToken(email) {
+  return crypto.createHmac('sha256', UNSUB_SECRET).update(email.toLowerCase().trim()).digest('hex').slice(0, 32);
+}
+function unsubscribeUrl(email) {
+  return `https://stackbid.app/unsubscribe?email=${encodeURIComponent(email)}&token=${unsubscribeToken(email)}`;
+}
 
 const PORT = process.env.PORT || 3000;
 
@@ -135,9 +146,39 @@ async function handleBrevoContact(req, res) {
   });
 }
 
-// ============================================================
-// MAIN SERVER
-// ============================================================
+// Unsubscribe handler — CAN-SPAM compliance. Verifies a signed token so
+// arbitrary people can't unsubscribe someone else's email, then marks
+// unsubscribed=true. No login required — clicking the link is enough,
+// as required by law (opt-out must be a one-click action).
+async function handleUnsubscribe(query, res) {
+  const email = (query.email || '').toLowerCase().trim();
+  const token = query.token || '';
+
+  const page = (title, message) => `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${title} — StackBid</title>
+    <style>body{font-family:sans-serif;max-width:480px;margin:80px auto;text-align:center;color:#0C2340;}
+    h1{font-size:22px;} p{color:#6B7A8D;}</style></head>
+    <body><h1>${title}</h1><p>${message}</p></body></html>`;
+
+  if (!email || !validateEmail(email) || !token || token !== unsubscribeToken(email)) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=UTF-8' });
+    res.end(page('Link not valid', 'This unsubscribe link is invalid or expired. Contact hello@stackbid.app if you keep getting emails you don\'t want.'));
+    return;
+  }
+
+  try {
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    await supabase.from('users').update({ unsubscribed: true }).eq('email', email);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
+    res.end(page('You\'re unsubscribed', `${email} won't receive any more marketing emails from StackBid. Transactional emails about your account may still be sent.`));
+  } catch (e) {
+    console.error('Unsubscribe error:', e.message);
+    res.writeHead(500, { 'Content-Type': 'text/html; charset=UTF-8' });
+    res.end(page('Something went wrong', 'Please try again or contact hello@stackbid.app to be removed manually.'));
+  }
+}
+
+
 const ALLOWED_ORIGINS = [
   'https://stackbid.app',
   'https://www.stackbid.app',
@@ -189,6 +230,10 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === '/api/brevo-contact' && req.method === 'POST') {
     return handleBrevoContact(req, res);
+  }
+
+  if (pathname === '/unsubscribe' && req.method === 'GET') {
+    return handleUnsubscribe(parsed.query, res);
   }
 
   const apiMatch = pathname.match(/^\/api\/(.+)$/);
@@ -269,8 +314,6 @@ server.listen(PORT, () => console.log(`StackBid running on port ${PORT}`));
 // ============================================================
 // FEEDBACK CRON — runs daily at 9am UTC
 // ============================================================
-const { createClient } = require('@supabase/supabase-js');
-const { Resend } = require('resend');
 
 async function sendFeedbackEmails() {
   try {
@@ -319,4 +362,129 @@ function scheduleDailyCron() {
 }
 
 scheduleDailyCron();
+
+// ============================================================
+// EMAIL NURTURE CAMPAIGN — free estimate → Pro, runs daily at 10am UTC
+// ============================================================
+// Requires env var UNSUB_SECRET (any long random string) and a filled-in
+// physical mailing address below (CAN_SPAM_ADDRESS) — legally required on
+// every commercial email in the US. DO NOT enable this cron until both
+// are set for real.
+//
+// Requires columns on `users` (see email-campaign-schema.sql):
+//   unsubscribed, nurture1_sent, nurture2_sent, nurture3_sent
+// Assumes existing columns: free_estimate_used, is_pro, estimate_date
+
+const CAN_SPAM_ADDRESS = process.env.CAN_SPAM_ADDRESS || '[ADDRESS NOT SET — do not send until this is filled in]';
+
+function emailFooter(unsubUrl) {
+  return `<hr style="border:none;border-top:1px solid #E5E9EF;margin:24px 0;">
+    <p style="color:#9AA5B1;font-size:11px;line-height:1.5;">
+      StackBid, ${CAN_SPAM_ADDRESS}<br>
+      You're receiving this because you used StackBid's free estimate tool.
+      <a href="${unsubUrl}" style="color:#9AA5B1;">Unsubscribe</a> from these emails anytime.
+    </p>`;
+}
+
+const NURTURE_TEMPLATES = {
+  1: {
+    subject: 'Still planning your project?',
+    html: (user, unsubUrl) => `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+      <h2 style="color:#0C2340;">Hi ${user.name || 'there'},</h2>
+      <p>A few days ago you got a free StackBid estimate. Just checking in — still moving forward with the project?</p>
+      <p>If prices shift or your plans change, StackBid Pro lets you re-run estimates anytime, not just once — $9.99/month, cancel whenever.</p>
+      <a href="https://stackbid.app/#pricing" style="display:inline-block;background:#C9952A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">See StackBid Pro</a>
+      <p style="color:#6B7A8D;font-size:13px;">Thanks,<br>The StackBid Team</p>
+      ${emailFooter(unsubUrl)}
+    </div>`
+  },
+  2: {
+    subject: 'Material prices don\'t hold still',
+    html: (user, unsubUrl) => `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+      <h2 style="color:#0C2340;">Hi ${user.name || 'there'},</h2>
+      <p>Lumber, fixtures, appliances — prices move week to week. The estimate you got is a snapshot from that day.</p>
+      <p>With StackBid Pro you can re-check pricing right before you buy or sign with a contractor, so you're negotiating with current numbers, not old ones.</p>
+      <a href="https://stackbid.app/#pricing" style="display:inline-block;background:#C9952A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">$9.99/month, unlimited estimates</a>
+      <p style="color:#6B7A8D;font-size:13px;">Thanks,<br>The StackBid Team</p>
+      ${emailFooter(unsubUrl)}
+    </div>`
+  },
+  3: {
+    subject: 'Last note about your estimate',
+    html: (user, unsubUrl) => `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+      <h2 style="color:#0C2340;">Hi ${user.name || 'there'},</h2>
+      <p>This is the last email we'll send about upgrading — no pressure either way.</p>
+      <p>If you ever need another estimate down the line, StackBid Pro is $9.99/month for unlimited use. If not, that's completely fine, and you can unsubscribe below.</p>
+      <a href="https://stackbid.app/#pricing" style="display:inline-block;background:#C9952A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">See StackBid Pro</a>
+      <p style="color:#6B7A8D;font-size:13px;">Thanks,<br>The StackBid Team</p>
+      ${emailFooter(unsubUrl)}
+    </div>`
+  }
+};
+
+async function sendNurtureEmails() {
+  if (!UNSUB_SECRET) {
+    console.error('Nurture cron: UNSUB_SECRET not set, refusing to send (unsubscribe links would be broken).');
+    return;
+  }
+  if (!process.env.CAN_SPAM_ADDRESS) {
+    console.error('Nurture cron: CAN_SPAM_ADDRESS not set, refusing to send (US law requires a real physical address in marketing email).');
+    return;
+  }
+  try {
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, name, email, estimate_date, nurture1_sent, nurture2_sent, nurture3_sent')
+      .eq('free_estimate_used', true)
+      .eq('is_pro', false)
+      .eq('unsubscribed', false)
+      .not('email', 'is', null)
+      .not('estimate_date', 'is', null);
+    if (error) { console.error('Nurture cron error:', error); return; }
+
+    const now = Date.now();
+    for (const user of users) {
+      const daysSince = Math.floor((now - new Date(user.estimate_date).getTime()) / 86400000);
+      let stage = null;
+      if (daysSince >= 16 && !user.nurture3_sent) stage = 3;
+      else if (daysSince >= 8 && !user.nurture2_sent) stage = 2;
+      else if (daysSince >= 3 && !user.nurture1_sent) stage = 1;
+      if (!stage) continue;
+
+      const template = NURTURE_TEMPLATES[stage];
+      const unsubUrl = unsubscribeUrl(user.email);
+      try {
+        await resend.emails.send({
+          from: 'StackBid <hello@stackbid.app>',
+          to: user.email,
+          subject: template.subject,
+          html: template.html(user, unsubUrl)
+        });
+        await supabase.from('users').update({ [`nurture${stage}_sent`]: true }).eq('id', user.id);
+      } catch (e) {
+        console.error(`Nurture stage ${stage} failed for ${user.email}:`, e.message);
+      }
+    }
+  } catch (e) {
+    console.error('Nurture cron failed:', e.message);
+  }
+}
+
+function scheduleNurtureCron() {
+  const now = new Date();
+  const next = new Date();
+  next.setUTCHours(10, 0, 0, 0); // сдвинуто на час от feedback-cron, чтобы не пересекались
+  if (next <= now) next.setDate(next.getDate() + 1);
+  const delay = next - now;
+  setTimeout(() => {
+    sendNurtureEmails();
+    setInterval(sendNurtureEmails, 24 * 60 * 60 * 1000);
+  }, delay);
+  console.log(`Nurture cron scheduled, next run in ${Math.round(delay/60000)} minutes`);
+}
+
+scheduleNurtureCron();
+
 
