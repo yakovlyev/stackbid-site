@@ -31,6 +31,11 @@ function evaluatePriceChange(oldPrice, newPrice, thresholdPct = ANOMALY_THRESHOL
 
 module.exports = { evaluatePriceChange, ANOMALY_THRESHOLD_PCT };
 const MAX_RUNTIME_MS = 5 * 60 * 1000; // 5 минут — жёсткий потолок на весь прогон, чтобы не висеть бесконечно
+const MAX_MATERIALS_PER_RUN = 15; // жёсткий потолок на расход: даже если время ещё есть,
+// не обрабатываем больше 15 материалов за один запуск. Это даёт предсказуемый
+// верхний предел стоимости прогона (в худшем случае 15 × до 6 tool-calls),
+// вместо того чтобы полагаться только на таймаут. Полный список из 62+ материалов
+// пройдёт за несколько запусков подряд (расписание/ручные Trigger Run).
 const runId = new Date().toISOString();
 const startedAt = Date.now();
 
@@ -113,7 +118,7 @@ If you cannot find a reliable current price after searching and fetching listing
       messages: [{ role: 'user', content: prompt }],
       tools: [
         { type: 'web_search_20250305', name: 'web_search', max_uses: 3 },
-        { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 3, max_content_tokens: 3000 },
+        { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 3, max_content_tokens: 2000 },
       ],
     }),
   });
@@ -199,6 +204,13 @@ async function main() {
 
   for (let i = 0; i < materials.length; i++) {
     const material = materials[i];
+
+    if (i >= MAX_MATERIALS_PER_RUN) {
+      const remaining = materials.slice(i).map(m => m.name);
+      skipped.push(...remaining);
+      console.log(`Material cap (${MAX_MATERIALS_PER_RUN}) reached. Stopping early. Skipped ${remaining.length} materials — they'll be picked up next run.`);
+      break;
+    }
 
     if (Date.now() - startedAt > MAX_RUNTIME_MS) {
       const remaining = materials.slice(i).map(m => m.name);
@@ -289,5 +301,6 @@ if (require.main === module) {
     process.exit(1);
   });
 }
+
 
 
