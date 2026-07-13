@@ -112,8 +112,8 @@ If you cannot find a reliable current price after searching and fetching listing
       max_tokens: 1500,
       messages: [{ role: 'user', content: prompt }],
       tools: [
-        { type: 'web_search_20250305', name: 'web_search', max_uses: 4 },
-        { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 4, max_content_tokens: 3000 },
+        { type: 'web_search_20250305', name: 'web_search', max_uses: 3 },
+        { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 3, max_content_tokens: 3000 },
       ],
     }),
   });
