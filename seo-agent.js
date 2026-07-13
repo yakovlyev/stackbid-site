@@ -178,13 +178,15 @@ Decision logic:
 - If the keyword is too broad or ambiguous to write one focused article, narrow it to the most likely searcher intent rather than trying to cover everything.
 - If your research surfaces information that differs from any notes provided with the topic, follow the evidence you found, not the note.
 
-Response format:
-Return ONLY a JSON object with these exact fields, no text outside the JSON:
+Response format — read this carefully, it is checked by an automated parser:
+Your final message must contain NOTHING except a single JSON object. No preamble like "Now I have enough data" or "Let me compile the article", no closing remarks, no markdown code fences around it — just the raw JSON object, starting with { and ending with }.
+Do not use <cite> tags, citation markup, or any XML-like tags inside content_markdown — write plain Markdown prose only. If you want to reference where a fact came from, that's what the sources array is for, not inline markup.
+
 {
   "title": string,
   "slug": string (lowercase-with-hyphens),
   "meta_description": string (155 characters or fewer),
-  "content_markdown": string (the full article body in Markdown),
+  "content_markdown": string (the full article body in plain Markdown, no citation tags),
   "faq": [{"question": string, "answer": string}, ...],
   "internal_links": [{"anchor": string, "path": string}, ...],
   "sources": [string, ...] (URLs you actually used from search)
@@ -216,13 +218,49 @@ async function generateArticle(topic) {
   const data = await res.json();
   const textBlocks = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text);
   const rawText = textBlocks.join('\n');
-  const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
 
-  try {
-    return JSON.parse(cleaned);
-  } catch (e) {
-    throw new Error(`Не удалось распарсить JSON-ответ модели: ${e.message}\n\nRAW:\n${rawText.slice(0, 2000)}`);
+  const article = extractJson(rawText);
+  if (!article) {
+    throw new Error(`Не удалось распарсить JSON-ответ модели.\n\nRAW:\n${rawText.slice(0, 2000)}`);
   }
+
+  // Защита от <cite index="...">...</cite> и подобной разметки, если модель
+  // всё же добавила её вопреки инструкции — вырезаем теги, оставляем текст.
+  if (typeof article.content_markdown === 'string') {
+    article.content_markdown = stripCiteTags(article.content_markdown);
+  }
+
+  return article;
+}
+
+// Пытается достать JSON тремя способами по очереди: прямой parse, из
+// ```json ... ``` блока, и как запасной вариант — от первой { до последней }.
+function extractJson(rawText) {
+  const attempts = [
+    rawText.trim(),
+    (rawText.match(/```json\s*([\s\S]*?)```/i) || [])[1],
+    (() => {
+      const start = rawText.indexOf('{');
+      const end = rawText.lastIndexOf('}');
+      return start !== -1 && end !== -1 && end > start ? rawText.slice(start, end + 1) : null;
+    })(),
+  ].filter(Boolean);
+
+  for (const candidate of attempts) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      // пробуем следующий вариант
+    }
+  }
+  return null;
+}
+
+function stripCiteTags(text) {
+  return text
+    .replace(/<cite[^>]*>/gi, '')
+    .replace(/<\/cite>/gi, '')
+    .trim();
 }
 
 // ---------- Запуск ----------
