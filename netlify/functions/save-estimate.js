@@ -18,7 +18,7 @@ exports.handler = async (event) => {
       const existing = existingRows && existingRows[0];
       freeEstimateUsed = existing ? !!existing.free_estimate_used : false;
 
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/users?on_conflict=email`, {
         method: 'POST',
         headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=representation' },
         body: JSON.stringify({
