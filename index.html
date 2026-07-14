@@ -317,12 +317,21 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   nav, .trust-bar, .how, .tool-tabs, .ptype-btn, .voice-btn, .tag-row,
   .gen-btn, .why, .proof, .capture, footer, .export-row, .tool-header,
   .progress-bar, .status-msg, .ios-tip, .hero-actions, .hero-stats,
-  .btn-hero, .btn-ghost, .pwa-banner { display: none !important; }
+  .btn-hero, .btn-ghost, .pwa-banner, .exp-btn, #email-pdf-box, .step-connector,
+  #tab-calc, #tab-upload, #tab-permit, #tab-hdprices { display: none !important; }
   .hero { padding: 20px 0; background: white; color: black; }
   .hero h1 { font-size: 24px; color: black; }
-  #estimate-out { display: block !important; }
   .tool-section { background: white; padding: 0; }
   .tool-card { box-shadow: none; border: none; }
+
+  /* За замовчуванням ховаємо обидва результати — показуємо лише той,
+     що відповідає режиму, встановленому doPrint() перед друком. */
+  #estimate-out, #tab-photo { display: none !important; }
+
+  body.printing-estimate #estimate-out { display: block !important; }
+  body.printing-photo #tab-photo { display: block !important; }
+  body.printing-photo #tab-photo > *:not(#photo-out) { display: none !important; }
+  body.printing-photo #photo-out { display: block !important; }
 }
 
 /* Voice recording animation */
@@ -611,18 +620,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 .footer-links a:hover { color: rgba(255,255,255,0.7); }
 .footer-links a[style] { width: 100%; justify-content: center; box-sizing: border-box; }
 
-/* PRINT */
-@media print {
-  nav, .trust-bar, .how, .tool-tabs, .ptype-btn, .voice-btn, .tag-row,
-  .gen-btn, .why, .proof, .capture, footer, .export-row, .tool-header,
-  .progress-bar, .status-msg, .ios-tip, .hero-actions, .hero-stats,
-  .btn-hero, .btn-ghost, .step-connector { display: none !important; }
-  .hero { padding: 20px 0; background: white; color: black; }
-  .hero h1 { font-size: 24px; color: black; }
-  #estimate-out { display: block !important; }
-  .tool-section { background: white; padding: 0; }
-  .tool-card { box-shadow: none; border: none; }
-}
+/* PRINT — see the single consolidated @media print block above */
 
 .local-matches-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
@@ -1085,7 +1083,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
               <div style="font-size:11px; color:var(--muted); margin-top:2px;">Prices: estimated 2026 wholesale market rates — actual prices may vary</div>
             </div>
             <div class="export-row">
-              <button class="exp-btn" onclick="doPrint()">📄 Save PDF</button>
+              <button class="exp-btn" onclick="doPrint('estimate')">📄 Save PDF</button>
               <button class="exp-btn" onclick="exportCSV()">📊 Excel</button>
               <button class="exp-btn" onclick="shareEmail()">📧 Email</button>
               <button class="exp-btn" onclick="shareiMessage()">💬 iMessage</button>
@@ -1817,7 +1815,7 @@ function renderPhotoResult(d, zip) {
     ${d.note ? `<div style="font-size:12px;color:var(--muted);background:var(--offwhite);border-radius:7px;padding:8px 12px;">💡 ${esc(d.note)}</div>` : ''}
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
       <button class="exp-btn" onclick="shareWhatsApp()">💬 Share</button>
-      <button class="exp-btn" onclick="doPrint()">📄 PDF</button>
+      <button class="exp-btn" onclick="doPrint('photo')">📄 PDF</button>
       <button class="exp-btn" onclick="resetPhoto()">📷 Try another photo</button>
     </div>
   `;
@@ -3171,7 +3169,9 @@ async function sendPdfEmail() {
   }
 }
 
-function doPrint() {
+function doPrint(mode) {
+  document.body.classList.remove('printing-estimate', 'printing-photo');
+  if (mode) document.body.classList.add('printing-' + mode);
   window.print();
 }
 
