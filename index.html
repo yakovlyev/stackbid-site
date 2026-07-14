@@ -1110,7 +1110,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           <div id="email-pdf-box" style="margin-top:24px;background:linear-gradient(135deg,#F5A623,#E8870A);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
             <div style="flex:1;min-width:200px;">
               <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">📄 Get this estimate as PDF</div>
-              <div style="font-size:13px;color:rgba(255,255,255,0.85);">Save your email and download your PDF now.</div>
+              <div style="font-size:13px;color:rgba(255,255,255,0.85);">We'll email you the PDF right now.</div>
             </div>
             <div id="email-pdf-form" style="display:flex;gap:8px;flex-wrap:wrap;">
               <input type="email" id="email-pdf-input" placeholder="your@email.com" style="padding:10px 14px;border:none;border-radius:8px;font-size:14px;min-width:200px;outline:none;">
@@ -3123,7 +3123,7 @@ async function submitProForm() {
   }
 }
 
-function sendPdfEmail() {
+async function sendPdfEmail() {
   const email = document.getElementById('email-pdf-input').value.trim();
   if (!email || !email.includes('@')) {
     document.getElementById('email-pdf-input').style.border = '2px solid red';
@@ -3132,8 +3132,10 @@ function sendPdfEmail() {
   }
   document.getElementById('email-pdf-input').style.border = 'none';
   document.getElementById('email-pdf-form').style.display = 'none';
+  document.getElementById('email-pdf-success').textContent = '⏳ Sending your PDF…';
   document.getElementById('email-pdf-success').style.display = 'block';
-  // Save to Supabase
+
+  // Save to Supabase (contact capture, non-blocking)
   const SUPABASE_URL = window.SUPABASE_URL;
   const SUPABASE_KEY = window.SUPABASE_KEY;
   fetch(`${SUPABASE_URL}/rest/v1/users?on_conflict=email`, {
@@ -3147,19 +3149,26 @@ function sendPdfEmail() {
     body: JSON.stringify({ email, role: 'homeowner', last_seen: new Date().toISOString() })
   }).catch(() => {});
 
-  // Send notification to stackbid
-  fetch('/api/contact', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      name: 'PDF Request',
-      email: email,
-      message: `User requested PDF estimate. ZIP: ${document.getElementById('zip-input') ? document.getElementById('zip-input').value : 'unknown'}`
-    })
-  }).catch(() => {});
-
-  // Actually give them the PDF now (print/save dialog) instead of an empty promise
-  setTimeout(() => { try { window.print(); } catch(e) {} }, 400);
+  // Actually generate and email a real PDF of this estimate
+  try {
+    const resp = await fetch('/api/email-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        estimate: window.lastEstimateData,
+        zip: window.lastEstimateZip
+      })
+    });
+    const result = await resp.json();
+    if (resp.ok && result.success) {
+      document.getElementById('email-pdf-success').textContent = '✓ Sent! Check your inbox for the PDF.';
+    } else {
+      document.getElementById('email-pdf-success').textContent = "Couldn't send it — try Save PDF below instead.";
+    }
+  } catch (e) {
+    document.getElementById('email-pdf-success').textContent = "Couldn't send it — try Save PDF below instead.";
+  }
 }
 
 function doPrint() {
