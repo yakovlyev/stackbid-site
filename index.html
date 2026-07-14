@@ -2904,6 +2904,15 @@ async function renderEstimateWithGate(data, zip) {
 function renderEstimate(data, zip) {
   window.lastEstimateData = data;
   window.lastEstimateZip = zip;
+
+  // Сброс блока "Get PDF" — иначе после первой отправки на этой странице
+  // форма остаётся скрытой и висит "✓ Sent!" даже для новой, следующей сметы
+  const pdfForm = document.getElementById('email-pdf-form');
+  const pdfSuccess = document.getElementById('email-pdf-success');
+  const pdfInput = document.getElementById('email-pdf-input');
+  if (pdfForm) pdfForm.style.display = 'flex';
+  if (pdfSuccess) pdfSuccess.style.display = 'none';
+  if (pdfInput) pdfInput.style.border = 'none';
   document.getElementById('etitle').textContent = data.title || 'Materials estimate';
   document.getElementById('emeta').textContent =
     `ZIP ${zip} · ${data.supplier_name || '84 Lumber'} · ${data.supplier_distance || '—'}`;
