@@ -314,24 +314,27 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
 /* PRINT */
 @media print {
-  nav, .trust-bar, .how, .tool-tabs, .ptype-btn, .voice-btn, .tag-row,
-  .gen-btn, .why, .proof, .capture, footer, .export-row, .tool-header,
-  .progress-bar, .status-msg, .ios-tip, .hero-actions, .hero-stats,
-  .btn-hero, .btn-ghost, .pwa-banner, .exp-btn, #email-pdf-box, .step-connector,
+  /* Ховаємо взагалі все на сторінці за замовчуванням — hero, секції
+     how/why/proof/faq/pricing/contractors/contact, footer тощо.
+     Це надійніше, ніж перелічувати кожну секцію окремо: нові блоки,
+     додані пізніше, за замовчуванням теж будуть сховані при друку. */
+  body > * { display: none !important; }
+
+  body.printing-estimate .tool-section,
+  body.printing-photo .tool-section { display: block !important; }
+
+  .tool-header, .tool-tabs, .ptype-btn, .voice-btn, .tag-row, .gen-btn,
+  .progress-bar, .status-msg, .ios-tip, .exp-btn, #email-pdf-box,
   #tab-calc, #tab-upload, #tab-permit, #tab-hdprices { display: none !important; }
-  .hero { padding: 20px 0; background: white; color: black; }
-  .hero h1 { font-size: 24px; color: black; }
-  .tool-section { background: white; padding: 0; }
-  .tool-card { box-shadow: none; border: none; }
 
-  /* За замовчуванням ховаємо обидва результати — показуємо лише той,
-     що відповідає режиму, встановленому doPrint() перед друком. */
   #estimate-out, #tab-photo { display: none !important; }
-
   body.printing-estimate #estimate-out { display: block !important; }
   body.printing-photo #tab-photo { display: block !important; }
   body.printing-photo #tab-photo > *:not(#photo-out) { display: none !important; }
   body.printing-photo #photo-out { display: block !important; }
+
+  .tool-section { background: white; padding: 0; }
+  .tool-card { box-shadow: none; border: none; }
 }
 
 /* Voice recording animation */
