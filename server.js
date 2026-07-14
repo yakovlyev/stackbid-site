@@ -64,7 +64,8 @@ const handlers = {
   estimate: require('./netlify/functions/estimate'),
   permit: require('./netlify/functions/permit'),
   prices: require('./netlify/functions/prices'),
-  'save-estimate': require('./netlify/functions/save-estimate')
+  'save-estimate': require('./netlify/functions/save-estimate'),
+  'email-pdf': require('./netlify/functions/email-pdf')
 };
 
 // Contact form handler
