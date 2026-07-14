@@ -2896,6 +2896,19 @@ async function renderEstimateWithGate(data, zip) {
   const access = await checkAccess(storedEmail);
   if (access.access_granted) {
     renderEstimate(data, zip);
+    // Раньше сохранение в Supabase (estimates-история + free_estimate_used)
+    // происходило ТОЛЬКО внутри unlockEstimate(), то есть только при первом
+    // прохождении формы. Если email уже был в localStorage (повторный визит,
+    // Pro-пользователь), смета считалась и показывалась, но нигде не
+    // сохранялась — история терялась, а флаг мог не выставиться. Сохраняем
+    // здесь тоже.
+    const userData = {
+      email: storedEmail,
+      first_name: localStorage.getItem('sb_user_name') || '',
+      role: localStorage.getItem('sb_user_role') || 'homeowner',
+      price_alerts: true
+    };
+    saveToSupabase(userData, data, zip);
   } else {
     showPaywall(data, zip);
   }
