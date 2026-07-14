@@ -49,15 +49,21 @@ function buildPdfBuffer(data, zip) {
         const l = (item.local_unit || 0) * qty;
         totalRetail += r; totalWholesale += w; totalLocal += l;
 
+        const nameWidth = 220;
+        doc.fontSize(9);
+        const nameHeight = doc.heightOfString(item.name || '', { width: nameWidth });
+        const rowHeight = Math.max(nameHeight, doc.currentLineHeight());
+
+        if (doc.y + rowHeight > 700) doc.addPage();
+
         const y = doc.y;
-        doc.fontSize(9).fillColor('#0C2340').text(item.name || '', colX.name, y, { width: 220 });
+        doc.fillColor('#0C2340').text(item.name || '', colX.name, y, { width: nameWidth });
         doc.text(String(qty) + ' ' + (item.unit || ''), colX.qty, y);
         doc.text('$' + r.toFixed(0), colX.retail, y);
         doc.text('$' + w.toFixed(0), colX.wholesale, y);
         doc.text('$' + l.toFixed(0), colX.local, y);
-        doc.moveDown(0.4);
 
-        if (doc.y > 700) doc.addPage();
+        doc.y = y + rowHeight + 6; // фіксований невеликий відступ між рядками
       });
     });
 
