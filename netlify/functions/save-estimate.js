@@ -4,7 +4,7 @@ exports.handler = async (event) => {
   try {
     const { user, estimate } = JSON.parse(event.body || '{}');
     const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; // service role — обходить RLS, тут довірений сервер-сайд код, не браузер
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY; // service role — обходить RLS, тут довірений сервер-сайд код, не браузер
     const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
     let userId = null;
     let freeEstimateUsed = false;
