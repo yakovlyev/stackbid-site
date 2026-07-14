@@ -2489,6 +2489,16 @@ document.addEventListener('DOMContentLoaded', () => {
     mainBtn.innerHTML = '⚡ Generate my estimate';
   }
 
+  // Возврат из Stripe Checkout — успех приходит через webhook (is_pro
+  // выставляется там, не здесь), тут только сообщаем человеку, что произошло
+  const proParam = new URLSearchParams(window.location.search).get('pro');
+  if (proParam === 'success') {
+    alert('🎉 You\'re subscribed to StackBid Pro! It may take a few seconds to activate — refresh if needed.');
+    window.history.replaceState({}, '', window.location.pathname);
+  } else if (proParam === 'cancelled') {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
   document.querySelectorAll('.gen-btn').forEach(btn => {
     btn.addEventListener('touchstart', () => {
       btn.style.transform = 'scale(0.97)';
@@ -2780,9 +2790,35 @@ function showPaywall(data, zip) {
   document.getElementById('estimate-out').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function handleSubscribeClick() {
-  // TODO: заменить на реальный Stripe Checkout, как только будет готов расчётный счёт/аккаунт
-  alert('Subscriptions are launching very soon! We\'ll email you at ' + (localStorage.getItem('sb_user_email') || 'your address') + ' the moment StackBid Pro is live.');
+async function handleSubscribeClick() {
+  const email = localStorage.getItem('sb_user_email');
+  if (!email) {
+    alert('Please enter your email above first.');
+    return;
+  }
+  const btn = event?.target;
+  const originalText = btn ? btn.textContent : null;
+  if (btn) { btn.textContent = 'Redirecting to checkout…'; btn.disabled = true; }
+  try {
+    const resp = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await resp.json();
+    if (resp.ok && data.url) {
+      window.location.href = data.url;
+      return;
+    }
+    if (resp.status === 503) {
+      alert('Subscriptions are launching very soon! We\'ll email you at ' + email + ' the moment StackBid Pro is live.');
+    } else {
+      alert("Couldn't start checkout — please try again in a moment.");
+    }
+  } catch (e) {
+    alert("Couldn't start checkout — please try again in a moment.");
+  }
+  if (btn) { btn.textContent = originalText; btn.disabled = false; }
 }
 
 function showGate(data, zip) {

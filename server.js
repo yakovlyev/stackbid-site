@@ -66,7 +66,9 @@ const handlers = {
   prices: require('./netlify/functions/prices'),
   'save-estimate': require('./netlify/functions/save-estimate'),
   'email-pdf': require('./netlify/functions/email-pdf'),
-  'check-access': require('./netlify/functions/check-access')
+  'check-access': require('./netlify/functions/check-access'),
+  'create-checkout-session': require('./netlify/functions/create-checkout-session'),
+  'stripe-webhook': require('./netlify/functions/stripe-webhook')
 };
 
 // Contact form handler
