@@ -4,10 +4,11 @@ exports.handler = async (event) => {
   try {
     const { user, estimate } = JSON.parse(event.body || '{}');
     const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; // service role — обходить RLS, тут довірений сервер-сайд код, не браузер
     const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
     let userId = null;
     let freeEstimateUsed = false;
+    let userWriteError = null;
     if (user?.email) {
       // Сначала проверяем текущее состояние пользователя
       const checkR = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(user.email)}&select=id,free_estimate_used,is_pro`, {
@@ -26,12 +27,17 @@ exports.handler = async (event) => {
           role: user.role,
           price_alerts: user.price_alerts ?? true,
           last_seen: new Date().toISOString(),
-          // Помечаем бесплатную смету использованной, если это первый раз
+          // Помечаем бесплатну смету використаною, якщо це перший раз
           free_estimate_used: true
         })
       });
-      const d = await r.json();
-      userId = d[0]?.id;
+      if (r.ok) {
+        const d = await r.json();
+        userId = d[0]?.id;
+      } else {
+        userWriteError = await r.text();
+        console.error('users upsert failed:', r.status, userWriteError);
+      }
     }
 
     let estimateId = null;
@@ -60,7 +66,7 @@ exports.handler = async (event) => {
       }
     }
 
-    return { statusCode: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true, user_id: userId, estimate_id: estimateId, estimate_error: estimateError }) };
+    return { statusCode: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true, user_id: userId, estimate_id: estimateId, estimate_error: estimateError, user_write_error: userWriteError }) };
   } catch (err) {
     return { statusCode: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: err.message }) };
   }
