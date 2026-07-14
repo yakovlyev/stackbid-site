@@ -11,7 +11,7 @@ exports.handler = async (event) => {
     }
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; // service role — обходить RLS, тут довірений сервер-сайд код, не браузер
 
     const r = await fetch(
       `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}&select=free_estimate_used,is_pro,pro_since`,
