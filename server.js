@@ -68,7 +68,8 @@ const handlers = {
   'email-pdf': require('./netlify/functions/email-pdf'),
   'check-access': require('./netlify/functions/check-access'),
   'create-checkout-session': require('./netlify/functions/create-checkout-session'),
-  'stripe-webhook': require('./netlify/functions/stripe-webhook')
+  'stripe-webhook': require('./netlify/functions/stripe-webhook'),
+  'get-estimates': require('./netlify/functions/get-estimates')
 };
 
 // Contact form handler
