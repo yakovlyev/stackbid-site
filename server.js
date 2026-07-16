@@ -71,7 +71,8 @@ const handlers = {
   'stripe-webhook': require('./netlify/functions/stripe-webhook'),
   'get-estimates': require('./netlify/functions/get-estimates'),
   'log-consent': require('./netlify/functions/log-consent'),
-  'create-portal-session': require('./netlify/functions/create-portal-session')
+  'create-portal-session': require('./netlify/functions/create-portal-session'),
+  'price-anomalies': require('./netlify/functions/price-anomalies')
 };
 
 // Contact form handler
