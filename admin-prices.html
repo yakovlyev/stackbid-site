@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>StackBid — Price Anomaly Review</title>
+<style>
+  body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #F7F8FA; color: #0C2340; margin: 0; padding: 24px 16px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #667; font-size: 13px; margin-bottom: 20px; }
+  .keybox { display: flex; gap: 8px; margin-bottom: 20px; }
+  .keybox input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #DDD; font-size: 14px; }
+  .keybox button { padding: 10px 16px; border-radius: 8px; border: none; background: #0C2340; color: white; font-weight: 600; cursor: pointer; }
+  .card { background: white; border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .card-sub { font-size: 12px; color: #778; margin-bottom: 10px; }
+  .price-row { display: flex; gap: 16px; font-size: 14px; margin-bottom: 10px; }
+  .price-old { color: #999; text-decoration: line-through; }
+  .price-new { color: #B45309; font-weight: 700; }
+  .pct { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #FEF3C7; color: #92400E; font-weight: 700; }
+  .note { font-size: 12.5px; color: #556; margin-bottom: 12px; font-style: italic; }
+  .actions { display: flex; gap: 8px; }
+  .actions button { flex: 1; padding: 9px; border-radius: 8px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; }
+  .apply-btn { background: #059669; color: white; }
+  .dismiss-btn { background: #EEE; color: #445; }
+  .empty { text-align: center; color: #889; padding: 40px 0; font-size: 14px; }
+  .loading { text-align: center; color: #889; padding: 40px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>⚠ Price Anomaly Review</h1>
+  <div class="sub">Flagged by price-agent.js — a scraped price differed &gt;30% from the last known price and was NOT auto-applied. Review each and decide.</div>
+
+  <div class="keybox">
+    <input type="password" id="key" placeholder="Admin key">
+    <button onclick="load()">Load</button>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<script>
+const savedKey = localStorage.getItem('stackbid_admin_key');
+if (savedKey) document.getElementById('key').value = savedKey;
+
+async function load() {
+  const key = document.getElementById('key').value.trim();
+  if (!key) return alert('Enter the admin key first.');
+  localStorage.setItem('stackbid_admin_key', key);
+
+  const list = document.getElementById('list');
+  list.innerHTML = '<div class="loading">Loading…</div>';
+
+  try {
+    const res = await fetch('/api/price-anomalies?key=' + encodeURIComponent(key));
+    const data = await res.json();
+    if (!res.ok) { list.innerHTML = '<div class="empty">' + (data.error || 'Failed to load') + '</div>'; return; }
+
+    if (!data.anomalies.length) {
+      list.innerHTML = '<div class="empty">✅ No unresolved anomalies. All clear.</div>';
+      return;
+    }
+
+    list.innerHTML = data.anomalies.map(a => {
+      const name = a.material ? a.material.name : ('Material #' + a.material_id);
+      const unit = a.material ? a.material.unit : '';
+      const pct = a.percent_change > 0 ? '+' + Number(a.percent_change).toFixed(1) : Number(a.percent_change).toFixed(1);
+      return `
+        <div class="card" id="card-${a.id}">
+          <div class="card-title">${name}</div>
+          <div class="card-sub">Flagged ${new Date(a.created_at).toLocaleDateString()} · unit: ${unit}</div>
+          <div class="price-row">
+            <span class="price-old">$${Number(a.old_price).toFixed(2)}</span>
+            <span>→</span>
+            <span class="price-new">$${Number(a.new_price).toFixed(2)}</span>
+            <span class="pct">${pct}%</span>
+          </div>
+          <div class="note">${a.source_note || ''}</div>
+          <div class="actions">
+            <button class="apply-btn" onclick="resolve(${a.id}, 'apply')">✓ Apply new price</button>
+            <button class="dismiss-btn" onclick="resolve(${a.id}, 'dismiss')">✕ Dismiss, keep old</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<div class="empty">Error: ' + e.message + '</div>';
+  }
+}
+
+async function resolve(logId, action) {
+  const key = document.getElementById('key').value.trim();
+  const card = document.getElementById('card-' + logId);
+  card.style.opacity = '0.5';
+  try {
+    const res = await fetch('/api/price-anomalies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, log_id: logId, action })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed'); card.style.opacity = '1'; return; }
+    card.remove();
+    if (!document.getElementById('list').children.length) {
+      document.getElementById('list').innerHTML = '<div class="empty">✅ No unresolved anomalies. All clear.</div>';
+    }
+  } catch (e) {
+    alert('Error: ' + e.message);
+    card.style.opacity = '1';
+  }
+}
+
+if (savedKey) load();
+</script>
+</body>
+</html>
