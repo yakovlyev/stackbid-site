@@ -2744,6 +2744,37 @@ async function enrichWithDBPrices(data, zip) {
     // scraped reference price, so a bad AI guess doesn't silently reach the
     // customer with no warning (same >30% anomaly threshold as price-agent.js).
     const ANOMALY_THRESHOLD_PCT = 30;
+
+    // Word-overlap matching instead of a raw 8-character prefix, which was
+    // matching unrelated materials that happen to share a common prefix
+    // (e.g. "Drywall 1/2 in" vs "Drywall 5/8 in fire-rated" — different
+    // products, different prices, but both start with "Drywall "). A false
+    // match here would silently feed a wrong fallback price OR trigger a
+    // false "verify price" warning, undermining the anomaly-check itself.
+    const STOP_WORDS = new Set(['and','the','for','with','per','ea','a','of','in','to']);
+    function significantWords(s) {
+      return (s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+        .filter(w => w.length >= 3 && !STOP_WORDS.has(w));
+    }
+    function unitsCompatible(a, b) {
+      if (!a || !b) return true; // missing unit info — don't block on it
+      const na = a.toLowerCase().replace(/s$/, '');
+      const nb = b.toLowerCase().replace(/s$/, '');
+      return na === nb;
+    }
+    function materialsLikelyMatch(nameA, nameB, unitA, unitB) {
+      if (!unitsCompatible(unitA, unitB)) return false;
+      const wa = significantWords(nameA);
+      const wb = significantWords(nameB);
+      if (!wa.length || !wb.length) return false;
+      const shared = wa.filter(w => wb.includes(w));
+      // Short names (<=2 significant words, e.g. "Rebar #4") need just 1 shared
+      // word; longer names need at least 2, so one generic shared word like
+      // "lumber" alone can't cause a false match between different products.
+      const minShared = Math.min(wa.length, wb.length) <= 2 ? 1 : 2;
+      return shared.length >= minShared;
+    }
+
     let dbMatches = 0;
     let flaggedCount = 0;
     (data.categories || []).forEach(cat => {
@@ -2755,8 +2786,8 @@ async function enrichWithDBPrices(data, zip) {
         const key = item.name.toLowerCase();
         const match = priceMap[key] ||
           Object.values(priceMap).find(p =>
-            key.includes(p.name.toLowerCase().substring(0, 8)) ||
-            p.search_term.toLowerCase().includes(key.substring(0, 8))
+            materialsLikelyMatch(item.name, p.name, item.unit, p.unit) ||
+            materialsLikelyMatch(item.name, p.search_term, item.unit, p.unit)
           );
 
         if (hasAiPrice) {
