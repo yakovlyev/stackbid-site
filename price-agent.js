@@ -32,10 +32,11 @@ function evaluatePriceChange(oldPrice, newPrice, thresholdPct = ANOMALY_THRESHOL
 module.exports = { evaluatePriceChange, ANOMALY_THRESHOLD_PCT };
 const MAX_RUNTIME_MS = 5 * 60 * 1000; // 5 минут — жёсткий потолок на весь прогон, чтобы не висеть бесконечно
 const MAX_MATERIALS_PER_RUN = 15; // жёсткий потолок на расход: даже если время ещё есть,
-// не обрабатываем больше 15 материалов за один запуск. Это даёт предсказуемый
-// верхний предел стоимости прогона (в худшем случае 15 × до 6 tool-calls),
-// вместо того чтобы полагаться только на таймаут. Полный список из 62+ материалов
-// пройдёт за несколько запусков подряд (расписание/ручные Trigger Run).
+// не обрабатываем больше 15 материалов за один запуск. Материалы, где первая попытка
+// не нашла цену, получают один повторный запрос с расширенным поиском (см. askAgentForPrice) —
+// это увеличивает расход на неудачных материалах, но общий потолок по времени (MAX_RUNTIME_MS)
+// всё равно ограничивает суммарную стоимость прогона сверху. Полный список из 60+ материалов
+// пройдёт за несколько запусков подряд благодаря сортировке по "давности" в getActiveMaterials().
 const runId = new Date().toISOString();
 const startedAt = Date.now();
 
@@ -69,9 +70,32 @@ async function getActiveMaterials() {
   // manual_pricing_only=true — товары, которых физически нет в рознице HD/Lowe's
   // (спец. заказ, дистрибьюторские бренды и т.п.). Агент их не трогает вообще,
   // чтобы не жечь API-вызовы на заведомо безрезультатный поиск.
-  return supabaseFetch(
+  const materials = await supabaseFetch(
     'materials?active=eq.true&manual_pricing_only=eq.false&select=id,name,name_short,sku_hd,unit,brand,specs'
   );
+
+  // КРИТИЧНО: без этого блока цикл в main() всегда стартует с индекса 0 и
+  // останавливается на MAX_MATERIALS_PER_RUN — то есть при каталоге из 60+
+  // материалов и лимите 15/прогон, одни и те же первые ~15 обновлялись бы
+  // каждую неделю, а остальные никогда не трогались бы вообще. Здесь мы
+  // сортируем материалы по "давности" последнего обновления цены — сначала
+  // те, у кого цены вообще никогда не было (null), затем от самых старых
+  // к самым свежим. Так каждый запуск естественным образом ротирует весь
+  // каталог, а не зацикливается на одном и том же хвосте.
+  const latestPrices = await supabaseFetch('prices?select=material_id,updated_at&order=updated_at.desc');
+  const lastUpdatedMap = {};
+  (latestPrices || []).forEach(p => {
+    if (!(p.material_id in lastUpdatedMap)) lastUpdatedMap[p.material_id] = p.updated_at;
+  });
+  materials.forEach(m => { m._lastPriceUpdate = lastUpdatedMap[m.id] || null; });
+  materials.sort((a, b) => {
+    if (!a._lastPriceUpdate && !b._lastPriceUpdate) return 0;
+    if (!a._lastPriceUpdate) return -1; // никогда не обновлялся — обрабатываем первым
+    if (!b._lastPriceUpdate) return 1;
+    return new Date(a._lastPriceUpdate) - new Date(b._lastPriceUpdate);
+  });
+
+  return materials;
 }
 
 async function getLastPrice(materialId) {
@@ -81,7 +105,11 @@ async function getLastPrice(materialId) {
   return rows && rows.length ? rows[0] : null;
 }
 
-async function askAgentForPrice(material) {
+async function askAgentForPrice(material, attempt = 1) {
+  const broadenHint = attempt === 1 ? '' : `
+
+Your first attempt didn't find a price. This time, broaden the search: drop the exact brand if it's too narrow, try the OTHER retailer (if you tried Home Depot, try Lowe's, and vice versa), and try a more general search term (e.g. drop specific dimensions/specs and search just the material category) before giving up.`;
+
   const prompt = `Find the current typical US retail price for this construction material as sold at major home improvement retailers (Home Depot, Lowe's) in 2026:
 
 Product: ${material.name}
@@ -97,7 +125,7 @@ Category/listing pages (homedepot.com/b/... and lowes.com/pl/...) DO show prices
 2. Use web_fetch to open that listing page and read the prices shown for each product in the grid.
 3. Match the listed product that best fits the brand/specs given above, and report its price. If multiple close matches exist, prefer the one most consistent with the given specs, and note in your answer which specific product you matched.
 4. Make sure the price you report is per exactly one ${material.unit} (not per pack, pallet, bundle, or case). Listing pages sometimes show "$X/package" — if so, divide by the pack quantity shown and say so in the note.
-5. If a listing page redirects you to a single product with no visible price, try a broader or different category search rather than giving up immediately.
+5. If a listing page redirects you to a single product with no visible price, try a broader or different category search rather than giving up immediately.${broadenHint}
 
 Do all searching and fetching first. Your FINAL message must contain ONLY a JSON object and nothing else — no markdown fences, no explanation before or after it:
 {"price": <number, USD, per ${material.unit}>, "confidence": "<high|medium|low>", "note": "<one short sentence: retailer, which product you matched, and whether you divided a multi-unit price>"}
@@ -221,7 +249,10 @@ async function main() {
 
     try {
       const last = await getLastPrice(material.id);
-      const result = await askAgentForPrice(material);
+      let result = await askAgentForPrice(material, 1);
+      if (result.price === null || typeof result.price !== 'number') {
+        result = await askAgentForPrice(material, 2); // one broadened retry before giving up
+      }
 
       if (result.price === null || typeof result.price !== 'number') {
         failures.push({ material: material.name, reason: result.note || 'no price found' });
