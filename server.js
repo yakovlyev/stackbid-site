@@ -69,7 +69,9 @@ const handlers = {
   'check-access': require('./netlify/functions/check-access'),
   'create-checkout-session': require('./netlify/functions/create-checkout-session'),
   'stripe-webhook': require('./netlify/functions/stripe-webhook'),
-  'get-estimates': require('./netlify/functions/get-estimates')
+  'get-estimates': require('./netlify/functions/get-estimates'),
+  'log-consent': require('./netlify/functions/log-consent'),
+  'create-portal-session': require('./netlify/functions/create-portal-session')
 };
 
 // Contact form handler

@@ -2,6 +2,35 @@
 // is_pro в Supabase. Это единственное место, где is_pro должен меняться —
 // никогда не доверяем фронтенду напрямую выставлять Pro-статус.
 const Stripe = require('stripe');
+const { Resend } = require('resend');
+
+async function sendConfirmationEmail(email) {
+  // Confirmation email — обязательный слой для FTC/state auto-renewal
+  // compliance: цена, billing cycle, дата следующего списания, как отменить.
+  // Best effort — сбой отправки не должен ронять обработку вебхука.
+  try {
+    if (!process.env.RESEND_API_KEY) return;
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    await resend.emails.send({
+      from: 'StackBid <hello@stackbid.app>',
+      to: email,
+      subject: "You're subscribed to StackBid Pro",
+      html: `
+        <p>Hi,</p>
+        <p>You're now subscribed to <strong>StackBid Pro</strong> — here's a quick summary of your plan:</p>
+        <ul>
+          <li>Price: <strong>$9.99 / month</strong></li>
+          <li>Billing: monthly, renews automatically until canceled</li>
+          <li>Includes: unlimited estimates, saved PDFs, project history, price drop alerts</li>
+        </ul>
+        <p>You can cancel anytime from your account — it takes one click, no phone call or email required.</p>
+        <p>Thanks for using StackBid!</p>
+      `
+    });
+  } catch (e) {
+    console.error('confirmation email failed:', e.message);
+  }
+}
 
 async function upsertUserByEmail(SUPABASE_URL, SUPABASE_KEY, email, fields) {
   const headers = {
@@ -63,6 +92,7 @@ exports.handler = async (event) => {
             stripe_customer_id: session.customer,
             stripe_subscription_id: session.subscription
           });
+          await sendConfirmationEmail(email);
         }
         break;
       }

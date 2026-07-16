@@ -47,7 +47,7 @@
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
 {"@type":"Question","name":"How accurate are StackBid estimates?","acceptedAnswer":{"@type":"Answer","text":"StackBid estimates are based on 2026 wholesale market data and are typically within 10-15% of actual supplier quotes. Prices vary by region, supplier, and season. Getting 2-3 quotes from local suppliers before purchasing is recommended."}},
 {"@type":"Question","name":"What is the difference between the three price columns on StackBid?","acceptedAnswer":{"@type":"Answer","text":"HD/Lowe's Retail is the standard walk-in shelf price at big box stores, the most expensive option. Wholesale Estimate is typical contractor/trade pricing, approximately 25% below retail. Local Supplier is the price from the nearest local building materials supplier by ZIP code, often the best value for larger projects."}},
-{"@type":"Question","name":"Is StackBid free to use?","acceptedAnswer":{"@type":"Answer","text":"Your first estimate is completely free — just your email, no credit card. After that, StackBid Pro ($9.99/month) unlocks unlimited estimates, saved PDFs, and full access to local supplier and contractor information."}},
+{"@type":"Question","name":"Is StackBid free to use?","acceptedAnswer":{"@type":"Answer","text":"Your first estimate is completely free — just your email, no credit card. After that, StackBid Pro ($9.99/month) unlocks unlimited estimates, saved PDFs, and local supplier and contractor options."}},
 {"@type":"Question","name":"Does StackBid's estimate include labor costs?","acceptedAnswer":{"@type":"Answer","text":"No, StackBid estimates cover materials only. Labor costs vary by contractor, region, and project complexity; contractor cards on the site can be used to get labor quotes from local professionals."}},
 {"@type":"Question","name":"Are the contractors listed on StackBid verified?","acceptedAnswer":{"@type":"Answer","text":"Contractors in the StackBid database have provided license numbers, but independently verifying any contractor's license through the state licensing board before hiring is strongly recommended. StackBid does not endorse specific contractors."}},
 {"@type":"Question","name":"How do I get the best price on construction materials?","acceptedAnswer":{"@type":"Answer","text":"Use a StackBid estimate as a baseline, then contact the local supplier shown in the third column, ask about bulk discounts for large orders, consider buying during the off-season, and ask a contractor if they can use their trade account for better pricing."}},
@@ -682,11 +682,11 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-eyebrow">&#9679; AI-Powered · 2026 Wholesale Prices · No Signup</div>
+  <div class="hero-eyebrow">&#9679; AI-Powered · 2026 Wholesale Prices · No Credit Card</div>
   <h1>Know your <em>real</em> materials cost before you build</h1>
-  <p class="hero-sub">Type what you're building. Get a full materials estimate with local wholesale prices — in under 3 minutes. Free.</p>
+  <p class="hero-sub">Type what you're building. Get a full materials estimate with local wholesale prices — in under 3 minutes. Your first estimate is free.</p>
   <div class="hero-actions">
-    <a href="#tool" class="btn-hero">Try it now — it's free</a>
+    <a href="#tool" class="btn-hero">Try it now — first estimate free</a>
     <a href="#how" class="btn-ghost">See how it works ↓</a>
   </div>
   <div class="hero-stats">
@@ -1056,14 +1056,15 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div style="background:#fff;border-radius:16px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,0.25);">
               <div style="text-align:center;margin-bottom:18px;">
                 <div style="font-size:28px;margin-bottom:6px;">⭐</div>
-                <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:18px;color:var(--ink);">You've used your free estimate</div>
-                <div style="font-size:13px;color:var(--muted);margin-top:6px;">Subscribe to StackBid Pro to keep estimating and unlock more</div>
+                <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:18px;color:var(--ink);">Unlock unlimited estimates</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:6px;">Your first estimate was free. Keep planning with StackBid Pro.</div>
               </div>
-              <div style="background:var(--offwhite);border-radius:10px;padding:16px;margin-bottom:18px;">
-                <div style="display:flex;align-items:baseline;gap:6px;justify-content:center;margin-bottom:10px;">
+              <div style="background:var(--offwhite);border-radius:10px;padding:16px;margin-bottom:16px;">
+                <div style="display:flex;align-items:baseline;gap:6px;justify-content:center;margin-bottom:4px;">
                   <span style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:28px;color:var(--ink);">$9.99</span>
                   <span style="font-size:13px;color:var(--muted);">/ month</span>
                 </div>
+                <div style="text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:12px;">Billed monthly. Renews automatically until canceled.</div>
                 <ul style="list-style:none;padding:0;margin:0;font-size:13px;color:var(--ink);display:flex;flex-direction:column;gap:8px;">
                   <li>✓ Unlimited material estimates</li>
                   <li>✓ Save your project history</li>
@@ -1072,7 +1073,12 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
                   <li>✓ Detailed supplier PDF reports</li>
                 </ul>
               </div>
-              <button class="gen-btn" style="width:100%;" onclick="handleSubscribeClick()">Subscribe to StackBid Pro</button>
+              <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--ink);margin-bottom:14px;cursor:pointer;background:var(--offwhite);border-radius:8px;padding:10px 12px;">
+                <input type="checkbox" id="paywall-consent" style="margin-top:2px;" onchange="document.getElementById('paywall-subscribe-btn').disabled = !this.checked;">
+                <span>I understand this is a monthly subscription for $9.99 that renews automatically until canceled, and that I can cancel anytime in my account.</span>
+              </label>
+              <button class="gen-btn" id="paywall-subscribe-btn" style="width:100%;" onclick="handleSubscribeClick()" disabled>Continue and unlock my plan</button>
+              <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;">You will not be charged unless you confirm this subscription.</div>
               <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;">Cancel anytime. Questions? <a href="mailto:hello@stackbid.app" style="color:var(--muted);">hello@stackbid.app</a></div>
             </div>
           </div>
@@ -1209,7 +1215,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
       <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
         <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">Is StackBid free to use? <span style="color:#F5A623;font-size:20px;">+</span></summary>
-        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Your first estimate is completely free — just your email, no credit card. After that, StackBid Pro ($9.99/month) gives you unlimited estimates, saved PDFs, and full access to local supplier and contractor information.</p>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Your first estimate is completely free — just your email, no credit card. After that, StackBid Pro ($9.99/month) gives you unlimited estimates, saved PDFs, and local supplier and contractor options.</p>
       </details>
 
       <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
@@ -1512,6 +1518,7 @@ async function submitContactForm() {
    
     <a href="/privacy.html">Privacy Policy</a>
     <a href="/terms.html">Terms of Service</a>
+    <a href="javascript:void(0)" onclick="openBillingPortal()">Manage / Cancel Subscription</a>
     <a href="#faq">FAQ</a>
     <a href="#contact">Contact</a>
   </div>
@@ -2790,15 +2797,61 @@ function showPaywall(data, zip) {
   document.getElementById('estimate-out').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+async function openBillingPortal() {
+  let email = localStorage.getItem('sb_user_email');
+  if (!email) {
+    email = prompt('Enter the email you used to subscribe to StackBid Pro:');
+    if (!email) return;
+  }
+  try {
+    const resp = await fetch('/api/create-portal-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim() })
+    });
+    const data = await resp.json();
+    if (resp.ok && data.url) {
+      window.location.href = data.url;
+      return;
+    }
+    if (resp.status === 404) {
+      alert("We couldn't find an active StackBid Pro subscription for this email.");
+    } else {
+      alert("Couldn't open the billing portal — please try again in a moment.");
+    }
+  } catch (e) {
+    alert("Couldn't open the billing portal — please try again in a moment.");
+  }
+}
+
 async function handleSubscribeClick() {
   const email = localStorage.getItem('sb_user_email');
   if (!email) {
     alert('Please enter your email above first.');
     return;
   }
+  const consentBox = document.getElementById('paywall-consent');
+  if (consentBox && !consentBox.checked) {
+    alert('Please check the box confirming you understand this is a recurring subscription.');
+    return;
+  }
   const btn = event?.target;
   const originalText = btn ? btn.textContent : null;
   if (btn) { btn.textContent = 'Redirecting to checkout…'; btn.disabled = true; }
+
+  // Proof-of-consent log — best effort, никогда не блокирует сам чекаут при сбое
+  try {
+    await fetch('/api/log-consent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        consent_text: 'I understand this is a monthly subscription for $9.99 that renews automatically until canceled, and that I can cancel anytime in my account.',
+        consent_version: 'paywall_v2_2026-07-16'
+      })
+    });
+  } catch (e) { /* не критично, продолжаем оформление */ }
+
   try {
     const resp = await fetch('/api/create-checkout-session', {
       method: 'POST',
