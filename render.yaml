@@ -11,7 +11,7 @@ services:
   - type: cron
     name: stackbid-price-agent
     runtime: node
-    schedule: "0 9 * * 1"
+    schedule: "0 9 * * *"
     buildCommand: npm install
     startCommand: node price-agent.js
     envVars:
