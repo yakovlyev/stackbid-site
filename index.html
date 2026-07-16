@@ -641,6 +641,9 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   .project-grid { grid-template-columns: repeat(3, 1fr); }
   .local-matches-grid { grid-template-columns: 1fr; }
 }
+.step-block { display: none; }
+.step-block.revealed { display: block; animation: stepFadeIn 0.35s ease; }
+@keyframes stepFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -776,17 +779,20 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <!-- TEXT TAB -->
         <div id="tab-text">
           <div style="margin-bottom:14px;">
-            <div class="section-label" style="font-size:11px; margin-bottom:8px;">Project type</div>
+            <div class="section-label" style="font-size:11px; margin-bottom:8px;">Step 1 · What are you building?</div>
             <div class="project-grid">
-              <div class="ptype-btn sel" onclick="setPtype(this,'New home build')"><div class="ptype-icon">🏠</div>New home</div>
+              <div class="ptype-btn" onclick="setPtype(this,'New home build')"><div class="ptype-icon">🏠</div>New home</div>
               <div class="ptype-btn" onclick="setPtype(this,'Deck or patio')"><div class="ptype-icon">🌿</div>Deck / patio</div>
               <div class="ptype-btn" onclick="setPtype(this,'Fence')"><div class="ptype-icon">🔲</div>Fence</div>
               <div class="ptype-btn" onclick="setPtype(this,'Roofing replacement')"><div class="ptype-icon">🏠</div>Roofing</div>
               <div class="ptype-btn" onclick="setPtype(this,'Siding or facade')"><div class="ptype-icon">🧱</div>Siding</div>
               <div class="ptype-btn" onclick="setPtype(this,'Foundation')"><div class="ptype-icon">⬛</div>Foundation</div>
             </div>
+            <button id="ptypeContinueBtn" onclick="revealSteps()" style="margin-top:10px;background:none;border:none;color:var(--muted);font-size:12.5px;text-decoration:underline;cursor:pointer;padding:4px 0;">Not sure yet — skip this step →</button>
           </div>
 
+          <div id="step2Block" class="step-block">
+          <div class="section-label" style="font-size:11px; margin-bottom:8px;">Step 2 · Add the details</div>
           <div class="voice-row">
             <button class="voice-btn" id="vbtn" onclick="toggleVoice()">🎙️ Speak</button>
             <span style="font-size:11px;color:var(--muted);">up to 2 min</span>
@@ -833,7 +839,10 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           </script>
 
           <div class="tag-row" id="qtags"></div>
+          </div>
 
+          <div id="step3Block" class="step-block">
+          <div class="section-label" style="font-size:11px; margin-bottom:8px;">Step 3 · Get local pricing</div>
           <div class="field-row">
             <div class="tf">
               <label>Your ZIP code</label>
@@ -851,6 +860,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
                 <option value="bfs">Builders FirstSource</option>
               </select>
             </div>
+          </div>
           </div>
         </div>
 
@@ -1600,6 +1610,17 @@ function setPtype(el, type) {
   el.classList.add('sel');
   selType = type;
   renderTags(type);
+  revealSteps();
+}
+
+function revealSteps() {
+  const s2 = document.getElementById('step2Block');
+  const s3 = document.getElementById('step3Block');
+  const skipBtn = document.getElementById('ptypeContinueBtn');
+  if (s2 && !s2.classList.contains('revealed')) s2.classList.add('revealed');
+  if (s3 && !s3.classList.contains('revealed')) s3.classList.add('revealed');
+  if (skipBtn) skipBtn.style.display = 'none';
+  if (s2) s2.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function addTag(t) {
@@ -1923,6 +1944,7 @@ function calcToEstimate() {
     // but still send the correct project type text to the estimate engine.
     selType = labels[type] || type;
   }
+  revealSteps();
 }
 
 /* ─── UPDATE setTab to include new tabs ─────────────── */
