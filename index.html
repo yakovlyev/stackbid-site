@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-title" content="StackBid">
 <meta name="theme-color" content="#0C2340">
 <title>StackBid — Know Your Materials Cost Before You Build</title>
-<meta name="description" content="Free AI construction materials estimator for US homeowners. Get wholesale prices by ZIP code in 3 minutes. Save up to 28% vshome improvement retail stores .">
+<meta name="description" content="Free AI construction materials estimator for US homeowners. Compare wholesale and retail prices by ZIP code in 3 minutes.">
 <meta name="keywords" content="construction estimate, materials cost, wholesale prices, home improvement, deck cost, roofing estimate">
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json">
@@ -29,14 +29,14 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://stackbid.app">
 <meta property="og:title" content="StackBid — Know Your Real Materials Cost Before You Build">
-<meta property="og:description" content="Free first AI estimate in 3 minutes. Wholesale prices by ZIP. Save up to 28% vs Home Depot. No signup.">
+<meta property="og:description" content="Free first AI estimate in 3 minutes. Compare wholesale and retail prices by ZIP.">
 <meta property="og:image" content="https://stackbid.app/og-image.png">
 <meta property="og:site_name" content="StackBid">
 <!-- Twitter/X -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@StackBid1">
 <meta name="twitter:title" content="StackBid — Free AI Materials Estimator">
-<meta name="twitter:description" content="Wholesale construction prices by ZIP. Save up to 28% vs Home Depot. First estimate free.">
+<meta name="twitter:description" content="Compare wholesale and retail construction prices by ZIP. First estimate free.">
 <meta name="twitter:image" content="https://stackbid.app/og-image.png">
 <!-- Schema.org -->
 <script type="application/ld+json">
@@ -45,8 +45,8 @@
 <!-- Schema.org: FAQPage (GEO — enables AI answer engines to cite these Q&As directly) -->
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
-{"@type":"Question","name":"How accurate are StackBid estimates?","acceptedAnswer":{"@type":"Answer","text":"StackBid estimates are based on 2026 wholesale market data and are typically within 10-15% of actual supplier quotes. Prices vary by region, supplier, and season. Getting 2-3 quotes from local suppliers before purchasing is recommended."}},
-{"@type":"Question","name":"What is the difference between the three price columns on StackBid?","acceptedAnswer":{"@type":"Answer","text":"HD/Lowe's Retail is the standard walk-in shelf price at big box stores, the most expensive option. Wholesale Estimate is typical contractor/trade pricing, approximately 25% below retail. Local Supplier is the price from the nearest local building materials supplier by ZIP code, often the best value for larger projects."}},
+{"@type":"Question","name":"How accurate are StackBid estimates?","acceptedAnswer":{"@type":"Answer","text":"StackBid estimates are based on current wholesale market data and are meant to be a close reference point for actual supplier quotes. Prices vary by region, supplier, and season. Getting 2-3 quotes from local suppliers before purchasing is recommended."}},
+{"@type":"Question","name":"What is the difference between the three price columns on StackBid?","acceptedAnswer":{"@type":"Answer","text":"HD/Lowe's Retail is the standard walk-in shelf price at big box stores, generally the most expensive option. Wholesale Estimate is typical contractor/trade pricing, generally below retail. Local Supplier is the price from the nearest local building materials supplier by ZIP code, and can be a strong option for larger projects."}},
 {"@type":"Question","name":"Is StackBid free to use?","acceptedAnswer":{"@type":"Answer","text":"Your first estimate is completely free — just your email, no credit card. After that, StackBid Pro ($9.99/month) unlocks unlimited estimates, saved PDFs, and local supplier and contractor options."}},
 {"@type":"Question","name":"How does StackBid billing work?","acceptedAnswer":{"@type":"Answer","text":"StackBid Pro is $9.99/month, billed automatically starting the day of subscription through Stripe. A confirmation email is sent right after subscribing. Billing is month to month with no long-term contract."}},
 {"@type":"Question","name":"How do I cancel my StackBid subscription?","acceptedAnswer":{"@type":"Answer","text":"Subscriptions can be canceled anytime from the account page via the Manage/Cancel Subscription button, which opens a billing portal — no phone call or email required. Pro access continues until the end of the current billing period, with no further charges after that."}},
@@ -693,16 +693,16 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   </div>
   <div class="hero-stats">
     <div>
-      <div class="hero-stat-val">$<span class="counter" data-target="11400">0</span></div>
-      <div class="hero-stat-lbl">avg. saved vs retail per project</div>
+      <div class="hero-stat-val"><span class="counter" data-target="3">0</span></div>
+      <div class="hero-stat-lbl">price points compared side by side</div>
     </div>
     <div>
       <div class="hero-stat-val"><span class="counter" data-target="3">0</span> min</div>
       <div class="hero-stat-lbl">from description to full estimate</div>
     </div>
     <div>
-      <div class="hero-stat-val"><span class="counter" data-target="28">0</span>%</div>
-      <div class="hero-stat-lbl">below Home Depot shelf price</div>
+      <div class="hero-stat-val">ZIP</div>
+      <div class="hero-stat-lbl">code-level local pricing</div>
     </div>
     <div>
       <div class="hero-stat-val"><span id="estimates-count">...</span></div>
@@ -1150,14 +1150,14 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
     <div class="price-col featured">
       <div class="price-col-label">Column 2</div>
       <h3>Wholesale estimate</h3>
-      <p>Contractor account pricing — typically 20–28% below retail. Available to anyone who asks for a quote account.</p>
-      <div class="price-col-tag">⬇ avg. 24% savings</div>
+      <p>Contractor account pricing — generally below retail. Available to anyone who asks for a quote account.</p>
+      <div class="price-col-tag">⬇ Typically lower than retail</div>
     </div>
     <div class="price-col">
       <div class="price-col-label">Column 3</div>
       <h3>Local supplier by ZIP</h3>
       <p>Your nearest lumber yard or supply house — 84 Lumber, ProBuild, Builders FirstSource. Frequently competitive for larger orders.</p>
-      <div class="price-col-tag">⬇ avg. 28% savings</div>
+      <div class="price-col-tag">⬇ Frequently lower than retail</div>
     </div>
   </div>
 </section>
@@ -1207,12 +1207,12 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
       <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
         <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">How accurate are StackBid estimates? <span style="color:#F5A623;font-size:20px;">+</span></summary>
-        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Our estimates are based on 2026 wholesale market data and are typically within 10-15% of actual supplier quotes. Prices vary by region, supplier, and season. We always recommend getting at least 2-3 quotes from local suppliers before purchasing.</p>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Our estimates are based on current wholesale market data and are meant to be a close reference point for actual supplier quotes. Prices vary by region, supplier, and season. We always recommend getting at least 2-3 quotes from local suppliers before purchasing.</p>
       </details>
 
       <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
         <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">What is the difference between the three price columns? <span style="color:#F5A623;font-size:20px;">+</span></summary>
-        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;"><strong>HD / Lowe's Retail</strong> — standard walk-in shelf price at big box stores. The most expensive option.<br><br><strong>Wholesale Estimate</strong> — typical contractor/trade pricing, approximately 25% below retail. Available to contractors and some homeowners with accounts.<br><br><strong>Local Supplier</strong> — price from the nearest local building materials supplier in your ZIP code area. Often the best value for larger projects.</p>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;"><strong>HD / Lowe's Retail</strong> — standard walk-in shelf price at big box stores. Generally the most expensive option.<br><br><strong>Wholesale Estimate</strong> — typical contractor/trade pricing, generally below retail. Available to contractors and some homeowners with accounts.<br><br><strong>Local Supplier</strong> — price from the nearest local building materials supplier in your ZIP code area. Can be a strong option for larger projects.</p>
       </details>
 
       <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
