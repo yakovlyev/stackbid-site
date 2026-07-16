@@ -22,14 +22,31 @@ exports.handler = async (event) => {
       if (!materials.length) continue;
       const mat = materials[0];
       const priceResp = await fetch(
-        `${SUPABASE_URL}/rest/v1/prices?material_id=eq.${mat.id}&select=price,supplier_id`,
+        `${SUPABASE_URL}/rest/v1/prices?material_id=eq.${mat.id}&select=price,supplier_id,updated_at`,
         { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
       );
       const prices = await priceResp.json();
       const hdPrice = prices.find(p => p.supplier_id === 1)?.price;
       const wsPrice = prices.find(p => p.supplier_id === 3)?.price;
       const localPrice = prices.find(p => p.supplier_id === 4)?.price;
-      if (hdPrice) results.push({ search_term: term, name: mat.name, unit: mat.unit, hd_price: hdPrice, wholesale_price: wsPrice || hdPrice * 0.75, local_price: localPrice || hdPrice * 0.69, from_db: true });
+      // price-agent.js (weekly HD/Lowe's scraper) writes rows with supplier_id = null —
+      // a general market price, not tied to one of the three columns above. This is our
+      // most-recently-verified real-world price, used to sanity-check the AI's live estimate,
+      // not just to fill gaps when the AI has nothing.
+      const marketRows = prices.filter(p => p.supplier_id === null || p.supplier_id === undefined)
+        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+      const referencePrice = marketRows[0]?.price;
+      const referenceDate = marketRows[0]?.updated_at;
+      if (hdPrice || referencePrice) {
+        results.push({
+          search_term: term, name: mat.name, unit: mat.unit,
+          hd_price: hdPrice, wholesale_price: wsPrice || (hdPrice ? hdPrice * 0.75 : undefined),
+          local_price: localPrice || (hdPrice ? hdPrice * 0.69 : undefined),
+          from_db: true,
+          reference_price: referencePrice || null,
+          reference_date: referenceDate || null,
+        });
+      }
     }
 
     return { statusCode: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ results, zip, found: results.length }) };
