@@ -76,7 +76,7 @@ exports.handler = async (event) => {
     await logAccessAndCheckSharing(SUPABASE_URL, SUPABASE_KEY, normalizedEmail, ip);
 
     const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}&select=free_estimate_used,is_pro,pro_since`,
+      `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}&select=id,free_estimate_used,is_pro,pro_since,access_token`,
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
     );
     const rows = await r.json();
@@ -85,6 +85,20 @@ exports.handler = async (event) => {
     // Новый пользователь — свободная смета ещё доступна
     if (!existing) {
       return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ can_use_free: true, is_pro: false }) };
+    }
+
+    // Возвращаем access_token, чтобы клиент мог его сохранить — нужен для
+    // get-estimates.js, которая иначе отдавала бы историю смет кому угодно
+    // по одному email. Лениво выпускаем, если у существующей строки его
+    // почему-то ещё нет (например, юзер создан до этого поля).
+    let accessToken = existing.access_token;
+    if (!accessToken) {
+      accessToken = require('crypto').randomBytes(24).toString('base64url');
+      await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}`, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: accessToken }),
+      });
     }
 
     const isPro = !!existing.is_pro;
@@ -96,6 +110,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         can_use_free: canUseFree,
         is_pro: isPro,
+        access_token: accessToken,
         // доступ разрешён, если это первая бесплатная смета ИЛИ активна подписка Pro
         access_granted: canUseFree || isPro
       })
