@@ -1,5 +1,5 @@
 exports.handler = async (event) => {
-  const cors = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'};
+  const cors = {'Access-Control-Allow-Origin':'https://stackbid.app','Access-Control-Allow-Methods':'POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'};
   if (event.httpMethod==='OPTIONS') return {statusCode:204,headers:cors,body:''};
   try {
     const body = JSON.parse(event.body||'{}');
