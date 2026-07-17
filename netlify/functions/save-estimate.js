@@ -7,16 +7,20 @@ exports.handler = async (event) => {
     const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY; // service role — обходить RLS, тут довірений сервер-сайд код, не браузер
     const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
     let userId = null;
+    let accessToken = null;
     let freeEstimateUsed = false;
     let userWriteError = null;
     if (user?.email) {
-      // Сначала проверяем текущее состояние пользователя
-      const checkR = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(user.email)}&select=id,free_estimate_used,is_pro`, {
+      // Сначала проверяем текущее состояние пользователя — если у него уже есть
+      // access_token, сохраняем его как есть (не перевыпускаем при каждом save,
+      // иначе токен, который клиент уже сохранил локально, перестанет совпадать).
+      const checkR = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(user.email)}&select=id,free_estimate_used,is_pro,access_token`, {
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
       });
       const existingRows = await checkR.json();
       const existing = existingRows && existingRows[0];
       freeEstimateUsed = existing ? !!existing.free_estimate_used : false;
+      accessToken = existing?.access_token || require('crypto').randomBytes(24).toString('base64url');
 
       const r = await fetch(`${SUPABASE_URL}/rest/v1/users?on_conflict=email`, {
         method: 'POST',
@@ -27,7 +31,8 @@ exports.handler = async (event) => {
           role: user.role,
           price_alerts: user.price_alerts ?? true,
           last_seen: new Date().toISOString(),
-          // Помечаем бесплатну смету використаною, якщо це перший раз
+          access_token: accessToken,
+          // Помечаем бесплатну смету использованою, якщо це перший раз
           free_estimate_used: true
         })
       });
@@ -66,7 +71,7 @@ exports.handler = async (event) => {
       }
     }
 
-    return { statusCode: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true, user_id: userId, estimate_id: estimateId, estimate_error: estimateError, user_write_error: userWriteError }) };
+    return { statusCode: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true, user_id: userId, access_token: accessToken, estimate_id: estimateId, estimate_error: estimateError, user_write_error: userWriteError }) };
   } catch (err) {
     return { statusCode: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: err.message }) };
   }
