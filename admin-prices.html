@@ -55,7 +55,7 @@ async function load() {
   list.innerHTML = '<div class="loading">Loading…</div>';
 
   try {
-    const res = await fetch('/api/price-anomalies?key=' + encodeURIComponent(key));
+    const res = await fetch('/api/price-anomalies', { headers: { 'Authorization': 'Bearer ' + key } });
     const data = await res.json();
     if (!res.ok) { list.innerHTML = '<div class="empty">' + (data.error || 'Failed to load') + '</div>'; return; }
 
@@ -97,8 +97,8 @@ async function resolve(logId, action) {
   try {
     const res = await fetch('/api/price-anomalies', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key, log_id: logId, action })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ log_id: logId, action })
     });
     const data = await res.json();
     if (!res.ok) { alert(data.error || 'Failed'); card.style.opacity = '1'; return; }
