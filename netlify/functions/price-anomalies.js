@@ -2,6 +2,7 @@
 // reading an email and fixing the DB by hand" with a small UI: list flagged
 // anomalies (from price-agent.js) + let Igor Apply (accept the new scraped
 // price) or Dismiss (keep the old price, mark reviewed) in one click.
+const crypto = require('crypto');
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const ADMIN_SECRET = process.env.ADMIN_SECRET; // shared secret, set in Render env vars
@@ -22,19 +23,34 @@ async function sb(path, options = {}) {
   return text ? JSON.parse(text) : null;
 }
 
+// Constant-time comparison — a plain !== leaks timing information character-by-character
+// over many requests. Low real-world risk here (network jitter usually swamps it, and the
+// endpoint is already rate-limited), but it's a one-line fix for an admin-gate secret.
+function safeEqual(a, b) {
+  const bufA = Buffer.from(String(a || ''));
+  const bufB = Buffer.from(String(b || ''));
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
 exports.handler = async (event) => {
-  const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+  const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'https://stackbid.app' };
 
   if (!ADMIN_SECRET) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'ADMIN_SECRET not configured on server' }) };
   }
 
+  // Key comes from the Authorization header (Bearer <key>) now, not a query-string
+  // parameter — GET query strings end up in server access logs and browser history,
+  // which is a bad place for a password to live even if the endpoint itself is fine.
+  const authHeader = event.headers?.authorization || event.headers?.Authorization || '';
+  const bearerKey = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
   const params = event.httpMethod === 'GET'
-    ? event.queryStringParameters || {}
+    ? (event.queryStringParameters || {})
     : JSON.parse(event.body || '{}');
 
-  if (params.key !== ADMIN_SECRET) {
-    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid key' }) };
+  if (!safeEqual(bearerKey, ADMIN_SECRET)) {
+    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid or missing Authorization header' }) };
   }
 
   try {
