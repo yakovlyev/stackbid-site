@@ -3536,7 +3536,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
 <button id="sb-assist-btn" onclick="sbAssistToggle()" aria-label="Open StackBid Assistant">💬</button>
 <div id="sb-assist-panel">
   <div id="sb-assist-header">
-    <span>⚡ StackBid Assistant</span>
+    <span>👋 Nika · StackBid Assistant</span>
     <span style="cursor:pointer;" onclick="sbAssistToggle()">✕</span>
   </div>
   <div id="sb-assist-messages"></div>
@@ -3556,9 +3556,25 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     panel.classList.toggle('open');
     if (!sbOpened && panel.classList.contains('open')) {
       sbOpened = true;
-      sbAddMessage('bot', "Hi! I'm the StackBid Assistant. Ask me anything about your estimate — why something costs what it does, cheaper alternatives, or I can email you the PDF.");
+      sbAddMessage('bot', "Hi, I'm Nika 👋 I'm the StackBid assistant — got any questions about your estimate? Ask me anything, or just close this if you're all set.");
     }
   };
+
+  // Открываем панель сама, один раз за сессию (не на каждой странице/перезагрузке
+  // подряд), с приветствием от Nika — маленькую кнопку легко не заметить,
+  // а так человек сразу видит, что есть кому задать вопрос.
+  (function autoOpenOnce() {
+    try {
+      if (sessionStorage.getItem('sb_assist_auto_opened')) return;
+      sessionStorage.setItem('sb_assist_auto_opened', '1');
+    } catch (e) { /* privacy mode — просто не автооткрываем, не критично */ }
+    setTimeout(function() {
+      const panel = document.getElementById('sb-assist-panel');
+      if (panel && !panel.classList.contains('open')) {
+        window.sbAssistToggle();
+      }
+    }, 3500);
+  })();
 
   function sbAddMessage(role, text) {
     const box = document.getElementById('sb-assist-messages');
