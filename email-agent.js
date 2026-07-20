@@ -1,12 +1,12 @@
 /**
- * StackBid — Inbox Triage Agent
+ * StackBid — Autonomous Inbox Agent
  *
  * Раз в час (Render Cron Job) проверяет новые письма на hello@stackbid.app,
- * классифицирует их через Anthropic API и готовит черновик ответа —
- * НЕ отправляет автоматически. Черновик кладётся в папку Drafts в самом
- * Zoho, плюс дублирующая сводка уходит на stackbid.hello@gmail.com,
- * чтобы Игорь мог проверять и одобрять руками, пока агент не наберёт
- * стабильно высокий процент точных ответов.
+ * классифицирует их через Anthropic API и ОТПРАВЛЯЕТ ответ сразу, полностью
+ * автономно — без черновика и без ручного одобрения. Решение владельца
+ * продукта: агент ведёт всю переписку сам, человек в этом процессе не
+ * участвует. Единственный след — запись в email_agent_log (для отладки/
+ * аудита постфактум, не для одобрения перед отправкой).
  *
  * Требуемые переменные окружения (Render):
  *   ANTHROPIC_API_KEY
@@ -16,7 +16,6 @@
  *   ZOHO_CLIENT_SECRET
  *   ZOHO_REFRESH_TOKEN        (получается один раз через Self Client, дальше вечный)
  *   ZOHO_ACCOUNT_ID           (numeric account id для hello@stackbid.app)
- *   DIGEST_TO_EMAIL           (stackbid.hello@gmail.com)
  *
  * Требуемая таблица в Supabase (см. email-agent-schema.sql):
  *   email_agent_log
@@ -160,9 +159,15 @@ Classify each email into exactly one category:
 - "bug_or_complaint" — reports a problem, error, or is unhappy — ALWAYS needs a human, never draft a confident fix
 - "spam" — irrelevant, promotional, or clearly automated spam
 
-For every category except "spam", draft a short, warm, accurate reply in plain English, signed "— The StackBid Team".
-For "bug_or_complaint", the draft should acknowledge the issue and say a team member will follow up personally —
-never invent a technical explanation or promise a specific fix.
+For every category except "spam", write a short, warm, accurate reply in plain English, signed "— The StackBid Team".
+This reply is sent automatically — there is no human reviewing it before it goes out, so it must be
+fully self-contained and honest about that.
+For "bug_or_complaint": do NOT promise that "a team member will follow up" — that would be untrue, nobody
+manually reviews these. Instead, be genuinely helpful: ask clarifying questions if the issue is vague,
+suggest concrete troubleshooting steps if the issue is common and you're confident about the cause, and
+point them to the in-app assistant (the chat bubble on stackbid.app) for real-time help. Never invent a
+technical explanation you're not confident about — if unsure, say so plainly and ask for more detail
+(screenshot, browser, steps to reproduce) so the next email can actually help.
 For "spam", leave draft_reply as an empty string.
 
 Respond with ONLY a JSON object, no markdown fences, no extra text:
@@ -273,9 +278,13 @@ async function main() {
       result = await classifyAndDraft(email);
 
       if (result.category !== 'spam' && result.draft_reply) {
-        await createDraft(accessToken, accountId, {
+        // Отправляем ответ сразу, без черновика/ручной проверки — по решению
+        // владельца продукта: агент полностью автономен, письма не идут
+        // через человека. email_agent_log ниже остаётся как единственный
+        // источник наблюдаемости (для отладки/аудита, не для ручного действия).
+        await sendMail(accessToken, accountId, {
           toAddress: email.fromAddress,
-          subject: email.subject,
+          subject: email.subject.startsWith('Re:') ? email.subject : `Re: ${email.subject}`,
           content: result.draft_reply.replace(/\n/g, '<br>'),
         });
         draftCreated = true;
@@ -311,27 +320,11 @@ async function main() {
     });
   }
 
-  if (digestItems.length > 0) {
-    const html = digestItems.map(item => `
-      <div style="border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:12px;">
-        <div style="font-size:12px;color:#888;text-transform:uppercase;">${escapeHtml(item.category)} · ${escapeHtml(item.confidence)}</div>
-        <div style="font-weight:700;margin:4px 0;">${escapeHtml(item.subject)}</div>
-        <div style="font-size:13px;color:#555;margin-bottom:8px;">From: ${escapeHtml(item.from)}</div>
-        <div style="font-size:14px;white-space:pre-wrap;background:#f9f9f9;padding:10px;border-radius:6px;">${escapeHtml(item.draft || '(no draft — spam or skipped)')}</div>
-      </div>
-    `).join('');
-
-    await sendMail(accessToken, accountId, {
-      toAddress: required('DIGEST_TO_EMAIL'),
-      subject: `StackBid inbox — ${processedCount} new message(s) triaged`,
-      content: `<div style="font-family:sans-serif;max-width:640px;">
-        <p>Drafts have been created in the hello@stackbid.app Drafts folder for review. Summary below:</p>
-        ${html}
-      </div>`,
-    });
-  }
-
-  console.log(`Done. Processed ${processedCount} message(s) in ${Date.now() - startedAt}ms.`);
+  // Больше не шлём дайджест человеку на почту — агент работает полностью
+  // автономно. Все обработанные письма и черновики/ответы уже залогированы
+  // в email_agent_log через logProcessed() выше — это единственный источник
+  // наблюдаемости, для отладки, не для ручного одобрения каждого письма.
+  console.log(`Done. Processed ${processedCount} message(s), sent ${digestItems.filter(i => i.draft).length} auto-reply(ies), in ${Date.now() - startedAt}ms.`);
 }
 
 main().catch(err => {
