@@ -783,11 +783,15 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div class="section-label" style="font-size:11px; margin-bottom:8px;">Project type</div>
             <div class="project-grid">
               <div class="ptype-btn sel" onclick="setPtype(this,'New home build')"><div class="ptype-icon">🏠</div>New home</div>
+              <div class="ptype-btn" onclick="setPtype(this,'Garage door replacement')"><div class="ptype-icon">🚪</div>Garage door</div>
               <div class="ptype-btn" onclick="setPtype(this,'Deck or patio')"><div class="ptype-icon">🌿</div>Deck / patio</div>
               <div class="ptype-btn" onclick="setPtype(this,'Fence')"><div class="ptype-icon">🔲</div>Fence</div>
               <div class="ptype-btn" onclick="setPtype(this,'Roofing replacement')"><div class="ptype-icon">🏠</div>Roofing</div>
               <div class="ptype-btn" onclick="setPtype(this,'Siding or facade')"><div class="ptype-icon">🧱</div>Siding</div>
               <div class="ptype-btn" onclick="setPtype(this,'Foundation')"><div class="ptype-icon">⬛</div>Foundation</div>
+            </div>
+            <div style="margin-top:10px;background:#FEF3C7;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400E;line-height:1.5;">
+              💡 <strong>Did you know?</strong> Garage door replacement has the highest ROI of any home improvement project — <strong>193.9%</strong> (Remodeling Magazine, Cost vs. Value). Check your materials cost above.
             </div>
           </div>
 
@@ -1589,6 +1593,7 @@ const VOICE_MAX_MS = 120000; // 2 minutes — auto-stop so short, curt speakers 
 
 const tagSets = {
   'New home build': ['~1,200 sq ft','3 bed / 2 bath','slab foundation','asphalt shingle roof','vinyl siding','2-car garage'],
+  'Garage door replacement': ['single 9×7 ft','double 16×7 ft','steel insulated','carriage style','with opener','2-car garage'],
   'Deck or patio': ['20×24 ft','pressure-treated','composite decking','attached to house','with stairs','cable railing'],
   'Fence': ['6 ft privacy','100 linear ft','cedar wood','vinyl fence','chain-link','with gate'],
   'Roofing replacement': ['1,500 sq ft','architectural shingles','metal roof','tear-off included','with underlayment','ridge vent'],
