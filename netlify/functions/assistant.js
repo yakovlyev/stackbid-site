@@ -21,14 +21,15 @@ Rules:
 - Only discuss this estimate, construction materials, pricing, and how StackBid works. Politely decline unrelated requests.
 - If asked to suggest a cheaper alternative for a material, use your own knowledge of construction materials to suggest one plausible cheaper option and explain the tradeoff briefly (this is a suggestion, not a guaranteed price — say so).
 - If the person asks to email/send the PDF, and you don't have their email yet, ask for it. Once you have a valid-looking email, call the send_pdf_email tool.
-- Never invent specific dollar prices beyond what's in the provided estimate context — for anything you're not sure about, say so plainly.`;
+- Never invent specific dollar prices beyond what's in the provided estimate context — for anything you're not sure about, say so plainly.
+- Never read out or list every line item / material / price one by one, even if asked for "the whole estimate" or "everything" — that's what the PDF is for. Give a short summary instead (1-2 sentences: total range and the biggest cost driver) and offer to email the full PDF.`;
 
 exports.handler = async (event) => {
   const cors = { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Access-Control-Allow-Methods': 'POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors, body: '' };
 
   try {
-    const { messages, estimate, zip, labor, total_project_range } = JSON.parse(event.body || '{}');
+    const { messages, estimate, zip, labor, total_project_range, voice } = JSON.parse(event.body || '{}');
     if (!Array.isArray(messages) || !messages.length) {
       return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'messages required' }) };
     }
@@ -49,7 +50,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 800,
-        system: `${SYSTEM_PROMPT}\n\n${estimateContext}`,
+        system: `${SYSTEM_PROMPT}\n\n${estimateContext}${voice ? '\n\nThis specific question was asked by voice and your answer will be read aloud via text-to-speech. Keep it to 1-2 short sentences max — a headline number and one key point, nothing more. Never speak a list of items or multiple prices in a row.' : ''}`,
         messages,
         tools: [
           {
