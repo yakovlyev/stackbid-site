@@ -83,6 +83,7 @@ function buildPdfBuffer(data, zip) {
   });
 }
 
+exports.buildPdfBuffer = buildPdfBuffer;
 exports.handler = async (event) => {
   const cors = {
     'Access-Control-Allow-Origin': 'https://stackbid.app',
