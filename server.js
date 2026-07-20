@@ -24,12 +24,6 @@ const LIMITS = {
   estimate: { max: 10, window: 60000 },   // 10 AI requests/min
   permit:   { max: 10, window: 60000 },
   contact:  { max: 5,  window: 60000 },   // 5 contact form submissions/min
-  // get-estimates/check-access take a bare email with no ownership proof (known,
-  // accepted tradeoff — full magic-link verification is separately backlogged).
-  // A tighter limit here isn't a fix for that, just a speed bump against someone
-  // trying to enumerate/scrape many emails quickly from one IP.
-  'get-estimates': { max: 8, window: 60000 },
-  'check-access':  { max: 8, window: 60000 },
   default:  { max: 60, window: 60000 }    // 60 general requests/min
 };
 
@@ -78,7 +72,8 @@ const handlers = {
   'get-estimates': require('./netlify/functions/get-estimates'),
   'log-consent': require('./netlify/functions/log-consent'),
   'create-portal-session': require('./netlify/functions/create-portal-session'),
-  'price-anomalies': require('./netlify/functions/price-anomalies')
+  'price-anomalies': require('./netlify/functions/price-anomalies'),
+  'labor-estimate': require('./netlify/functions/labor-estimate')
 };
 
 // Contact form handler
