@@ -27,6 +27,7 @@ exports.handler = async (event) => {
     // в ответе, чтобы фронтенд мог честно объяснить это пользователю.
     const PROJECT_MAP = {
       'New home build':        { trade: 'general_labor', hoursLow: 800, hoursHigh: 1600 },
+      'Garage door replacement': { trade: 'carpentry', hoursLow: 4, hoursHigh: 10 },
       'Deck or patio':         { trade: 'carpentry', hoursLow: 40, hoursHigh: 80 },
       'Deck / patio':          { trade: 'carpentry', hoursLow: 40, hoursHigh: 80 },
       'Fence':                 { trade: 'carpentry', hoursLow: 16, hoursHigh: 40 },
