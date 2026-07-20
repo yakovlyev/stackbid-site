@@ -3651,6 +3651,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
           zip: window.lastEstimateZip || null,
           labor: window.lastLaborData || null,
           total_project_range: window.lastTotalProjectRange || null,
+          voice: sbVoiceMode,
         }),
       });
       const data = await res.json();
