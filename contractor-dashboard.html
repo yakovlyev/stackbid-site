@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StackBid — Contractor Dashboard</title>
+<style>
+  body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #F7F8FA; color: #0C2340; margin: 0; padding: 24px 16px; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sub { color: #667; font-size: 13px; margin-bottom: 20px; }
+  .lookup-row { display: flex; gap: 8px; margin-bottom: 24px; }
+  .lookup-row input { flex: 1; padding: 11px 14px; border-radius: 8px; border: 1.5px solid #DDD; font-size: 14px; }
+  .lookup-row button { padding: 11px 20px; border-radius: 8px; border: none; background: #0C2340; color: white; font-weight: 700; cursor: pointer; }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: white; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .stat-num { font-size: 24px; font-weight: 800; color: #0C2340; }
+  .stat-label { font-size: 11px; color: #778; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; }
+  .lead-card { background: white; border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .lead-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+  .lead-title { font-weight: 700; font-size: 15px; }
+  .lead-sub { font-size: 12.5px; color: #667; margin-top: 2px; }
+  .status-pill { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px; text-transform: uppercase; }
+  .status-new { background: #FEF3C7; color: #92400E; }
+  .status-contacted { background: #DBEAFE; color: #1E40AF; }
+  .status-won { background: #D1FAE5; color: #065F46; }
+  .status-lost { background: #F3F4F6; color: #6B7280; }
+  .lead-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .lead-actions button { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #DDD; background: white; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .empty { text-align: center; color: #889; padding: 40px 0; font-size: 14px; }
+  .verified { display:inline-block; margin-left:6px; background:#E8F5E9; color:#2E7D32; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔨 Contractor Dashboard</h1>
+  <div class="sub">See and manage the leads StackBid has sent you.</div>
+
+  <div class="lookup-row">
+    <input type="email" id="email" placeholder="Your account email">
+    <button onclick="load()">View my leads</button>
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<script>
+const savedEmail = localStorage.getItem('stackbid_contractor_email');
+if (savedEmail) document.getElementById('email').value = savedEmail;
+
+async function load() {
+  const email = document.getElementById('email').value.trim();
+  if (!email) return alert('Enter the email you signed up with.');
+  localStorage.setItem('stackbid_contractor_email', email);
+
+  const content = document.getElementById('content');
+  content.innerHTML = '<div class="empty">Loading…</div>';
+
+  try {
+    const res = await fetch('/api/contractor-dashboard?email=' + encodeURIComponent(email));
+    const data = await res.json();
+    if (!data.found) {
+      content.innerHTML = '<div class="empty">No contractor account found for this email. If you just signed up, check that you used the same email — or contact hello@stackbid.app.</div>';
+      return;
+    }
+
+    const c = data.contractor;
+    const verifiedBadge = c.license_verified ? '<span class="verified">✓ Verified</span>' : '';
+    let html = `
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num">${c.leads_received || 0}</div><div class="stat-label">Leads received</div></div>
+        <div class="stat-card"><div class="stat-num">${c.leads_converted || 0}</div><div class="stat-label">Jobs won</div></div>
+        <div class="stat-card"><div class="stat-num">${c.rating ? c.rating.toFixed(1) : '—'}</div><div class="stat-label">Rating (${c.review_count || 0})</div></div>
+      </div>
+      <div style="font-weight:700;margin-bottom:10px;">${c.company_name}${verifiedBadge} <span style="font-weight:400;color:#667;font-size:13px;">· ${c.subscription_tier || 'free'} ${c.subscription_active ? '(active)' : '(inactive)'}</span></div>
+    `;
+
+    if (!data.leads.length) {
+      html += '<div class="empty">No leads yet. New leads from homeowners on StackBid will show up here automatically.</div>';
+    } else {
+      html += data.leads.map(l => `
+        <div class="lead-card" id="lead-${l.id}">
+          <div class="lead-top">
+            <div>
+              <div class="lead-title">${l.project_type || 'Project'} — ZIP ${l.zip_code || '—'}</div>
+              <div class="lead-sub">${l.budget_range || 'Budget not specified'} · ${new Date(l.created_at).toLocaleDateString()}</div>
+            </div>
+            <span class="status-pill status-${l.status}">${l.status}</span>
+          </div>
+          ${l.status === 'new' || l.status === 'contacted' ? `
+          <div class="lead-actions">
+            ${l.status === 'new' ? `<button onclick="setStatus(${l.id}, 'contacted')">Mark Contacted</button>` : ''}
+            <button onclick="setStatus(${l.id}, 'won')">Won</button>
+            <button onclick="setStatus(${l.id}, 'lost')">Lost</button>
+          </div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    content.innerHTML = html;
+  } catch (e) {
+    content.innerHTML = '<div class="empty">Error loading your dashboard. Please try again.</div>';
+  }
+}
+
+async function setStatus(leadId, status) {
+  try {
+    await fetch('/api/contractor-dashboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lead_id: leadId, status }),
+    });
+    load();
+  } catch (e) {
+    alert('Could not update — please try again.');
+  }
+}
+
+if (savedEmail) load();
+</script>
+</body>
+</html>
