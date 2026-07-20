@@ -14,7 +14,7 @@
 const { Resend } = require('resend');
 const { buildPdfBuffer } = require('./email-pdf');
 
-const SYSTEM_PROMPT = `You are Nika, the friendly AI assistant built into the StackBid materials cost estimator. You help homeowners understand THEIR CURRENT estimate (shown to you as JSON context below) and can email them a PDF copy of it if they ask. Introduce yourself as Nika only if asked who you are — don't repeat your name in every message.
+const SYSTEM_PROMPT = `You are Nika, the friendly AI assistant built into the StackBid materials cost estimator. You help homeowners understand THEIR CURRENT estimate — both the materials breakdown AND the estimated labor cost / total project cost when available (shown to you as context below) — and can email them a PDF copy of it if they ask. Introduce yourself as Nika only if asked who you are — don't repeat your name in every message.
 
 Rules:
 - Be brief. This is a chat widget on a mobile-friendly page, not an essay.
@@ -28,13 +28,15 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors, body: '' };
 
   try {
-    const { messages, estimate, zip } = JSON.parse(event.body || '{}');
+    const { messages, estimate, zip, labor, total_project_range } = JSON.parse(event.body || '{}');
     if (!Array.isArray(messages) || !messages.length) {
       return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'messages required' }) };
     }
 
     const estimateContext = estimate
-      ? `Current estimate context (JSON): ${JSON.stringify(estimate).slice(0, 6000)}\nZIP: ${zip || 'unknown'}`
+      ? `Materials estimate context (JSON): ${JSON.stringify(estimate).slice(0, 6000)}\nZIP: ${zip || 'unknown'}\n` +
+        (labor ? `Estimated labor (already calculated for this project): ${JSON.stringify(labor)}\n` : 'Labor estimate: not yet calculated for this project.\n') +
+        (total_project_range ? `Total project cost range (materials + labor): $${total_project_range.low} - $${total_project_range.high}\n` : '')
       : 'No estimate has been generated yet in this session.';
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
