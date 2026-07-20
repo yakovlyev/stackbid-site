@@ -73,7 +73,8 @@ const handlers = {
   'log-consent': require('./netlify/functions/log-consent'),
   'create-portal-session': require('./netlify/functions/create-portal-session'),
   'price-anomalies': require('./netlify/functions/price-anomalies'),
-  'labor-estimate': require('./netlify/functions/labor-estimate')
+  'labor-estimate': require('./netlify/functions/labor-estimate'),
+  'assistant': require('./netlify/functions/assistant')
 };
 
 // Contact form handler
