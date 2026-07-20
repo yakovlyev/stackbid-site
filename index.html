@@ -13,6 +13,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -3189,6 +3190,7 @@ async function loadLaborEstimate(projectType, zip, materialsTotal) {
       body: JSON.stringify({ project_type: projectType, zip }),
     });
     const d = await res.json();
+    window.lastLaborData = d.available ? d : null;
     if (!d.available) return;
 
     document.getElementById('labor-range').textContent =
@@ -3200,10 +3202,12 @@ async function loadLaborEstimate(projectType, zip, materialsTotal) {
     const totalHigh = materialsTotal + d.labor_high;
     document.getElementById('total-project-range').textContent =
       `$${totalLow.toLocaleString()} – $${totalHigh.toLocaleString()}`;
+    window.lastTotalProjectRange = { low: totalLow, high: totalHigh };
 
     box.style.display = 'block';
     if (totalBox) totalBox.style.display = 'block';
   } catch (e) {
+    window.lastLaborData = null;
     // тихо скрываем блок при сбое — это дополнение, не должно ломать основную смету
   }
 }
@@ -3541,7 +3545,8 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
   </div>
   <div id="sb-assist-messages"></div>
   <div id="sb-assist-input-row">
-    <input id="sb-assist-input" type="text" placeholder="Ask about your estimate..." onkeydown="if(event.key==='Enter') sbAssistSend()">
+    <button id="sb-assist-mic" onclick="sbAssistVoice()" title="Speak your question" style="background:none;border:1.5px solid #E5E9EF;border-radius:50%;width:36px;height:36px;font-size:15px;cursor:pointer;flex-shrink:0;">🎙️</button>
+    <input id="sb-assist-input" type="text" placeholder="Ask about your estimate or labor..." onkeydown="if(event.key==='Enter') sbAssistSend()">
     <button id="sb-assist-send" onclick="sbAssistSend()">➤</button>
   </div>
 </div>
@@ -3550,13 +3555,14 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
 (function() {
   let sbHistory = [];
   let sbOpened = false;
+  let sbVoiceMode = false; // true если последний вопрос задан голосом — тогда и ответ озвучиваем
 
   window.sbAssistToggle = function() {
     const panel = document.getElementById('sb-assist-panel');
     panel.classList.toggle('open');
     if (!sbOpened && panel.classList.contains('open')) {
       sbOpened = true;
-      sbAddMessage('bot', "Hi, I'm Nika 👋 I'm the StackBid assistant — got any questions about your estimate? Ask me anything, or just close this if you're all set.");
+      sbAddMessage('bot', "Hi, I'm Nika 👋 I'm the StackBid assistant — ask me anything about your materials, estimated labor, or total project cost. You can type or tap the mic to talk. Just close this if you're all set.");
     }
   };
 
@@ -3585,6 +3591,42 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     box.scrollTop = box.scrollHeight;
   }
 
+  // Голосовой ввод вопроса — тот же Web Speech API, что уже используется для
+  // голосового описания проекта, просто в более простом режиме одной фразы.
+  window.sbAssistVoice = function() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micBtn = document.getElementById('sb-assist-mic');
+    if (!SR) {
+      sbAddMessage('bot', "Voice input isn't supported in this browser — please type your question instead.");
+      return;
+    }
+    const rec = new SR();
+    rec.lang = 'en-US';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    micBtn.textContent = '🔴';
+    rec.onresult = function(e) {
+      const transcript = e.results[0][0].transcript;
+      document.getElementById('sb-assist-input').value = transcript;
+      sbVoiceMode = true;
+      sbAssistSend();
+    };
+    rec.onerror = function() { micBtn.textContent = '🎙️'; };
+    rec.onend = function() { micBtn.textContent = '🎙️'; };
+    rec.start();
+  };
+
+  function sbMaybeSpeak(text) {
+    if (!sbVoiceMode || !window.speechSynthesis) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = 1.05;
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* тихо игнорируем — озвучка не критична */ }
+  }
+
   window.sbAssistSend = async function() {
     const input = document.getElementById('sb-assist-input');
     const text = input.value.trim();
@@ -3607,6 +3649,8 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
           messages: sbHistory,
           estimate: window.lastEstimateData || null,
           zip: window.lastEstimateZip || null,
+          labor: window.lastLaborData || null,
+          total_project_range: window.lastTotalProjectRange || null,
         }),
       });
       const data = await res.json();
@@ -3614,9 +3658,12 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
       const reply = data.reply || "Sorry, I couldn't process that — try again?";
       sbAddMessage('bot', reply);
       sbHistory.push({ role: 'assistant', content: reply });
+      sbMaybeSpeak(reply);
     } catch (e) {
       document.getElementById('sb-thinking')?.remove();
       sbAddMessage('bot', "Sorry, something went wrong. Please try again.");
+    } finally {
+      sbVoiceMode = false; // следующий ввод текстом — по умолчанию без озвучки, пока не нажат микрофон снова
     }
   };
 })();
