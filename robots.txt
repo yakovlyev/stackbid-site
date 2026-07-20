@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /admin-prices.html
+Disallow: /contractor-dashboard.html
 Sitemap: https://stackbid.app/sitemap.xml
