@@ -1112,6 +1112,10 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             </div>
           </div>
           <div class="ios-tip" id="iostip">📱 On iPhone/iPad: tap "Save PDF" → tap the Share icon → "Save to Files" or "Print"</div>
+          <div id="total-project-box" style="display:none;background:#0C2340;border-radius:12px;padding:18px 22px;margin-bottom:16px;text-align:center;">
+            <div style="font-size:12px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Estimated Total Project Cost (materials + labor)</div>
+            <div id="total-project-range" style="font-size:26px;font-weight:800;color:#F5A623;">—</div>
+          </div>
           <div class="totals" id="etotals"></div>
           <div style="overflow-x:auto;">
             <table class="est-table" id="etable">
@@ -1125,6 +1129,11 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
               </tr></thead>
               <tbody id="etbody"></tbody>
             </table>
+          </div>
+          <div id="labor-estimate-box" style="display:none;margin-top:16px;background:var(--offwhite);border:1px solid var(--border);border-radius:12px;padding:18px 22px;">
+            <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;">🔨 Estimated Labor <span style="font-weight:400;color:var(--muted);">(separate from materials above)</span></div>
+            <div id="labor-range" style="font-size:22px;font-weight:800;color:var(--ink);margin-bottom:6px;">—</div>
+            <div id="labor-note" style="font-size:12px;color:var(--muted);line-height:1.6;"></div>
           </div>
           <!-- EMAIL PDF CAPTURE -->
           <div id="email-pdf-box" style="margin-top:24px;background:linear-gradient(135deg,#F5A623,#E8870A);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -2669,6 +2678,7 @@ Rules:
     }
     clearInterval(iv);
     pfill.style.width = '100%';
+    json.project_type = type;
     setTimeout(async () => {
       document.getElementById('pbar').style.display = 'none';
       document.getElementById('smsg').style.display = 'none';
@@ -3173,6 +3183,39 @@ function renderEstimate(data, zip) {
 
   // Load local contractor and supplier by ZIP
   loadLocalMatches(zip);
+  loadLaborEstimate(data.project_type, zip, Math.round(tL));
+}
+
+async function loadLaborEstimate(projectType, zip, materialsTotal) {
+  const box = document.getElementById('labor-estimate-box');
+  const totalBox = document.getElementById('total-project-box');
+  if (!box) return;
+  box.style.display = 'none';
+  if (totalBox) totalBox.style.display = 'none';
+  try {
+    const res = await fetch('/api/labor-estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project_type: projectType, zip }),
+    });
+    const d = await res.json();
+    if (!d.available) return;
+
+    document.getElementById('labor-range').textContent =
+      `$${d.labor_low.toLocaleString()} – $${d.labor_high.toLocaleString()}`;
+    document.getElementById('labor-note').textContent =
+      `Based on ${d.region} regional wage data for ${d.trade.replace('_',' ')} (${d.wage_source}) × ${d.hours_low}-${d.hours_high} typical hours for this project size. Labor varies significantly by contractor, complexity, and local demand — always get 2-3 local quotes.`;
+
+    const totalLow = materialsTotal + d.labor_low;
+    const totalHigh = materialsTotal + d.labor_high;
+    document.getElementById('total-project-range').textContent =
+      `$${totalLow.toLocaleString()} – $${totalHigh.toLocaleString()}`;
+
+    box.style.display = 'block';
+    if (totalBox) totalBox.style.display = 'block';
+  } catch (e) {
+    // тихо скрываем блок при сбое — это дополнение, не должно ломать основную смету
+  }
 }
 
 async function loadLocalMatches(zip) {
