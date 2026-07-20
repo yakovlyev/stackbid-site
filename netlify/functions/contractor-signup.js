@@ -1,9 +1,18 @@
-// Регистрация Pro-подрядчика. Раньше форма писала в Supabase напрямую
-// anon-ключом — у таблицы contractors нет политики на INSERT для anon,
-// поэтому запись молча проваливалась каждый раз (RLS отклонял, ошибка
-// не проверялась, форма всё равно показывала "успех"). Теперь пишет
-// через сервер с SERVICE_KEY — как и весь остальной бэкенд.
-const { Resend } = require('resend');
+// Регистрация Pro-подрядчика.
+//
+// ВАЖНО (исправлено 17.07.2026 — реальный риск, найден до того, как кто-то
+// пострадал): раньше эта функция сразу выставляла subscription_active=true
+// в базе просто по факту заполнения формы — то есть подрядчик получал
+// доступ без единой привязанной карты, а через 30 дней должно было начать
+// списываться $49/мес неизвестно каким механизмом (никакого механизма
+// физически не было). Обратный, более опасный сценарий — "заплатил и
+// ничего не получил" — тоже был возможен в теории при любом сбое между
+// формой и базой. Теперь: запись создаётся НЕактивной, подрядчик уходит на
+// настоящий Stripe Checkout с 30-дневным триалом (карта привязывается
+// сразу, первое списание делает сам Stripe через 30 дней — не наш код).
+// subscription_active становится true только когда Stripe подтвердит через
+// вебхук (stripe-webhook.js), что подписка реально создана.
+const Stripe = require('stripe');
 
 exports.handler = async (event) => {
   const cors = { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Access-Control-Allow-Methods': 'POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
@@ -35,11 +44,11 @@ exports.handler = async (event) => {
         zip_code: zip,
         city: '',
         license_number: license,
-        license_verified: false, // верификация — отдельный ручной/будущий процесс, не выставляем true просто по факту регистрации
+        license_verified: false, // верификация — отдельный ручной/будущий процесс
         specializations: [specialization || 'General Contractor'],
         service_zip_codes: [zip],
-        subscription_tier: 'trial',
-        subscription_active: true, // 30-дневный пробный период активен сразу
+        subscription_tier: 'pending_payment',
+        subscription_active: false, // становится true только когда Stripe подтвердит оплату/триал
         leads_received: 0,
         leads_converted: 0,
         source: 'pro_signup',
@@ -54,30 +63,42 @@ exports.handler = async (event) => {
     const rows = await r.json();
     const contractorId = rows[0]?.id;
 
-    // Письмо подрядчику — подтверждение
-    if (process.env.RESEND_API_KEY) {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      try {
-        await resend.emails.send({
-          from: 'StackBid <hello@stackbid.app>',
-          to: email,
-          subject: 'Welcome to StackBid Pro — your 30-day trial is active',
-          html: `<p>Hi ${name},</p><p>You're in! <strong>${company}</strong> is now listed on StackBid with your 30-day Pro trial active — priority placement and lead notifications are live now.</p><p>When a homeowner in your area requests a quote, you'll get an email with their project type, ZIP, and budget range right away.</p><p>Questions? Just reply to this email.</p><p>— StackBid</p>`,
-        });
-        // Внутреннее уведомление
-        await resend.emails.send({
-          from: 'StackBid <hello@stackbid.app>',
-          to: 'hello@stackbid.app',
-          subject: `New Pro contractor signup: ${company}`,
-          html: `<p>${company} (${name}, ${email}, ${phone}) signed up for Pro trial. State: ${state} ${zip}. License: ${license}.</p>`,
-        });
-      } catch (e) {
-        console.error('contractor signup email failed:', e.message);
-        // не блокируем регистрацию из-за сбоя письма — контрактор уже сохранён в базе
-      }
+    // Сразу создаём Stripe Checkout Session с 30-дневным триалом — фронтенд
+    // должен перенаправить пользователя на полученный url для ввода карты.
+    const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+    const STRIPE_PRICE_ID_CONTRACTOR = process.env.STRIPE_PRICE_ID_CONTRACTOR;
+    const SITE_URL = process.env.SITE_URL || 'https://stackbid.app';
+
+    if (!STRIPE_SECRET_KEY || !STRIPE_PRICE_ID_CONTRACTOR) {
+      // Оплата ещё не настроена на бэкенде (нужен STRIPE_PRICE_ID_CONTRACTOR
+      // в Render) — честно говорим об этом, не притворяемся, что всё готово.
+      return {
+        statusCode: 200,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          success: true,
+          contractor_id: contractorId,
+          checkout_url: null,
+          warning: 'Contractor billing is not fully configured yet — your info is saved, but activation is pending. We will follow up by email.',
+        }),
+      };
     }
 
-    return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true, contractor_id: contractorId }) };
+    const stripe = new Stripe(STRIPE_SECRET_KEY);
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer_email: email,
+      line_items: [{ price: STRIPE_PRICE_ID_CONTRACTOR, quantity: 1 }],
+      success_url: `${SITE_URL}/contractor-dashboard.html?signup=success`,
+      cancel_url: `${SITE_URL}/?contractor_signup=cancelled`,
+      subscription_data: {
+        trial_period_days: 30,
+        metadata: { tier: 'contractor', contractor_id: String(contractorId) },
+      },
+      metadata: { tier: 'contractor', contractor_id: String(contractorId), app_email: email },
+    });
+
+    return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true, contractor_id: contractorId, checkout_url: session.url }) };
   } catch (err) {
     return { statusCode: 500, headers: { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Content-Type': 'application/json' }, body: JSON.stringify({ error: err.message }) };
   }
