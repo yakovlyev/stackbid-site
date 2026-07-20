@@ -628,7 +628,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
 /* PRINT — see the single consolidated @media print block above */
 
-.local-matches-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.local-matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
 
 /* RESPONSIVE */
 @media (max-width: 640px) {
@@ -1433,6 +1433,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Specialization</label>
         <select id="pro-spec" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
           <option>General Contractor</option>
+          <option>Handyman</option>
           <option>Roofing</option>
           <option>Remodeling</option>
           <option>Framing</option>
@@ -3262,6 +3263,27 @@ async function loadLocalMatches(zip) {
       contractor = data[0];
     }
 
+    // Тот же поиск, но только среди подрядчиков со специализацией Handyman —
+    // отдельное окно специально под мелкие/многопрофильные работы, где нужен
+    // не "подрядчик на весь проект", а один мастер на все руки.
+    const handySelect = 'select=id,company_name,phone,city,state,specializations,license_number,license_verified';
+    let handyman = null;
+    let hResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?${handySelect}&specializations=cs.{Handyman}&zip_code=eq.${zip}&${order}&limit=1`, { headers });
+    let hData = await hResp.json();
+    handyman = hData[0];
+
+    if (!handyman) {
+      hResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?${handySelect}&specializations=cs.{Handyman}&state=eq.${primaryState}&${order}&limit=1`, { headers });
+      hData = await hResp.json();
+      handyman = hData[0];
+    }
+
+    if (!handyman) {
+      hResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?${handySelect}&specializations=cs.{Handyman}&${order}&limit=1`, { headers });
+      hData = await hResp.json();
+      handyman = hData[0];
+    }
+
     // Build HTML
     const phone = contractor ? (contractor.phone || '') : '';
     const companyName = contractor ? (contractor.company_name || '') : '';
@@ -3272,7 +3294,15 @@ async function loadLocalMatches(zip) {
     const verifiedBadge = contractor && contractor.license_verified
       ? '<span style="display:inline-block;margin-left:6px;background:#E8F5E9;color:#2E7D32;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;vertical-align:middle;">✓ Verified</span>' : '';
 
+    const hyPhone = handyman ? (handyman.phone || '') : '';
+    const hyName = handyman ? (handyman.company_name || '') : '';
+    const hyCity = handyman ? (handyman.city || '') : '';
+    const hyState = handyman ? (handyman.state || '') : '';
+    const hyVerifiedBadge = handyman && handyman.license_verified
+      ? '<span style="display:inline-block;margin-left:6px;background:#E8F5E9;color:#2E7D32;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;vertical-align:middle;">✓ Verified</span>' : '';
+
     window.currentContractorMatch = contractor ? { id: contractor.id, phone } : null;
+    window.currentHandymanMatch = handyman ? { id: handyman.id, phone: hyPhone } : null;
 
     container.innerHTML =
       '<div class="local-matches-grid">' +
@@ -3289,6 +3319,14 @@ async function loadLocalMatches(zip) {
           '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ' + esc(city) + ', ' + esc(state) + '</div>' +
           '<div style="font-size:13px;color:#666;margin-bottom:12px;">🔧 ' + esc(spec) + ' · License: ' + esc(license) + '</div>' +
           '<button id="contractor-quote-btn" onclick="requestContractorQuote()" style="display:inline-block;background:#F5A623;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">📞 Request Quote</button>' +
+        '</div>' : '') +
+        (handyman ?
+        '<div style="background:#fff;border:2px solid #4C956C;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
+          '<div style="font-size:11px;font-weight:600;color:#2E7D4F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🧰 Handyman</div>' +
+          '<div style="font-size:16px;font-weight:700;color:#0C2340;margin-bottom:4px;">' + esc(hyName) + hyVerifiedBadge + '</div>' +
+          '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ' + esc(hyCity) + ', ' + esc(hyState) + '</div>' +
+          '<div style="font-size:13px;color:#666;margin-bottom:12px;">For smaller jobs & multi-trade tasks — no need for a full contractor</div>' +
+          '<button id="handyman-quote-btn" onclick="requestHandymanQuote()" style="display:inline-block;background:#4C956C;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">📞 Request Quote</button>' +
         '</div>' : '') +
       '</div>';
 
@@ -3331,6 +3369,33 @@ async function requestContractorQuote() {
     // не блокируем звонок, даже если уведомление не отправилось
   }
   btn.outerHTML = '<a href="tel:' + esc(match.phone) + '" style="display:inline-block;background:#F5A623;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">📞 ' + esc(match.phone) + '</a><div style="font-size:11px;color:#2E7D32;margin-top:6px;">✓ Contractor notified of your project</div>';
+}
+
+async function requestHandymanQuote() {
+  const btn = document.getElementById('handyman-quote-btn');
+  const match = window.currentHandymanMatch;
+  if (!match || !btn) return;
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  try {
+    const data = window.lastEstimateData;
+    const totalRange = window.lastTotalProjectRange;
+    await fetch('/api/contractor-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contractor_id: match.id,
+        user_email: (document.getElementById('gate-email') || {}).value || null,
+        project_type: data ? data.project_type : null,
+        zip_code: window.lastEstimateZip || null,
+        budget_low: totalRange ? totalRange.low : null,
+        budget_high: totalRange ? totalRange.high : null,
+      }),
+    });
+  } catch (e) {
+    // не блокируем звонок, даже если уведомление не отправилось
+  }
+  btn.outerHTML = '<a href="tel:' + esc(match.phone) + '" style="display:inline-block;background:#4C956C;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">📞 ' + esc(match.phone) + '</a><div style="font-size:11px;color:#2E7D32;margin-top:6px;">✓ Handyman notified of your project</div>';
 }
 
 async function submitProForm() {
