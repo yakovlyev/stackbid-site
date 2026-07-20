@@ -74,7 +74,10 @@ const handlers = {
   'create-portal-session': require('./netlify/functions/create-portal-session'),
   'price-anomalies': require('./netlify/functions/price-anomalies'),
   'labor-estimate': require('./netlify/functions/labor-estimate'),
-  'assistant': require('./netlify/functions/assistant')
+  'assistant': require('./netlify/functions/assistant'),
+  'contractor-signup': require('./netlify/functions/contractor-signup'),
+  'contractor-lead': require('./netlify/functions/contractor-lead'),
+  'contractor-dashboard': require('./netlify/functions/contractor-dashboard')
 };
 
 // Contact form handler
