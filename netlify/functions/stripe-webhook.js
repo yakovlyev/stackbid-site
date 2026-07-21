@@ -33,20 +33,22 @@ async function sendConfirmationEmail(email) {
   }
 }
 
-async function sendContractorConfirmationEmail(email, trialEnd) {
+async function sendContractorConfirmationEmail(email, trialEnd, isHandyman) {
   try {
     if (!process.env.RESEND_API_KEY) return;
     const resend = new Resend(process.env.RESEND_API_KEY);
     const trialEndStr = trialEnd ? new Date(trialEnd * 1000).toLocaleDateString() : 'in 30 days';
+    const price = isHandyman ? '$29' : '$49';
+    const roleLabel = isHandyman ? 'Handyman' : 'Contractor';
     await resend.emails.send({
       from: 'StackBid <hello@stackbid.app>',
       to: email,
-      subject: 'Your StackBid Pro contractor trial is confirmed',
+      subject: `Your StackBid Pro ${roleLabel.toLowerCase()} trial is confirmed`,
       html: `
         <p>Hi,</p>
-        <p>Your card is on file and your <strong>30-day free trial</strong> of StackBid Pro Contractor is active — priority placement and lead notifications start now.</p>
+        <p>Your card is on file and your <strong>30-day free trial</strong> of StackBid Pro ${roleLabel} is active — priority placement and lead notifications start now.</p>
         <ul>
-          <li>Price after trial: <strong>$49 / month</strong></li>
+          <li>Price after trial: <strong>${price} / month</strong></li>
           <li>First charge: <strong>${trialEndStr}</strong></li>
           <li>Billing: monthly, renews automatically until canceled</li>
         </ul>
@@ -125,7 +127,7 @@ exports.handler = async (event) => {
     switch (stripeEvent.type) {
       case 'checkout.session.completed': {
         const session = stripeEvent.data.object;
-        const isContractor = session.metadata?.tier === 'contractor';
+        const isContractor = session.metadata?.tier === 'contractor' || session.metadata?.tier === 'handyman';
         const email = session.customer_details?.email || session.metadata?.app_email;
 
         if (isContractor && session.metadata?.contractor_id) {
@@ -143,7 +145,7 @@ exports.handler = async (event) => {
             await updateContractorById(SUPABASE_URL, SUPABASE_KEY, session.metadata.contractor_id, {
               trial_ends_at: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
             });
-            if (email) await sendContractorConfirmationEmail(email, sub.trial_end);
+            if (email) await sendContractorConfirmationEmail(email, sub.trial_end, session.metadata?.tier === 'handyman');
           } catch (e) {
             console.error('could not fetch subscription for trial_end:', e.message);
           }
@@ -161,7 +163,7 @@ exports.handler = async (event) => {
       case 'customer.subscription.updated': {
         const sub = stripeEvent.data.object;
         const isActive = sub.status === 'active' || sub.status === 'trialing';
-        if (sub.metadata?.tier === 'contractor' && sub.metadata?.contractor_id) {
+        if ((sub.metadata?.tier === 'contractor' || sub.metadata?.tier === 'handyman') && sub.metadata?.contractor_id) {
           await updateContractorById(SUPABASE_URL, SUPABASE_KEY, sub.metadata.contractor_id, {
             subscription_active: isActive,
             subscription_tier: sub.status === 'trialing' ? 'trial' : 'pro',
@@ -177,7 +179,7 @@ exports.handler = async (event) => {
       }
       case 'customer.subscription.deleted': {
         const sub = stripeEvent.data.object;
-        if (sub.metadata?.tier === 'contractor' && sub.metadata?.contractor_id) {
+        if ((sub.metadata?.tier === 'contractor' || sub.metadata?.tier === 'handyman') && sub.metadata?.contractor_id) {
           await updateContractorById(SUPABASE_URL, SUPABASE_KEY, sub.metadata.contractor_id, { subscription_active: false, subscription_tier: 'cancelled' });
         } else {
           await setProByCustomerId(SUPABASE_URL, SUPABASE_KEY, sub.customer, { is_pro: false });
