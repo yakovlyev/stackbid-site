@@ -65,13 +65,19 @@ exports.handler = async (event) => {
 
     // Сразу создаём Stripe Checkout Session с 30-дневным триалом — фронтенд
     // должен перенаправить пользователя на полученный url для ввода карты.
+    // Handyman платит $29/мес, а не $49 — они и так зарабатывают своим
+    // трудом на месте, полноценный подрядчик-тариф для них не оправдан.
+    const isHandyman = (specialization || '').trim() === 'Handyman';
     const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-    const STRIPE_PRICE_ID_CONTRACTOR = process.env.STRIPE_PRICE_ID_CONTRACTOR;
+    const STRIPE_PRICE_ID = isHandyman
+      ? process.env.STRIPE_PRICE_ID_HANDYMAN
+      : process.env.STRIPE_PRICE_ID_CONTRACTOR;
     const SITE_URL = process.env.SITE_URL || 'https://stackbid.app';
 
-    if (!STRIPE_SECRET_KEY || !STRIPE_PRICE_ID_CONTRACTOR) {
+    if (!STRIPE_SECRET_KEY || !STRIPE_PRICE_ID) {
       // Оплата ещё не настроена на бэкенде (нужен STRIPE_PRICE_ID_CONTRACTOR
-      // в Render) — честно говорим об этом, не притворяемся, что всё готово.
+      // и/или STRIPE_PRICE_ID_HANDYMAN в Render) — честно говорим об этом,
+      // не притворяемся, что всё готово.
       return {
         statusCode: 200,
         headers: { ...cors, 'Content-Type': 'application/json' },
@@ -88,14 +94,14 @@ exports.handler = async (event) => {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: email,
-      line_items: [{ price: STRIPE_PRICE_ID_CONTRACTOR, quantity: 1 }],
+      line_items: [{ price: STRIPE_PRICE_ID, quantity: 1 }],
       success_url: `${SITE_URL}/contractor-dashboard.html?signup=success`,
       cancel_url: `${SITE_URL}/?contractor_signup=cancelled`,
       subscription_data: {
         trial_period_days: 30,
-        metadata: { tier: 'contractor', contractor_id: String(contractorId) },
+        metadata: { tier: isHandyman ? 'handyman' : 'contractor', contractor_id: String(contractorId) },
       },
-      metadata: { tier: 'contractor', contractor_id: String(contractorId), app_email: email },
+      metadata: { tier: isHandyman ? 'handyman' : 'contractor', contractor_id: String(contractorId), app_email: email },
     });
 
     return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true, contractor_id: contractorId, checkout_url: session.url }) };
