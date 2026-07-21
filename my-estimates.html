@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StackBid — My Estimates</title>
+<style>
+  body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #F7F8FA; color: #0C2340; margin: 0; padding: 24px 16px; }
+  .wrap { max-width: 680px; margin: 0 auto; }
+  .header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .header a { color: #0C2340; text-decoration: none; font-weight: 700; font-size: 18px; }
+  h1 { font-size: 20px; margin: 20px 0 4px; }
+  .sub { color: #667; font-size: 13px; margin-bottom: 20px; }
+  .lookup-row { display: flex; gap: 8px; margin-bottom: 24px; }
+  .lookup-row input { flex: 1; padding: 11px 14px; border-radius: 8px; border: 1.5px solid #DDD; font-size: 14px; }
+  .lookup-row button { padding: 11px 20px; border-radius: 8px; border: none; background: #0C2340; color: white; font-weight: 700; cursor: pointer; }
+  .pro-badge { display: inline-block; background: #F5A623; color: #0C2340; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+  .est-card { background: white; border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .est-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .est-sub { font-size: 12.5px; color: #667; margin-bottom: 8px; }
+  .est-totals { display: flex; gap: 16px; font-size: 13px; }
+  .est-totals span { color: #445; }
+  .est-totals b { color: #0C2340; }
+  .empty { text-align: center; color: #889; padding: 40px 0; font-size: 14px; }
+  .no-token { text-align: center; color: #92400E; background: #FEF3C7; border-radius: 10px; padding: 16px; font-size: 13.5px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <a href="/">← StackBid</a>
+  </div>
+  <h1>📋 My Estimates</h1>
+  <div class="sub">Your saved materials estimates, all in one place.</div>
+
+  <div class="lookup-row">
+    <input type="email" id="email" placeholder="Your email">
+    <button onclick="load()">View my estimates</button>
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<script>
+const savedEmail = localStorage.getItem('sb_user_email');
+if (savedEmail) document.getElementById('email').value = savedEmail;
+
+async function load() {
+  const email = document.getElementById('email').value.trim();
+  if (!email) return alert('Enter the email you used on StackBid.');
+
+  const token = localStorage.getItem('sb_access_token');
+  const content = document.getElementById('content');
+
+  if (!token) {
+    content.innerHTML = '<div class="no-token">We couldn\'t find a saved session on this device for that email. Generate a new estimate on this device with the same email to link your history here.</div>';
+    return;
+  }
+
+  content.innerHTML = '<div class="empty">Loading…</div>';
+
+  try {
+    const res = await fetch('/api/get-estimates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, token }),
+    });
+    const data = await res.json();
+
+    if (res.status === 403) {
+      content.innerHTML = '<div class="no-token">That email doesn\'t match the saved session on this device. Generate a new estimate here with this email to link it.</div>';
+      return;
+    }
+
+    if (!data.estimates || !data.estimates.length) {
+      content.innerHTML = '<div class="empty">No saved estimates yet. Generate one on the home page — it\'ll show up here automatically.</div>';
+      return;
+    }
+
+    const proBadge = data.is_pro ? '<span class="pro-badge">PRO</span>' : '';
+    content.innerHTML = `<div style="margin-bottom:12px;font-size:13px;color:#667;">${data.estimates.length} estimate${data.estimates.length > 1 ? 's' : ''}${proBadge}</div>` +
+      data.estimates.map(e => `
+        <div class="est-card">
+          <div class="est-title">${e.title || e.project_type || 'Estimate'} — ZIP ${e.zip || '—'}</div>
+          <div class="est-sub">${new Date(e.created_at).toLocaleDateString()}</div>
+          <div class="est-totals">
+            ${e.total_retail ? `<span>Retail: <b>$${Math.round(e.total_retail).toLocaleString()}</b></span>` : ''}
+            ${e.total_wholesale ? `<span>Wholesale: <b>$${Math.round(e.total_wholesale).toLocaleString()}</b></span>` : ''}
+            ${e.total_local ? `<span>Local: <b>$${Math.round(e.total_local).toLocaleString()}</b></span>` : ''}
+          </div>
+        </div>
+      `).join('');
+  } catch (e) {
+    content.innerHTML = '<div class="empty">Error loading your estimates. Please try again.</div>';
+  }
+}
+
+if (savedEmail) load();
+</script>
+</body>
+</html>
