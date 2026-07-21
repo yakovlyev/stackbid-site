@@ -54,7 +54,7 @@
 {"@type":"Question","name":"Does StackBid's estimate include labor costs?","acceptedAnswer":{"@type":"Answer","text":"Yes — alongside the materials breakdown, StackBid now shows an estimated labor cost range based on regional wage data and typical hours for your project type, plus a combined Total Project Cost estimate. Actual labor cost varies by contractor, complexity, and local demand, so we recommend getting 2-3 local quotes to confirm."}},
 {"@type":"Question","name":"Are the contractors listed on StackBid verified?","acceptedAnswer":{"@type":"Answer","text":"Contractors in the StackBid database have provided license numbers, but independently verifying any contractor's license through the state licensing board before hiring is strongly recommended. StackBid does not endorse specific contractors."}},
 {"@type":"Question","name":"How do I get the best price on construction materials?","acceptedAnswer":{"@type":"Answer","text":"Use a StackBid estimate as a baseline, then contact the local supplier shown in the third column, ask about bulk discounts for large orders, consider buying during the off-season, and ask a contractor if they can use their trade account for better pricing."}},
-{"@type":"Question","name":"How does a contractor get listed on StackBid?","acceptedAnswer":{"@type":"Answer","text":"Contractors and handymen can sign up directly on the site for a 30-day free Pro trial ($49/month after). Pro listings get priority placement and instant email notifications when a homeowner in their area requests a quote. Handymen get their own dedicated matching window, separate from full contractors. A verified badge is added after StackBid confirms the license."}}
+{"@type":"Question","name":"How does a contractor get listed on StackBid?","acceptedAnswer":{"@type":"Answer","text":"Contractors and handymen can sign up directly on the site for a 30-day free Pro trial ($49/month for contractors, $29/month for handymen). Pro listings get priority placement and instant email notifications when a homeowner in their area requests a quote. Handymen get their own dedicated matching window, separate from full contractors. A verified badge is added after StackBid confirms the license."}}
 ]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1242,7 +1242,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
       <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
         <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">I am a contractor. How do I get listed on StackBid? <span style="color:#F5A623;font-size:20px;">+</span></summary>
-        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Sign up directly on the site for a 30-day free Pro trial ($49/month after) — priority placement and lead notifications start immediately. A verified badge is added once StackBid confirms your license. Questions? <a href="mailto:hello@stackbid.app" style="color:#F5A623;">hello@stackbid.app</a></p>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Sign up directly on the site for a 30-day free Pro trial ($49/month for contractors, $29/month for handymen) — priority placement and lead notifications start immediately. A verified badge is added once StackBid confirms your license. Questions? <a href="mailto:hello@stackbid.app" style="color:#F5A623;">hello@stackbid.app</a></p>
       </details>
 
     </div>
@@ -1335,7 +1335,8 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         </div>
       </div>
       <div style="font-size:28px;font-weight:800;color:#F5A623;margin-bottom:4px;">$49<span style="font-size:16px;font-weight:400;color:rgba(255,255,255,0.6)">/month</span></div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:24px;">First 30 days free · Cancel anytime</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:8px;">First 30 days free · Cancel anytime</div>
+      <div style="font-size:13px;color:#4C956C;font-weight:700;margin-bottom:24px;">🧰 Handyman? Just $29/month — pick "Handyman" on the next screen.</div>
       <button onclick="document.getElementById('pro-form-overlay').style.display='flex'" style="background:#F5A623;color:#0C2340;border:3px solid #C9952A;padding:14px 32px;border-radius:8px;font-weight:800;font-size:17px;cursor:pointer;box-shadow:0 6px 20px rgba(197,149,42,0.4);text-transform:uppercase;letter-spacing:0.02em;">🔨 JOIN AS PRO CONTRACTOR →</button>
     </div>
     <!-- "What Pro contractors say" removed 17.07.2026 — fabricated quotes,
@@ -1355,7 +1356,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   <div style="background:#fff;border-radius:16px;padding:40px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;">
     <button onclick="document.getElementById('pro-form-overlay').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#999;">×</button>
     <h2 style="font-size:24px;font-weight:800;color:#0C2340;margin-bottom:4px;">Join StackBid Pro</h2>
-    <p style="font-size:14px;color:#666;margin-bottom:24px;">First 30 days free · $49/month after · Cancel anytime</p>
+    <p id="pro-form-price-note" style="font-size:14px;color:#666;margin-bottom:24px;">First 30 days free · $49/month after · Cancel anytime</p>
 
     <div style="display:grid;gap:16px;">
       <div>
@@ -1402,7 +1403,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       </div>
       <div>
         <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Specialization</label>
-        <select id="pro-spec" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+        <select id="pro-spec" onchange="updateProPriceDisplay()" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
           <option>General Contractor</option>
           <option>Handyman</option>
           <option>Roofing</option>
@@ -1420,7 +1421,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       <div style="background:#f8f9fa;border-radius:8px;padding:14px;">
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
           <input type="checkbox" id="pro-agree" style="margin-top:2px;flex-shrink:0;">
-          <span style="font-size:13px;color:#555;line-height:1.5;">I agree to the <a href="/terms.html" target="_blank" style="color:#F5A623;">Terms of Service</a> and authorize StackBid to charge $49/month after the 30-day free trial. You'll enter your card on the next screen (secure Stripe checkout) — you won't be charged until the trial ends.</span>
+          <span id="pro-consent-text" style="font-size:13px;color:#555;line-height:1.5;">I agree to the <a href="/terms.html" target="_blank" style="color:#F5A623;">Terms of Service</a> and authorize StackBid to charge $49/month after the 30-day free trial. You'll enter your card on the next screen (secure Stripe checkout) — you won't be charged until the trial ends.</span>
         </label>
       </div>
       <button onclick="submitProForm()" style="background:#F5A623;color:#0C2340;border:3px solid #0C2340;padding:14px;border-radius:8px;font-weight:800;font-size:16px;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(0,0,0,0.2);text-transform:uppercase;">🚀 Start Free Trial →</button>
@@ -3376,6 +3377,18 @@ async function requestHandymanQuote() {
     // не блокируем звонок, даже если уведомление не отправилось
   }
   btn.outerHTML = '<a href="tel:' + esc(match.phone) + '" style="display:inline-block;background:#4C956C;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">📞 ' + esc(match.phone) + '</a><div style="font-size:11px;color:#2E7D32;margin-top:6px;">✓ Handyman notified of your project</div>';
+}
+
+function updateProPriceDisplay() {
+  const spec = document.getElementById('pro-spec').value;
+  const isHandyman = spec === 'Handyman';
+  const price = isHandyman ? '$29' : '$49';
+  const priceNote = document.getElementById('pro-form-price-note');
+  const consentText = document.getElementById('pro-consent-text');
+  if (priceNote) priceNote.textContent = `First 30 days free · ${price}/month after · Cancel anytime`;
+  if (consentText) {
+    consentText.innerHTML = `I agree to the <a href="/terms.html" target="_blank" style="color:#F5A623;">Terms of Service</a> and authorize StackBid to charge ${price}/month after the 30-day free trial. You'll enter your card on the next screen (secure Stripe checkout) — you won't be charged until the trial ends.`;
+  }
 }
 
 async function submitProForm() {
