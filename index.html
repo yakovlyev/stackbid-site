@@ -1901,7 +1901,7 @@ function calcToEstimate() {
   if (!lastCalcResult) return;
   const type = document.getElementById('calc-type').value;
   const labels = { deck:'deck',roof:'roofing replacement',fence:'fence',siding:'siding',flooring:'flooring',drywall:'drywall',concrete:'concrete slab' };
-  const ptypeLabels = { deck:'Deck or patio', roof:'Roofing replacement', fence:'Fence', siding:'Siding or facade', concrete:'Foundation' };
+  const ptypeLabels = { deck:'Deck or patio', roof:'Roofing replacement', fence:'Fence', siding:'Siding or facade', concrete:'Foundation', flooring:'Flooring', drywall:'Drywall' };
   const nums = Object.values(lastCalcResult.result);
   const unitLabels = calcConfigs[type].units;
   const desc = nums.map((n,i)=>`${n.toLocaleString()} ${unitLabels[i]}`).join(', ');
@@ -3218,7 +3218,7 @@ async function loadLocalMatches(zip) {
     // (это и есть "priority listing placement", раньше нигде не работавший).
     const order = 'order=subscription_active.desc,rating.desc.nullslast';
     let contractor = null;
-    let resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=id,company_name,phone,city,state,specializations,license_number,license_verified&zip_code=eq.${zip}&${order}&limit=1`, { headers });
+    let resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=id,company_name,phone,city,state,specializations,license_number,license_verified&zip_code=eq.${encodeURIComponent(zip)}&${order}&limit=1`, { headers });
     let data = await resp.json();
     contractor = data[0];
 
@@ -3239,7 +3239,7 @@ async function loadLocalMatches(zip) {
     // не "подрядчик на весь проект", а один мастер на все руки.
     const handySelect = 'select=id,company_name,phone,city,state,specializations,license_number,license_verified';
     let handyman = null;
-    let hResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?${handySelect}&specializations=cs.{Handyman}&zip_code=eq.${zip}&${order}&limit=1`, { headers });
+    let hResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?${handySelect}&specializations=cs.{Handyman}&zip_code=eq.${encodeURIComponent(zip)}&${order}&limit=1`, { headers });
     let hData = await hResp.json();
     handyman = hData[0];
 
