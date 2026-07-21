@@ -46,7 +46,7 @@
 <!-- Schema.org: FAQPage (GEO — enables AI answer engines to cite these Q&As directly) -->
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
-{"@type":"Question","name":"How accurate are StackBid estimates?","acceptedAnswer":{"@type":"Answer","text":"StackBid estimates are based on current wholesale market data and are meant to be a close reference point for actual supplier quotes. Prices vary by region, supplier, and season. Getting 2-3 quotes from local suppliers before purchasing is recommended."}},
+{"@type":"Question","name":"How accurate are StackBid estimates?","acceptedAnswer":{"@type":"Answer","text":"StackBid estimates are based on current wholesale market data. Like any materials estimate, expect typical market variance of about 5-10% due to region, supplier, season, and exact product choice — this is normal for the industry, not specific to StackBid. Getting 2-3 quotes from local suppliers before purchasing is recommended."}},
 {"@type":"Question","name":"What is the difference between the three price columns on StackBid?","acceptedAnswer":{"@type":"Answer","text":"HD/Lowe's Retail is the standard walk-in shelf price at big box stores, generally the most expensive option. Wholesale Estimate is typical contractor/trade pricing, generally below retail. Local Supplier is the price from the nearest local building materials supplier by ZIP code, and can be a strong option for larger projects."}},
 {"@type":"Question","name":"Is StackBid free to use?","acceptedAnswer":{"@type":"Answer","text":"Your first estimate is completely free — just your email, no credit card. After that, StackBid Pro ($9.99/month) unlocks unlimited estimates, saved PDFs, and local supplier and contractor options."}},
 {"@type":"Question","name":"How does StackBid billing work?","acceptedAnswer":{"@type":"Answer","text":"StackBid Pro is $9.99/month, billed automatically starting the day of subscription through Stripe. A confirmation email is sent right after subscribing. Billing is month to month with no long-term contract."}},
@@ -1180,7 +1180,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
     </div>
   </div>
   <p style="text-align:center;max-width:620px;margin:24px auto 0;font-size:12.5px;color:var(--muted);line-height:1.6;">
-    Prices are AI-generated estimates, cross-checked against real scraped supplier data where available, and refreshed continuously. Coverage and accuracy currently focus on the contiguous US. Always confirm final pricing with your supplier before purchasing.
+    Prices are AI-generated estimates, cross-checked against real scraped supplier data where available, and refreshed continuously. Like any materials estimate, expect typical market variance of about 5-10% due to region, supplier, season, and product choice — this is normal for the industry, not a claim about StackBid's own precision. Coverage currently focuses on the contiguous US. Always confirm final pricing with your supplier before purchasing.
   </p>
 </section>
 
@@ -1202,7 +1202,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
       <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
         <summary style="font-weight:700;font-size:16px;color:#0C2340;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">How accurate are StackBid estimates? <span style="color:#F5A623;font-size:20px;">+</span></summary>
-        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Our estimates are based on current wholesale market data and are meant to be a close reference point for actual supplier quotes. Prices vary by region, supplier, and season. We always recommend getting at least 2-3 quotes from local suppliers before purchasing.</p>
+        <p style="margin-top:12px;color:#555;font-size:14px;line-height:1.7;">Our estimates are based on current wholesale market data. Like any materials estimate, expect typical market variance of about 5-10% due to region, supplier, season, and exact product choice — that's normal for the industry, not specific to StackBid. We always recommend getting at least 2-3 quotes from local suppliers before purchasing.</p>
       </details>
 
       <details style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
@@ -2611,7 +2611,8 @@ Return ONLY valid JSON, no markdown, no preamble:
           "retail_unit": number,
           "wholesale_unit": number,
           "local_unit": number,
-          "note": "spec note"
+          "note": "spec note",
+          "alt_note": "one brief alternative material suggestion for this line item (e.g. a cheaper option with a spec tradeoff, or a higher-spec option and why) — empty string if there's no meaningful alternative worth mentioning"
         }
       ]
     }
@@ -2624,6 +2625,7 @@ Rules:
 - local_unit = 5-10% below wholesale
 - 4-6 relevant categories for this project type
 - Use realistic current 2026 prices reflecting US construction market conditions
+- alt_note: keep it to one short sentence, plain language, no brand names, clearly a suggestion not a guaranteed price (e.g. "OSB is typically 15-20% cheaper than plywood here but has lower moisture resistance" or "3/4in vs 1/2in adds load capacity for heavier flooring loads, worth it if this is a workshop/gym area")
 - Return JSON only`;
 
   try {
@@ -3124,9 +3126,12 @@ function renderEstimate(data, zip) {
       const flagBadge = item.price_flagged
         ? `<span title="${esc(item.price_flag_note || '')}" style="display:inline-block;margin-left:6px;background:#FEF3C7;color:#92400E;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;cursor:help;white-space:nowrap;">⚠ Verify price</span>`
         : '';
+      const altNote = item.alt_note && item.alt_note.trim()
+        ? `<br><span style="font-size:10.5px;color:#6B8CAE;">💡 Alternative: ${esc(item.alt_note)}</span>`
+        : '';
       row.innerHTML = `
         <td><b style="font-weight:500;">${esc(item.name)}</b>${flagBadge}<br>
-          <span style="font-size:11px;color:var(--muted);">${esc(item.note)}</span></td>
+          <span style="font-size:11px;color:var(--muted);">${esc(item.note)}</span>${altNote}</td>
         <td>${item.qty} ${esc(item.unit)}</td>
         <td><div class="price-retail">$${r.toLocaleString()}</div>
             <div style="font-size:11px;color:var(--muted);">$${item.retail_unit.toFixed(2)}/unit</div></td>
