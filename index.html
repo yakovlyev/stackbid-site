@@ -1289,12 +1289,26 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <button onclick="handleSubscribeClick()" style="width:100%;background:#F5A623;color:#0C2340;border:2px solid #C9952A;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 14px rgba(197,149,42,0.35);">Subscribe to Pro →</button>
       </div>
 
+      <!-- Handyman Pro plan — separate card, separate flow, not a dropdown option buried inside Contractor -->
+      <div style="border:2px solid #4C956C;border-radius:16px;padding:32px;text-align:left;">
+        <div style="font-size:13px;font-weight:600;color:#4C956C;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">🧰 Handyman</div>
+        <div style="font-size:42px;font-weight:800;color:#0C2340;margin-bottom:4px;">$29<span style="font-size:18px;font-weight:400;color:#999;">/mo</span></div>
+        <div style="font-size:14px;color:#999;margin-bottom:24px;">First 30 days free. Cancel anytime.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> Dedicated "Find a Handyman" window</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> Priority listing placement</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> Pre-qualified leads for small jobs</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> Verified badge</div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> Direct lead notifications</div>
+        </div>
+        <button onclick="document.getElementById('handyman-form-overlay').style.display='flex'" style="width:100%;background:#4C956C;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;">Join as Handyman →</button>
+      </div>
+
       <!-- Contractor Pro plan -->
       <div style="border:2px solid #e2e8f0;border-radius:16px;padding:32px;text-align:left;">
         <div style="font-size:13px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">Contractor Pro</div>
         <div style="font-size:42px;font-weight:800;color:#0C2340;margin-bottom:4px;">$49<span style="font-size:18px;font-weight:400;color:#999;">/mo</span></div>
-        <div style="font-size:14px;color:#999;margin-bottom:8px;">First 30 days free. Cancel anytime.</div>
-        <div style="font-size:13px;color:#4C956C;font-weight:700;margin-bottom:24px;">🧰 Handyman? $29/mo instead — pick it in the next step.</div>
+        <div style="font-size:14px;color:#999;margin-bottom:24px;">First 30 days free. Cancel anytime.</div>
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Priority listing placement</div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> Pre-qualified leads — homeowners already know their budget</div>
@@ -1319,7 +1333,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       <p style="color:rgba(255,255,255,0.7);font-size:16px;margin-bottom:12px;line-height:1.6;">Join StackBid Pro and appear in front of homeowners who already know their materials budget and estimated labor cost before they ever call you. Less haggling, faster yes. No cold calls. No bidding wars.</p>
       <div style="background:rgba(76,149,108,0.15);border:1.5px solid #4C956C;border-radius:10px;padding:14px 16px;margin-bottom:24px;">
         <div style="color:#fff;font-size:15px;font-weight:700;margin-bottom:4px;">🧰 Handyman? This means you too.</div>
-        <div style="color:rgba(255,255,255,0.75);font-size:14px;line-height:1.6;">Homeowners with small jobs (a shelf, a leaky faucet, an outlet) get their own dedicated "Find a Handyman" window right on their estimate — separate from full contractors. Just pick "Handyman" as your specialty when you sign up below.</div>
+        <div style="color:rgba(255,255,255,0.75);font-size:14px;line-height:1.6;">Homeowners with small jobs (a shelf, a leaky faucet, an outlet) get their own dedicated "Find a Handyman" window right on their estimate — separate from full contractors. See the Handyman plan below — it's its own signup, own price ($29/mo).</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
         <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.85);font-size:15px;">
@@ -1404,9 +1418,8 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       </div>
       <div>
         <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Specialization</label>
-        <select id="pro-spec" onchange="updateProPriceDisplay()" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+        <select id="pro-spec" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
           <option>General Contractor</option>
-          <option>Handyman</option>
           <option>Roofing</option>
           <option>Remodeling</option>
           <option>Framing</option>
@@ -1428,6 +1441,69 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       <button onclick="submitProForm()" style="background:#F5A623;color:#0C2340;border:3px solid #0C2340;padding:14px;border-radius:8px;font-weight:800;font-size:16px;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(0,0,0,0.2);text-transform:uppercase;">🚀 Start Free Trial →</button>
       <div id="pro-success" style="display:none;background:#d4edda;color:#155724;padding:14px;border-radius:8px;text-align:center;font-weight:600;">✓ You're live! Your Pro trial is active now. Check your email, and bookmark your <a href="/contractor-dashboard.html" target="_blank" style="color:#155724;text-decoration:underline;">contractor dashboard</a> to see leads as they come in.</div>
       <div id="pro-error" style="display:none;background:#f8d7da;color:#721c24;padding:14px;border-radius:8px;text-align:center;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HANDYMAN SIGNUP FORM OVERLAY — fully separate from contractor form -->
+<div id="handyman-form-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;">
+  <div style="background:#fff;border-radius:16px;padding:40px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;">
+    <button onclick="document.getElementById('handyman-form-overlay').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#999;">×</button>
+    <h2 style="font-size:24px;font-weight:800;color:#0C2340;margin-bottom:4px;">🧰 Join as a Handyman</h2>
+    <p style="font-size:14px;color:#666;margin-bottom:24px;">First 30 days free · $29/month after · Cancel anytime</p>
+
+    <div style="display:grid;gap:16px;">
+      <div>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Full Name *</label>
+        <input type="text" id="handy-name" placeholder="John Smith" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Business Name *</label>
+        <input type="text" id="handy-company" placeholder="Smith Handyman Services" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Email *</label>
+        <input type="email" id="handy-email" placeholder="john@example.com" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Phone *</label>
+        <input type="tel" id="handy-phone" placeholder="555-123-4567" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">State *</label>
+          <select id="handy-state" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+            <option value="">Select state</option>
+            <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
+            <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
+            <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option>
+            <option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+            <option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option>
+            <option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option>
+            <option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option>
+            <option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+            <option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option>
+            <option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">ZIP Code *</label>
+          <input type="text" id="handy-zip" placeholder="90001" maxlength="5" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">License Number (if applicable)</label>
+        <input type="text" id="handy-license" placeholder="Leave blank if not licensed" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      </div>
+      <div style="background:#f8f9fa;border-radius:8px;padding:14px;">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+          <input type="checkbox" id="handy-agree" style="margin-top:2px;flex-shrink:0;">
+          <span style="font-size:13px;color:#555;line-height:1.5;">I agree to the <a href="/terms.html" target="_blank" style="color:#F5A623;">Terms of Service</a> and authorize StackBid to charge $29/month after the 30-day free trial. You'll enter your card on the next screen (secure Stripe checkout) — you won't be charged until the trial ends.</span>
+        </label>
+      </div>
+      <button onclick="submitHandymanForm()" style="background:#4C956C;color:#fff;border:3px solid #0C2340;padding:14px;border-radius:8px;font-weight:800;font-size:16px;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(0,0,0,0.2);text-transform:uppercase;">🧰 Start Free Trial →</button>
+      <div id="handy-success" style="display:none;background:#d4edda;color:#155724;padding:14px;border-radius:8px;text-align:center;font-weight:600;">✓ You're live! Your Pro trial is active now. Check your email, and bookmark your <a href="/contractor-dashboard.html" target="_blank" style="color:#155724;text-decoration:underline;">contractor dashboard</a> to see leads as they come in.</div>
+      <div id="handy-error" style="display:none;background:#f8d7da;color:#721c24;padding:14px;border-radius:8px;text-align:center;"></div>
     </div>
   </div>
 </div>
@@ -3385,15 +3461,61 @@ async function requestHandymanQuote() {
   btn.outerHTML = '<a href="tel:' + esc(match.phone) + '" style="display:inline-block;background:#4C956C;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">📞 ' + esc(match.phone) + '</a><div style="font-size:11px;color:#2E7D32;margin-top:6px;">✓ Handyman notified of your project</div>';
 }
 
-function updateProPriceDisplay() {
-  const spec = document.getElementById('pro-spec').value;
-  const isHandyman = spec === 'Handyman';
-  const price = isHandyman ? '$29' : '$49';
-  const priceNote = document.getElementById('pro-form-price-note');
-  const consentText = document.getElementById('pro-consent-text');
-  if (priceNote) priceNote.textContent = `First 30 days free · ${price}/month after · Cancel anytime`;
-  if (consentText) {
-    consentText.innerHTML = `I agree to the <a href="/terms.html" target="_blank" style="color:#F5A623;">Terms of Service</a> and authorize StackBid to charge ${price}/month after the 30-day free trial. You'll enter your card on the next screen (secure Stripe checkout) — you won't be charged until the trial ends.`;
+async function submitHandymanForm() {
+  const name = document.getElementById('handy-name').value.trim();
+  const company = document.getElementById('handy-company').value.trim();
+  const email = document.getElementById('handy-email').value.trim();
+  const phone = document.getElementById('handy-phone').value.trim();
+  const state = document.getElementById('handy-state').value;
+  const zip = document.getElementById('handy-zip').value.trim();
+  const license = document.getElementById('handy-license').value.trim() || 'N/A';
+  const agree = document.getElementById('handy-agree').checked;
+
+  const errEl = document.getElementById('handy-error');
+  errEl.style.display = 'none';
+
+  if (!name || !company || !email || !phone || !state || !zip) {
+    errEl.textContent = 'Please fill in all required fields.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!agree) {
+    errEl.textContent = 'Please agree to the Terms of Service.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = event.target;
+  btn.textContent = 'Submitting...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/contractor-signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name, company, email, phone, state, zip,
+        license, specialization: 'Handyman',
+      }),
+    });
+    const result = await res.json();
+    if (!res.ok || !result.success) {
+      throw new Error(result.error || 'signup_failed');
+    }
+
+    if (result.checkout_url) {
+      window.location.href = result.checkout_url;
+      return;
+    }
+
+    document.getElementById('handy-success').innerHTML = '✓ Your info is saved! Billing setup is still being finalized on our end — we\'ll email you within 24 hours to activate your trial.';
+    document.getElementById('handy-success').style.display = 'block';
+    btn.style.display = 'none';
+  } catch(e) {
+    errEl.textContent = 'Something went wrong. Please email us at hello@stackbid.app';
+    errEl.style.display = 'block';
+    btn.textContent = '🧰 Start Free Trial';
+    btn.disabled = false;
   }
 }
 
