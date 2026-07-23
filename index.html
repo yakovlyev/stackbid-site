@@ -683,7 +683,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
     <a href="#why">Pricing</a>
     <a href="#contact">Contact</a>
   </div>
-  <a href="#tool" class="nav-cta">Get my estimate →</a>
+  <a href="#tool" class="nav-cta">Check how much you overpay →</a>
 </nav>
 
 <!-- HERO -->
@@ -1116,6 +1116,9 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div id="total-project-range" style="font-size:26px;font-weight:800;color:#F5A623;">—</div>
           </div>
           <div class="totals" id="etotals"></div>
+          <div style="text-align:center;margin:-8px 0 16px;">
+            <a href="javascript:void(0)" onclick="sbAskNikaWhy()" style="font-size:13px;color:#4C6FA8;text-decoration:none;font-weight:600;">💬 Ask Nika why this costs this much →</a>
+          </div>
           <div style="overflow-x:auto;">
             <table class="est-table" id="etable">
               <thead><tr>
@@ -2650,11 +2653,11 @@ async function generate() {
   document.getElementById('smsg').style.display = 'block';
 
   const msgs = [
-    'Analyzing your project...',
-    'Calculating material quantities...',
-    'Looking up 2026 wholesale prices...',
-    'Finding your nearest supplier in ZIP ' + zip + '...',
-    'Building your estimate...'
+    'Step 1/5 · Analyzing your project...',
+    'Step 2/5 · Calculating material quantities...',
+    'Step 3/5 · Looking up 2026 wholesale prices...',
+    'Step 4/5 · Finding your nearest supplier in ZIP ' + zip + '...',
+    'Step 5/5 · Building your estimate...'
   ];
   let pct = 0, mi = 0;
   const pfill = document.getElementById('pfill');
@@ -3235,7 +3238,7 @@ function renderEstimate(data, zip) {
     </div>
     <div class="total-card savings">
       <div class="total-val" id="total-savings">$${Math.round(tR - tL).toLocaleString()}</div>
-      <div class="total-lbl">You save vs retail</div>
+      <div class="total-lbl">You'd overpay at retail</div>
     </div>`;
   document.getElementById('etotals').innerHTML = totHtml;
   document.getElementById('estimate-out').style.display = 'block';
@@ -3773,6 +3776,19 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     if (!sbOpened && panel.classList.contains('open')) {
       sbOpened = true;
       sbAddMessage('bot', "Hi, I'm Nika 👋 I'm the StackBid assistant — ask me anything about your materials, estimated labor, or total project cost. You can type or tap the mic to talk. Just close this if you're all set.");
+    }
+  };
+
+  // Триггер с кнопки "Ask Nika why this costs this much" рядом со сметой —
+  // открывает чат и сразу задаёт вопрос за пользователя, чтобы не заставлять
+  // печатать то же самое вручную.
+  window.sbAskNikaWhy = function() {
+    const panel = document.getElementById('sb-assist-panel');
+    if (!panel.classList.contains('open')) window.sbAssistToggle();
+    const input = document.getElementById('sb-assist-input');
+    if (input) {
+      input.value = 'Why does this project cost this much?';
+      window.sbAssistSend();
     }
   };
 
