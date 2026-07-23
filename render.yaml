@@ -27,3 +27,19 @@ services:
         sync: false
       - key: ALERT_EMAIL
         sync: false
+
+  - type: cron
+    name: stackbid-market-scan-agent
+    runtime: node
+    schedule: "0 8 * * 1"
+    buildCommand: npm install
+    startCommand: node market-scan-agent.js
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
