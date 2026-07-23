@@ -1419,11 +1419,20 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <input type="text" id="pro-license" placeholder="CA-GC-123456" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Years in Business</label>
+        <input type="number" id="pro-years" placeholder="e.g. 12" min="0" max="100" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      </div>
+      <div>
         <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Specialization</label>
         <select id="pro-spec" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
           <option>General Contractor</option>
           <option>Roofing</option>
           <option>Remodeling</option>
+          <option>Kitchen & Bath</option>
+          <option>Decks</option>
+          <option>Windows</option>
+          <option>Masonry</option>
+          <option>Pavers</option>
           <option>Framing</option>
           <option>Electrical</option>
           <option>Plumbing</option>
@@ -1496,6 +1505,10 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       <div>
         <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">License Number (if applicable)</label>
         <input type="text" id="handy-license" placeholder="Leave blank if not licensed" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Years in Business</label>
+        <input type="number" id="handy-years" placeholder="e.g. 5" min="0" max="100" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div style="background:#f8f9fa;border-radius:8px;padding:14px;">
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
@@ -3312,18 +3325,18 @@ async function loadLocalMatches(zip) {
     // (это и есть "priority listing placement", раньше нигде не работавший).
     const order = 'order=subscription_active.desc,rating.desc.nullslast';
     let contractor = null;
-    let resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=id,company_name,phone,city,state,specializations,license_number,license_verified&zip_code=eq.${encodeURIComponent(zip)}&${order}&limit=1`, { headers });
+    let resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=id,company_name,phone,city,state,specializations,license_number,license_verified,years_in_business&zip_code=eq.${encodeURIComponent(zip)}&${order}&limit=1`, { headers });
     let data = await resp.json();
     contractor = data[0];
 
     if (!contractor) {
-      resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=id,company_name,phone,city,state,specializations,license_number,license_verified&state=eq.${primaryState}&${order}&limit=1`, { headers });
+      resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=id,company_name,phone,city,state,specializations,license_number,license_verified,years_in_business&state=eq.${primaryState}&${order}&limit=1`, { headers });
       data = await resp.json();
       contractor = data[0];
     }
 
     if (!contractor) {
-      resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=id,company_name,phone,city,state,specializations,license_number,license_verified&${order}&limit=1`, { headers });
+      resp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?select=id,company_name,phone,city,state,specializations,license_number,license_verified,years_in_business&${order}&limit=1`, { headers });
       data = await resp.json();
       contractor = data[0];
     }
@@ -3331,7 +3344,7 @@ async function loadLocalMatches(zip) {
     // Тот же поиск, но только среди подрядчиков со специализацией Handyman —
     // отдельное окно специально под мелкие/многопрофильные работы, где нужен
     // не "подрядчик на весь проект", а один мастер на все руки.
-    const handySelect = 'select=id,company_name,phone,city,state,specializations,license_number,license_verified';
+    const handySelect = 'select=id,company_name,phone,city,state,specializations,license_number,license_verified,years_in_business';
     let handyman = null;
     let hResp = await fetch(`${SUPABASE_URL}/rest/v1/contractors?${handySelect}&specializations=cs.{Handyman}&zip_code=eq.${encodeURIComponent(zip)}&${order}&limit=1`, { headers });
     let hData = await hResp.json();
@@ -3365,6 +3378,10 @@ async function loadLocalMatches(zip) {
     const hyState = handyman ? (handyman.state || '') : '';
     const hyVerifiedBadge = handyman && handyman.license_verified
       ? '<span style="display:inline-block;margin-left:6px;background:#E8F5E9;color:#2E7D32;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;vertical-align:middle;">✓ Verified</span>' : '';
+    const yearsLine = contractor && contractor.years_in_business
+      ? ' · ' + contractor.years_in_business + ' yrs in business' : '';
+    const hyYearsLine = handyman && handyman.years_in_business
+      ? ' · ' + handyman.years_in_business + ' yrs in business' : '';
 
     window.currentContractorMatch = contractor ? { id: contractor.id, phone } : null;
     window.currentHandymanMatch = handyman ? { id: handyman.id, phone: hyPhone } : null;
@@ -3381,7 +3398,7 @@ async function loadLocalMatches(zip) {
         '<div style="background:#fff;border:2px solid #F5A623;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
           '<div style="font-size:11px;font-weight:600;color:#E8870A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🔨 Local Contractor</div>' +
           '<div style="font-size:16px;font-weight:700;color:#0C2340;margin-bottom:4px;">' + esc(companyName) + verifiedBadge + '</div>' +
-          '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ' + esc(city) + ', ' + esc(state) + '</div>' +
+          '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ' + esc(city) + ', ' + esc(state) + yearsLine + '</div>' +
           '<div style="font-size:13px;color:#666;margin-bottom:12px;">🔧 ' + esc(spec) + ' · License: ' + esc(license) + '</div>' +
           '<button id="contractor-quote-btn" onclick="requestContractorQuote()" style="display:inline-block;background:#F5A623;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">📞 Request Quote</button>' +
         '</div>' : '') +
@@ -3389,7 +3406,7 @@ async function loadLocalMatches(zip) {
         '<div style="background:#fff;border:2px solid #4C956C;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
           '<div style="font-size:11px;font-weight:600;color:#2E7D4F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🧰 Handyman</div>' +
           '<div style="font-size:16px;font-weight:700;color:#0C2340;margin-bottom:4px;">' + esc(hyName) + hyVerifiedBadge + '</div>' +
-          '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ' + esc(hyCity) + ', ' + esc(hyState) + '</div>' +
+          '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ' + esc(hyCity) + ', ' + esc(hyState) + hyYearsLine + '</div>' +
           '<div style="font-size:13px;color:#666;margin-bottom:12px;">For smaller jobs & multi-trade tasks — no need for a full contractor</div>' +
           '<button id="handyman-quote-btn" onclick="requestHandymanQuote()" style="display:inline-block;background:#4C956C;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">📞 Request Quote</button>' +
         '</div>' : '') +
@@ -3471,6 +3488,7 @@ async function submitHandymanForm() {
   const state = document.getElementById('handy-state').value;
   const zip = document.getElementById('handy-zip').value.trim();
   const license = document.getElementById('handy-license').value.trim() || 'N/A';
+  const years = document.getElementById('handy-years').value.trim();
   const agree = document.getElementById('handy-agree').checked;
 
   const errEl = document.getElementById('handy-error');
@@ -3498,6 +3516,7 @@ async function submitHandymanForm() {
       body: JSON.stringify({
         name, company, email, phone, state, zip,
         license, specialization: 'Handyman',
+        years_in_business: years ? parseInt(years, 10) : null,
       }),
     });
     const result = await res.json();
@@ -3529,6 +3548,7 @@ async function submitProForm() {
   const state = document.getElementById('pro-state').value;
   const zip = document.getElementById('pro-zip').value.trim();
   const license = document.getElementById('pro-license').value.trim();
+  const years = document.getElementById('pro-years').value.trim();
   const spec = document.getElementById('pro-spec').value;
   const agree = document.getElementById('pro-agree').checked;
 
@@ -3557,6 +3577,7 @@ async function submitProForm() {
       body: JSON.stringify({
         name, company, email, phone, state, zip,
         license, specialization: spec,
+        years_in_business: years ? parseInt(years, 10) : null,
       }),
     });
     const result = await res.json();
