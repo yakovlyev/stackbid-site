@@ -19,7 +19,7 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors, body: '' };
 
   try {
-    const { name, company, email, phone, state, zip, license, specialization } = JSON.parse(event.body || '{}');
+    const { name, company, email, phone, state, zip, license, specialization, years_in_business } = JSON.parse(event.body || '{}');
 
     if (!name || !company || !email || !phone || !state || !zip || !license) {
       return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Missing required fields' }) };
@@ -45,6 +45,7 @@ exports.handler = async (event) => {
         city: '',
         license_number: license,
         license_verified: false, // верификация — отдельный ручной/будущий процесс
+        years_in_business: years_in_business || null,
         specializations: [specialization || 'General Contractor'],
         service_zip_codes: [zip],
         subscription_tier: 'pending_payment',
