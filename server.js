@@ -75,6 +75,7 @@ const handlers = {
   'price-anomalies': require('./netlify/functions/price-anomalies'),
   'labor-estimate': require('./netlify/functions/labor-estimate'),
   'assistant': require('./netlify/functions/assistant'),
+  'whatsapp-webhook': require('./netlify/functions/whatsapp-webhook'),
   'contractor-signup': require('./netlify/functions/contractor-signup'),
   'contractor-lead': require('./netlify/functions/contractor-lead'),
   'contractor-dashboard': require('./netlify/functions/contractor-dashboard')
