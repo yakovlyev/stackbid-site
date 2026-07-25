@@ -1337,7 +1337,8 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       <p style="color:rgba(255,255,255,0.55);font-size:13.5px;margin-bottom:12px;">Roofers, electricians, plumbers, HVAC, painters, appliance repair, masonry, and more — pick your specialty when you sign up.</p>
       <div style="background:rgba(76,149,108,0.15);border:1.5px solid #4C956C;border-radius:10px;padding:14px 16px;margin-bottom:24px;">
         <div style="color:#fff;font-size:15px;font-weight:700;margin-bottom:4px;">🧰 Handyman? This means you too.</div>
-        <div style="color:rgba(255,255,255,0.75);font-size:14px;line-height:1.6;">Homeowners with small jobs (a shelf, a leaky faucet, an outlet) get their own dedicated "Find a Handyman" window right on their estimate — separate from full contractors. See the Handyman plan below — it's its own signup, own price ($29/mo).</div>
+        <div style="color:rgba(255,255,255,0.75);font-size:14px;line-height:1.6;margin-bottom:12px;">Homeowners with small jobs (a shelf, a leaky faucet, an outlet) get their own dedicated "Find a Handyman" window right on their estimate — separate from full contractors. Own signup, own price — $29/mo.</div>
+        <button onclick="document.getElementById('handyman-form-overlay').style.display='flex'" style="background:#4C956C;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Join as Handyman →</button>
       </div>
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
         <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.85);font-size:15px;">
@@ -3744,16 +3745,16 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
 <!-- ===== StackBid AI Assistant (floating widget, additive — не трогает существующую вёрстку) ===== -->
 <style>
   #sb-assist-btn {
-    position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); right: 20px; z-index: 9990;
-    width: 56px; height: 56px; border-radius: 50%;
+    position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); right: 16px; z-index: 9990;
+    width: 52px; height: 52px; border-radius: 50%;
     background: #0C2340; color: #F5A623; border: none;
-    font-size: 24px; cursor: pointer;
+    font-size: 22px; cursor: pointer;
     box-shadow: 0 4px 16px rgba(12,35,64,0.35);
     display: flex; align-items: center; justify-content: center;
   }
   #sb-assist-panel {
-    position: fixed; bottom: calc(88px + env(safe-area-inset-bottom)); right: 20px; z-index: 9990;
-    width: min(360px, calc(100vw - 32px)); height: min(500px, calc(100vh - 160px));
+    position: fixed; bottom: calc(88px + env(safe-area-inset-bottom)); right: 16px; z-index: 9990;
+    width: min(340px, calc(100vw - 24px)); height: min(400px, calc(100vh - 220px));
     background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);
     display: none; flex-direction: column; overflow: hidden;
     font-family: inherit;
