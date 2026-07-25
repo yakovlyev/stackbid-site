@@ -29,7 +29,7 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors, body: '' };
 
   try {
-    const { messages, estimate, zip, labor, total_project_range, voice } = JSON.parse(event.body || '{}');
+    const { messages, estimate, zip, labor, total_project_range, voice, lang } = JSON.parse(event.body || '{}');
     if (!Array.isArray(messages) || !messages.length) {
       return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'messages required' }) };
     }
@@ -50,7 +50,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 800,
-        system: `${SYSTEM_PROMPT}\n\n${estimateContext}${voice ? '\n\nThis specific question was asked by voice and your answer will be read aloud via text-to-speech. Keep it to 1-2 short sentences max — a headline number and one key point, nothing more. Never speak a list of items or multiple prices in a row.' : ''}`,
+        system: `${SYSTEM_PROMPT}\n\n${estimateContext}${voice ? '\n\nThis specific question was asked by voice and your answer will be read aloud via text-to-speech. Keep it to 1-2 short sentences max — a headline number and one key point, nothing more. Never speak a list of items or multiple prices in a row.' : ''}${lang === 'es' ? '\n\nRespond in natural Latin American Spanish, suitable for a US Hispanic homeowner. Keep dollar amounts as $ figures (do not convert currency).' : ''}`,
         messages,
         tools: [
           {
