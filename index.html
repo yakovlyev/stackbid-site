@@ -22,6 +22,8 @@
 <title>StackBid — Know Your Materials & Labor Cost Before You Talk to a Contractor</title>
 <meta name="description" content="Free AI construction cost estimator for US homeowners — materials and labor. Compare wholesale and retail prices by ZIP code in 3 minutes.">
 <meta name="keywords" content="construction estimate, materials cost, wholesale prices, home improvement, deck cost, roofing estimate">
+<link rel="alternate" hreflang="es" href="https://stackbid.app/es.html">
+<link rel="alternate" hreflang="en" href="https://stackbid.app/">
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
@@ -677,57 +679,57 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   </a>
   <div class="nav-links nav-mobile-hide">
     <a href="#how">How it works</a>
-    <a href="#tool">Try it free</a>
-    <a href="#contractors">For Contractors</a>
-    <a href="#faq">FAQ</a>
-    <a href="#why">Pricing</a>
-    <a href="#contact">Contact</a>
+    <a href="#tool" data-i18n="nav_try">Try it free</a>
+    <a href="#contractors" data-i18n="nav_contractors">For Contractors</a>
+    <a href="#faq" data-i18n="nav_faq">FAQ</a>
+    <a href="#why" data-i18n="nav_pricing">Pricing</a>
+    <a href="#contact" data-i18n="nav_contact">Contact</a>
   </div>
-  <a href="#tool" class="nav-cta">Check how much you overpay →</a>
+  <a href="#tool" class="nav-cta" data-i18n="nav_cta">Check how much you overpay →</a>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-eyebrow">&#9679; AI-Powered · 2026 Wholesale Prices · No Credit Card</div>
-  <h1>Know your <em>real</em> materials <span style="white-space:nowrap;">&amp; labor</span> cost before you talk to a contractor</h1>
-  <p class="hero-sub">Type what you're building. Get a full materials + labor estimate with local wholesale prices — in under 3 minutes. Your first estimate is free.</p>
+  <div class="hero-eyebrow" data-i18n="hero_eyebrow">&#9679; AI-Powered · 2026 Wholesale Prices · No Credit Card</div>
+  <h1 data-i18n="hero_h1">Know your <em>real</em> materials <span style="white-space:nowrap;">&amp; labor</span> cost before you talk to a contractor</h1>
+  <p class="hero-sub" data-i18n="hero_sub">Type what you're building. Get a full materials + labor estimate with local wholesale prices — in under 3 minutes. Your first estimate is free.</p>
   <div class="hero-actions">
-    <a href="#tool" class="btn-hero">Try it now — first estimate free</a>
-    <a href="#how" class="btn-ghost">See how it works ↓</a>
+    <a href="#tool" class="btn-hero" data-i18n="hero_btn">Try it now — first estimate free</a>
+    <a href="#how" class="btn-ghost" data-i18n="hero_ghost">See how it works ↓</a>
   </div>
   <div class="hero-stats">
     <div>
       <div class="hero-stat-val"><span class="counter" data-target="3">0</span></div>
-      <div class="hero-stat-lbl">price points compared side by side</div>
+      <div class="hero-stat-lbl" data-i18n="stat_1">price points compared side by side</div>
     </div>
     <div>
       <div class="hero-stat-val"><span class="counter" data-target="3">0</span> min</div>
-      <div class="hero-stat-lbl">from description to full estimate</div>
+      <div class="hero-stat-lbl" data-i18n="stat_2">from description to full estimate</div>
     </div>
     <div>
       <div class="hero-stat-val">ZIP</div>
-      <div class="hero-stat-lbl">code-level local pricing</div>
+      <div class="hero-stat-lbl" data-i18n="stat_3">code-level local pricing</div>
     </div>
     <div>
       <div class="hero-stat-val"><span id="estimates-count">...</span></div>
-      <div class="hero-stat-lbl">estimates generated</div>
+      <div class="hero-stat-lbl" data-i18n="stat_4">estimates generated</div>
     </div>
   </div>
 </section>
 
 <!-- TRUST BAR -->
 <div class="trust-bar">
-  <div class="trust-item"><span class="trust-icon">✓</span> No account required</div>
-  <div class="trust-item"><span class="trust-icon">✓</span> Works on all devices</div>
-  <div class="trust-item"><span class="trust-icon">✓</span> Real 2026 wholesale prices</div>
-  <div class="trust-item"><span class="trust-icon">✓</span> Local supplier by ZIP code</div>
-  <div class="trust-item"><span class="trust-icon">✓</span> Save to PDF in one tap</div>
+  <div class="trust-item"><span class="trust-icon">✓</span> <span data-i18n="trust_1">No account required</span></div>
+  <div class="trust-item"><span class="trust-icon">✓</span> <span data-i18n="trust_2">Works on all devices</span></div>
+  <div class="trust-item"><span class="trust-icon">✓</span> <span data-i18n="trust_3">Real 2026 wholesale prices</span></div>
+  <div class="trust-item"><span class="trust-icon">✓</span> <span data-i18n="trust_4">Local supplier by ZIP code</span></div>
+  <div class="trust-item"><span class="trust-icon">✓</span> <span data-i18n="trust_5">Save to PDF in one tap</span></div>
 </div>
 
 <!-- HOW IT WORKS -->
 <section class="how" id="how">
-  <div class="section-label">How it works</div>
-  <h2 class="section-title">Three steps to your estimate</h2>
+  <div class="section-label" data-i18n="how_label">How it works</div>
+  <h2 class="section-title" data-i18n="how_title">Three steps to your estimate</h2>
   <p class="section-sub">No contractor. No waiting. No hourly fees for a number you could get yourself.</p>
   <div class="steps">
     <div class="step">
@@ -780,24 +782,24 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <!-- TEXT TAB -->
         <div id="tab-text">
           <div style="margin-bottom:14px;">
-            <div class="section-label" style="font-size:11px; margin-bottom:8px;">Project type</div>
+            <div class="section-label" style="font-size:11px; margin-bottom:8px;" data-i18n="ptype_label">Project type</div>
             <div class="project-grid">
-              <div class="ptype-btn sel" onclick="setPtype(this,'New home build')"><div class="ptype-icon">🏠</div>New home</div>
-              <div class="ptype-btn" onclick="setPtype(this,'Garage door replacement')"><div class="ptype-icon">🚪</div>Garage door</div>
-              <div class="ptype-btn" onclick="setPtype(this,'Deck or patio')"><div class="ptype-icon">🌿</div>Deck / patio</div>
-              <div class="ptype-btn" onclick="setPtype(this,'Fence')"><div class="ptype-icon">🔲</div>Fence</div>
-              <div class="ptype-btn" onclick="setPtype(this,'Roofing replacement')"><div class="ptype-icon">🏠</div>Roofing</div>
-              <div class="ptype-btn" onclick="setPtype(this,'Siding or facade')"><div class="ptype-icon">🧱</div>Siding</div>
-              <div class="ptype-btn" onclick="setPtype(this,'Foundation')"><div class="ptype-icon">⬛</div>Foundation</div>
+              <div class="ptype-btn sel" onclick="setPtype(this,'New home build')"><div class="ptype-icon">🏠</div><span data-i18n="pt_newhome">New home</span></div>
+              <div class="ptype-btn" onclick="setPtype(this,'Garage door replacement')"><div class="ptype-icon">🚪</div><span data-i18n="pt_garage">Garage door</span></div>
+              <div class="ptype-btn" onclick="setPtype(this,'Deck or patio')"><div class="ptype-icon">🌿</div><span data-i18n="pt_deck">Deck / patio</span></div>
+              <div class="ptype-btn" onclick="setPtype(this,'Fence')"><div class="ptype-icon">🔲</div><span data-i18n="pt_fence">Fence</span></div>
+              <div class="ptype-btn" onclick="setPtype(this,'Roofing replacement')"><div class="ptype-icon">🏠</div><span data-i18n="pt_roofing">Roofing</span></div>
+              <div class="ptype-btn" onclick="setPtype(this,'Siding or facade')"><div class="ptype-icon">🧱</div><span data-i18n="pt_siding">Siding</span></div>
+              <div class="ptype-btn" onclick="setPtype(this,'Foundation')"><div class="ptype-icon">⬛</div><span data-i18n="pt_foundation">Foundation</span></div>
             </div>
-            <div style="margin-top:10px;background:#FEF3C7;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400E;line-height:1.5;">
+            <div style="margin-top:10px;background:#FEF3C7;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400E;line-height:1.5;" data-i18n="garage_roi_html">
               💡 <strong>Did you know?</strong> Garage door replacement has the highest ROI of any home improvement project — <strong>193.9%</strong> (Remodeling Magazine, Cost vs. Value). Check your materials cost above.
             </div>
           </div>
 
           <div class="voice-row">
-            <button class="voice-btn" id="vbtn" onclick="toggleVoice()">🎙️ Speak</button>
-            <span style="font-size:11px;color:var(--muted);">up to 2 min</span>
+            <button class="voice-btn" id="vbtn" onclick="toggleVoice()"><span data-i18n="voice_speak">🎙️ Speak</span></button>
+            <span style="font-size:11px;color:var(--muted);" data-i18n="voice_uptotwomin">up to 2 min</span>
             <select id="voiceLang" style="padding:6px 8px;border-radius:8px;border:1px solid var(--border);font-size:13px;">
               <option value="en-US">English (US)</option>
               <option value="ru-RU">Русский</option>
@@ -821,8 +823,8 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           </div>
 
           <div class="tf" style="margin-bottom:12px;">
-            <label>Project description</label>
-            <textarea id="desc" rows="5" style="min-height:120px;font-size:16px;" placeholder="Example: 20×24 ft pressure-treated deck attached to the back of the house, composite decking boards, 4×4 posts, cable railing, single level, no stairs."></textarea>
+            <label data-i18n="desc_label">Project description</label>
+            <textarea id="desc" rows="5" style="min-height:120px;font-size:16px;" placeholder="Example: 20×24 ft pressure-treated deck attached to the back of the house, composite decking boards, 4×4 posts, cable railing, single level, no stairs." data-i18n-placeholder="desc_placeholder"></textarea>
           </div>
 
           <script>
@@ -842,16 +844,16 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
           <div class="tag-row" id="qtags"></div>
 
-          <div class="section-label" style="font-size:11px; margin-bottom:8px;">Get local pricing</div>
+          <div class="section-label" style="font-size:11px; margin-bottom:8px;" data-i18n="local_pricing_label">Get local pricing</div>
           <div class="field-row">
             <div class="tf">
-              <label>Your ZIP code</label>
+              <label data-i18n="zip_label">Your ZIP code</label>
               <input type="text" id="zip" placeholder="e.g. 77001" maxlength="5" inputmode="numeric">
             </div>
             <div class="tf">
-              <label>Preferred supplier</label>
+              <label data-i18n="supplier_label">Preferred supplier</label>
               <select id="supp">
-                <option value="auto">Auto — nearest wholesale</option>
+                <option value="auto" data-i18n="supp_auto">Auto — nearest wholesale</option>
                 <option value="84lumber">84 Lumber</option>
                 <option value="lowes">Lowe's Pro</option>
                 <option value="hd">Home Depot Pro</option>
@@ -1022,7 +1024,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <div class="progress-bar" id="pbar"><div class="progress-fill" id="pfill"></div></div>
         <div class="status-msg" id="smsg">Analyzing your project...</div>
 
-        <button class="gen-btn" id="main-gen-btn" onclick="generate()">⚡ Generate my estimate — free</button>
+        <button class="gen-btn" id="main-gen-btn" onclick="generate()" data-i18n="gen_btn">⚡ Generate my estimate — free</button>
 
         <!-- RESULT -->
         <div id="estimate-out" style="margin-top:24px;">
@@ -1198,8 +1200,8 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 <!-- FAQ SECTION -->
 <section id="faq" style="background:#f8f9fa;padding:56px 5%;">
   <div style="max-width:760px;margin:0 auto;">
-    <div style="font-size:12px;font-weight:600;color:#F5A623;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">FAQ</div>
-    <h2 style="font-size:28px;font-weight:800;color:#0C2340;margin-bottom:40px;">Frequently Asked Questions</h2>
+    <div style="font-size:12px;font-weight:600;color:#F5A623;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;" data-i18n="faq_eyebrow">FAQ</div>
+    <h2 style="font-size:28px;font-weight:800;color:#0C2340;margin-bottom:40px;" data-i18n="faq_title">Frequently Asked Questions</h2>
 
     <div style="display:flex;flex-direction:column;gap:16px;">
 
@@ -1255,9 +1257,9 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 <!-- PRICING SECTION -->
 <section id="pricing" style="background:#fff;padding:56px 5%;">
   <div style="max-width:980px;margin:0 auto;text-align:center;">
-    <div style="font-size:12px;font-weight:600;color:#F5A623;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Pricing</div>
-    <h2 style="font-size:32px;font-weight:800;color:#0C2340;margin-bottom:12px;">Simple, transparent pricing</h2>
-    <p style="font-size:16px;color:#666;margin-bottom:48px;">Your first estimate is free. Unlimited estimates for $9.99/month.</p>
+    <div style="font-size:12px;font-weight:600;color:#F5A623;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;" data-i18n="pricing_eyebrow">Pricing</div>
+    <h2 style="font-size:32px;font-weight:800;color:#0C2340;margin-bottom:12px;" data-i18n="pricing_title">Simple, transparent pricing</h2>
+    <p style="font-size:16px;color:#666;margin-bottom:48px;" data-i18n="pricing_sub">Your first estimate is free. Unlimited estimates for $9.99/month.</p>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;max-width:900px;margin:0 auto;">
 
@@ -2721,6 +2723,7 @@ Rules:
 - 4-6 relevant categories for this project type
 - Use realistic current 2026 prices reflecting US construction market conditions
 - alt_note: keep it to one short sentence, plain language, no brand names, clearly a suggestion not a guaranteed price (e.g. "OSB is typically 15-20% cheaper than plywood here but has lower moisture resistance" or "3/4in vs 1/2in adds load capacity for heavier flooring loads, worth it if this is a workshop/gym area")
+${window.SB_LANG === 'es' ? '- Write "name", "note", and "alt_note" fields in Spanish (Latin American Spanish, natural for a US Hispanic homeowner). Keep "unit" as standard abbreviations. Category "name" fields also in Spanish.' : ''}
 - Return JSON only`;
 
   try {
@@ -3238,22 +3241,23 @@ function renderEstimate(data, zip) {
     });
   });
 
+  const isEs = window.SB_LANG === 'es';
   const totHtml = `
     <div class="total-card">
       <div class="total-val" id="total-retail">$${Math.round(tR).toLocaleString()}</div>
-      <div class="total-lbl">HD / Lowe's retail</div>
+      <div class="total-lbl">${isEs ? 'Precio minorista (HD/Lowe\\'s)' : 'HD / Lowe\\'s retail'}</div>
     </div>
     <div class="total-card">
       <div class="total-val" id="total-wholesale">$${Math.round(tW).toLocaleString()}</div>
-      <div class="total-lbl">Wholesale estimate</div>
+      <div class="total-lbl">${isEs ? 'Precio mayorista estimado' : 'Wholesale estimate'}</div>
     </div>
     <div class="total-card highlight">
       <div class="total-val" id="total-local">$${Math.round(tL).toLocaleString()}</div>
-      <div class="total-lbl">Local supplier</div>
+      <div class="total-lbl">${isEs ? 'Proveedor local' : 'Local supplier'}</div>
     </div>
     <div class="total-card savings">
       <div class="total-val" id="total-savings">$${Math.round(tR - tL).toLocaleString()}</div>
-      <div class="total-lbl">You'd overpay at retail</div>
+      <div class="total-lbl">${isEs ? 'Sobrepagarías al precio minorista' : "You'd overpay at retail"}</div>
     </div>`;
   document.getElementById('etotals').innerHTML = totHtml;
   document.getElementById('estimate-out').style.display = 'block';
@@ -3798,7 +3802,9 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     panel.classList.toggle('open');
     if (!sbOpened && panel.classList.contains('open')) {
       sbOpened = true;
-      sbAddMessage('bot', "Hi, I'm Nika 👋 I'm the StackBid assistant — ask me anything about your materials, estimated labor, or total project cost. You can type or tap the mic to talk. Just close this if you're all set.");
+      sbAddMessage('bot', window.SB_LANG === 'es'
+        ? "¡Hola! Soy Nika 👋 Soy la asistente de StackBid — pregúntame lo que quieras sobre tus materiales, la mano de obra estimada o el costo total del proyecto. Puedes escribir o tocar el micrófono para hablar. Solo cierra esto si ya tienes lo que necesitas."
+        : "Hi, I'm Nika 👋 I'm the StackBid assistant — ask me anything about your materials, estimated labor, or total project cost. You can type or tap the mic to talk. Just close this if you're all set.");
     }
   };
 
@@ -3901,6 +3907,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
           labor: window.lastLaborData || null,
           total_project_range: window.lastTotalProjectRange || null,
           voice: sbVoiceMode,
+          lang: window.SB_LANG || 'en',
         }),
       });
       const data = await res.json();
@@ -3916,6 +3923,71 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
       sbVoiceMode = false; // следующий ввод текстом — по умолчанию без озвучки, пока не нажат микрофон снова
     }
   };
+})();
+</script>
+
+<!-- ===== i18n — простой словарь переводов. Один файл, одна логика, ===== -->
+<!-- ===== /es.html — тот же файл с window.SB_LANG='es', установленным до этого скрипта. ===== -->
+<script>
+(function() {
+  if (window.SB_LANG !== 'es') return; // по умолчанию — английский, ничего не трогаем
+
+  var t = {
+    nav_try: 'Pruébalo gratis',
+    nav_contractors: 'Para contratistas',
+    nav_faq: 'Preguntas frecuentes',
+    nav_pricing: 'Precios',
+    nav_contact: 'Contacto',
+    nav_cta: 'Descubre cuánto estás pagando de más →',
+    hero_eyebrow: '● Con IA · Precios mayoristas 2026 · Sin tarjeta de crédito',
+    hero_h1: 'Conoce el costo <em>real</em> de materiales <span style="white-space:nowrap;">y mano de obra</span> antes de hablar con un contratista',
+    hero_sub: 'Escribe lo que vas a construir. Obtén una estimación completa de materiales y mano de obra con precios mayoristas locales — en menos de 3 minutos. Tu primera estimación es gratis.',
+    hero_btn: 'Pruébalo ahora — primera estimación gratis',
+    hero_ghost: 'Ver cómo funciona ↓',
+    stat_1: 'precios comparados uno al lado del otro',
+    stat_2: 'de la descripción a la estimación completa',
+    stat_3: 'precios locales por código postal',
+    stat_4: 'estimaciones generadas',
+    trust_1: 'No requiere cuenta',
+    trust_2: 'Funciona en todos los dispositivos',
+    trust_3: 'Precios mayoristas reales de 2026',
+    trust_4: 'Proveedor local por código postal',
+    trust_5: 'Guarda en PDF con un toque',
+    how_label: 'Cómo funciona',
+    how_title: 'Tres pasos hacia tu estimación',
+    ptype_label: 'Tipo de proyecto',
+    pt_newhome: 'Casa nueva',
+    pt_garage: 'Puerta de garaje',
+    pt_deck: 'Terraza / patio',
+    pt_fence: 'Cerca',
+    pt_roofing: 'Techo',
+    pt_siding: 'Revestimiento',
+    pt_foundation: 'Cimientos',
+    garage_roi_html: '💡 <strong>¿Sabías que?</strong> Reemplazar la puerta de garaje tiene el mayor retorno de inversión de cualquier proyecto de mejoras para el hogar — <strong>193.9%</strong> (Remodeling Magazine, Cost vs. Value). Revisa el costo de materiales arriba.',
+    voice_speak: '🎙️ Hablar',
+    voice_uptotwomin: 'hasta 2 min',
+    desc_label: 'Descripción del proyecto',
+    desc_placeholder: 'Ejemplo: terraza de 20×24 pies con madera tratada a presión, adosada a la parte trasera de la casa, tablas de composite, postes de 4×4, barandal de cable, un solo nivel, sin escaleras.',
+    local_pricing_label: 'Obtén precios locales',
+    zip_label: 'Tu código postal',
+    supplier_label: 'Proveedor preferido',
+    supp_auto: 'Automático — mayorista más cercano',
+    gen_btn: '⚡ Generar mi estimación — gratis',
+    faq_eyebrow: 'Preguntas frecuentes',
+    faq_title: 'Preguntas Frecuentes',
+    pricing_eyebrow: 'Precios',
+    pricing_title: 'Precios simples y transparentes',
+    pricing_sub: 'Tu primera estimación es gratis. Estimaciones ilimitadas por $9.99/mes.',
+  };
+
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-placeholder');
+    if (t[key] !== undefined) el.setAttribute('placeholder', t[key]);
+  });
 })();
 </script>
 
