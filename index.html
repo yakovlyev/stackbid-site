@@ -730,7 +730,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 <section class="how" id="how">
   <div class="section-label" data-i18n="how_label">How it works</div>
   <h2 class="section-title" data-i18n="how_title">Three steps to your estimate</h2>
-  <p class="section-sub">No contractor. No waiting. No hourly fees for a number you could get yourself.</p>
+  <p class="section-sub" data-i18n="how_sub">No contractor. No waiting. No hourly fees for a number you could get yourself.</p>
   <div class="steps">
     <div class="step">
       <div class="step-num">STEP 1</div>
@@ -756,9 +756,9 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 <!-- LIVE TOOL -->
 <section class="tool-section" id="tool">
   <div class="tool-wrap">
-    <div class="section-label" style="margin-bottom:10px;">Try it right now</div>
-    <h2 class="section-title">Get your free estimate</h2>
-    <p class="section-sub" style="margin-bottom:32px;">No signup. No credit card. Works on any device.</p>
+    <div class="section-label" style="margin-bottom:10px;" data-i18n="tool_label">Try it right now</div>
+    <h2 class="section-title" data-i18n="tool_title">Get your free estimate</h2>
+    <p class="section-sub" style="margin-bottom:32px;" data-i18n="tool_sub">No signup. No credit card. Works on any device.</p>
 
     <div class="tool-card">
       <div class="tool-header">
@@ -766,17 +766,17 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           <img src="/logo.svg" alt="StackBid" width="28" height="28">
           StackBid Estimator
         </div>
-        <div class="tool-badge">Free · 2026 Prices</div>
+        <div class="tool-badge" data-i18n="tool_badge">Free · 2026 Prices</div>
       </div>
       <div class="tool-body">
-        <div class="tool-tabs-scroll-hint">👉 swipe for more</div>
+        <div class="tool-tabs-scroll-hint" data-i18n="tool_swipe">👉 swipe for more</div>
         <div class="tool-tabs-wrap"><div class="tool-tabs">
-          <button class="tool-tab active" onclick="setTab('text')">✏️ Type</button>
-          <button class="tool-tab" onclick="setTab('photo')">📷 Photo</button>
-          <button class="tool-tab" onclick="setTab('calc')">📐 Area</button>
-          <button class="tool-tab" onclick="setTab('upload')">📎 Upload</button>
-          <button class="tool-tab" onclick="setTab('permit')">🏛️ Permit</button>
-          <button class="tool-tab" onclick="setTab('hdprices')">🏷️ Prices</button>
+          <button class="tool-tab active" onclick="setTab('text')"><span data-i18n="tab_type">✏️ Type</span></button>
+          <button class="tool-tab" onclick="setTab('photo')"><span data-i18n="tab_photo">📷 Photo</span></button>
+          <button class="tool-tab" onclick="setTab('calc')"><span data-i18n="tab_area">📐 Area</span></button>
+          <button class="tool-tab" onclick="setTab('upload')"><span data-i18n="tab_upload">📎 Upload</span></button>
+          <button class="tool-tab" onclick="setTab('permit')"><span data-i18n="tab_permit">🏛️ Permit</span></button>
+          <button class="tool-tab" onclick="setTab('hdprices')"><span data-i18n="tab_prices">🏷️ Prices</span></button>
         </div></div>
 
         <!-- TEXT TAB -->
@@ -831,13 +831,14 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           (function(){
             var langSel = document.getElementById('voiceLang');
             if (!langSel) return;
+            var storeKey = window.SB_LANG === 'es' ? 'stackbid_voice_lang_es' : 'stackbid_voice_lang';
             var saved = null;
-            try { saved = localStorage.getItem('stackbid_voice_lang'); } catch(e) {}
-            var guess = (navigator.language || 'en-US');
-            var match = Array.prototype.find.call(langSel.options, function(o){ return o.value === guess || o.value.split('-')[0] === guess.split('-')[0]; });
+            try { saved = localStorage.getItem(storeKey); } catch(e) {}
+            var defaultLang = window.SB_LANG === 'es' ? 'es-ES' : (navigator.language || 'en-US');
+            var match = Array.prototype.find.call(langSel.options, function(o){ return o.value === defaultLang || o.value.split('-')[0] === defaultLang.split('-')[0]; });
             langSel.value = saved || (match ? match.value : 'en-US');
             langSel.addEventListener('change', function(){
-              try { localStorage.setItem('stackbid_voice_lang', langSel.value); } catch(e) {}
+              try { localStorage.setItem(storeKey, langSel.value); } catch(e) {}
             });
           })();
           </script>
@@ -1161,30 +1162,30 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
 <!-- WHY THREE PRICES -->
 <section class="why" id="why">
-  <div class="section-label">Why three prices?</div>
-  <h2 class="section-title" style="color:var(--white);">Stop paying retail for contractor materials</h2>
-  <p class="section-sub">Most homeowners overpay because they don't know wholesale exists — or where to find it.</p>
+  <div class="section-label" data-i18n="why3_label">Why three prices?</div>
+  <h2 class="section-title" style="color:var(--white);" data-i18n="why3_title">Stop paying retail for contractor materials</h2>
+  <p class="section-sub" data-i18n="why3_sub">Most homeowners overpay because they don't know wholesale exists — or where to find it.</p>
   <div class="price-cols" style="margin-top:40px;">
     <div class="price-col">
-      <div class="price-col-label">Column 1</div>
-      <h3>Home Depot / Lowe's retail</h3>
-      <p>Walk-in shelf price. Convenient, but the most expensive way to buy materials for a serious project.</p>
-      <div class="price-col-tag">Baseline reference</div>
+      <div class="price-col-label" data-i18n="pc1_label">Column 1</div>
+      <h3 data-i18n="pc1_h3">Home Depot / Lowe's retail</h3>
+      <p data-i18n="pc1_p">Walk-in shelf price. Convenient, but the most expensive way to buy materials for a serious project.</p>
+      <div class="price-col-tag" data-i18n="pc1_tag">Baseline reference</div>
     </div>
     <div class="price-col featured">
-      <div class="price-col-label">Column 2</div>
-      <h3>Wholesale estimate</h3>
-      <p>Contractor account pricing — generally below retail. Available to anyone who asks for a quote account.</p>
-      <div class="price-col-tag">⬇ Typically lower than retail</div>
+      <div class="price-col-label" data-i18n="pc2_label">Column 2</div>
+      <h3 data-i18n="pc2_h3">Wholesale estimate</h3>
+      <p data-i18n="pc2_p">Contractor account pricing — generally below retail. Available to anyone who asks for a quote account.</p>
+      <div class="price-col-tag" data-i18n="pc2_tag">⬇ Typically lower than retail</div>
     </div>
     <div class="price-col">
-      <div class="price-col-label">Column 3</div>
-      <h3>Local supplier by ZIP</h3>
-      <p>Your nearest lumber yard or supply house — 84 Lumber, ProBuild, Builders FirstSource. Frequently competitive for larger orders.</p>
-      <div class="price-col-tag">⬇ Frequently lower than retail</div>
+      <div class="price-col-label" data-i18n="pc3_label">Column 3</div>
+      <h3 data-i18n="pc3_h3">Local supplier by ZIP</h3>
+      <p data-i18n="pc3_p">Your nearest lumber yard or supply house — 84 Lumber, ProBuild, Builders FirstSource. Frequently competitive for larger orders.</p>
+      <div class="price-col-tag" data-i18n="pc3_tag">⬇ Frequently lower than retail</div>
     </div>
   </div>
-  <p style="text-align:center;max-width:620px;margin:24px auto 0;font-size:12.5px;color:var(--muted);line-height:1.6;">
+  <p style="text-align:center;max-width:620px;margin:24px auto 0;font-size:12.5px;color:var(--muted);line-height:1.6;" data-i18n="price_disclaimer">
     Prices are AI-generated estimates, cross-checked against real scraped supplier data where available, and refreshed continuously. Like any materials estimate, expect typical market variance of about 5-10% due to region, supplier, season, and product choice — this is normal for the industry, not a claim about StackBid's own precision. Coverage currently focuses on the contiguous US. Always confirm final pricing with your supplier before purchasing.
   </p>
 </section>
@@ -4050,6 +4051,40 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     cf_email: 'Tu correo electrónico',
     cf_message: 'Tu mensaje...',
     cf_btn: '📨 ENVIAR MENSAJE',
+
+    // How-it-works sub, missed on first pass
+    how_sub: 'Sin contratista. Sin espera. Sin tarifas por hora por un número que puedes obtener tú mismo.',
+
+    // Tool section (was completely missed on first pass)
+    tool_label: 'Pruébalo ahora mismo',
+    tool_title: 'Obtén tu estimación gratis',
+    tool_sub: 'Sin registro. Sin tarjeta de crédito. Funciona en cualquier dispositivo.',
+    tool_badge: 'Gratis · Precios 2026',
+    tool_swipe: '👉 desliza para ver más',
+    tab_type: '✏️ Escribir',
+    tab_photo: '📷 Foto',
+    tab_area: '📐 Área',
+    tab_upload: '📎 Subir',
+    tab_permit: '🏛️ Permiso',
+    tab_prices: '🏷️ Precios',
+
+    // Why three prices section (was completely missed on first pass)
+    why3_label: '¿Por qué tres precios?',
+    why3_title: 'Deja de pagar precio minorista por materiales de construcción',
+    why3_sub: 'La mayoría de los propietarios pagan de más porque no saben que existe el precio mayorista — o dónde encontrarlo.',
+    pc1_label: 'Columna 1',
+    pc1_h3: 'Precio minorista Home Depot / Lowe\'s',
+    pc1_p: 'Precio de tienda física. Conveniente, pero la forma más cara de comprar materiales para un proyecto serio.',
+    pc1_tag: 'Referencia base',
+    pc2_label: 'Columna 2',
+    pc2_h3: 'Estimación mayorista',
+    pc2_p: 'Precio de cuenta de contratista — generalmente por debajo del minorista. Disponible para quien solicite una cuenta de cotización.',
+    pc2_tag: '⬇ Típicamente más bajo que el minorista',
+    pc3_label: 'Columna 3',
+    pc3_h3: 'Proveedor local por código postal',
+    pc3_p: 'Tu depósito de madera o proveedor más cercano — 84 Lumber, ProBuild, Builders FirstSource. A menudo competitivo para pedidos grandes.',
+    pc3_tag: '⬇ Frecuentemente más bajo que el minorista',
+    price_disclaimer: 'Los precios son estimaciones generadas por IA, verificadas contra datos reales de proveedores cuando están disponibles, y actualizadas continuamente. Como cualquier estimación de materiales, espera una variación típica del mercado de 5-10% según la región, el proveedor, la temporada y el producto — esto es normal en la industria, no una afirmación sobre la precisión de StackBid. La cobertura actualmente se enfoca en el territorio continental de EE.UU. Siempre confirma el precio final con tu proveedor antes de comprar.',
   };
 
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
