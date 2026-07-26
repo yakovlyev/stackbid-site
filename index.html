@@ -661,12 +661,12 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   <div class="pwa-banner-left">
     <img src="/logo.svg" alt="StackBid">
     <div>
-      <div style="font-weight:700; font-size:14px;">Install StackBid</div>
-      <div style="font-size:12px; color:rgba(255,255,255,0.6);">Add to Home Screen for quick access</div>
+      <div style="font-weight:700; font-size:14px;" data-i18n="pwa_title">Install StackBid</div>
+      <div style="font-size:12px; color:rgba(255,255,255,0.6);" data-i18n="pwa_sub">Add to Home Screen for quick access</div>
     </div>
   </div>
   <div style="display:flex; gap:8px; align-items:center;">
-    <button class="pwa-banner-btn" onclick="installPWA()">Install</button>
+    <button class="pwa-banner-btn" onclick="installPWA()" data-i18n="pwa_btn">Install</button>
     <button class="pwa-banner-close" onclick="closePWABanner()" aria-label="Close">×</button>
   </div>
 </div>
@@ -1778,7 +1778,7 @@ function handlePhoto(file) {
 }
 
 async function analyzePhoto() {
-  if (!photoBase64) { alert('Please take or upload a photo first.'); return; }
+  if (!photoBase64) { alert(window.SB_LANG === 'es' ? 'Por favor toma o sube una foto primero.' : 'Please take or upload a photo first.'); return; }
   const photoBtn = document.getElementById('photo-gen-btn');
   setBtnLoading(photoBtn, true);
   const zip = document.getElementById('photo-zip').value.trim() || '77001';
@@ -1981,7 +1981,7 @@ function runCalc() {
   const vals = {};
   for (const f of cfg.fields) {
     const v = parseFloat(document.getElementById('calc-' + f.id)?.value);
-    if (!v || v <= 0) { alert('Please fill in all measurements.'); return; }
+    if (!v || v <= 0) { alert(window.SB_LANG === 'es' ? 'Por favor completa todas las medidas.' : 'Please fill in all measurements.'); return; }
     vals[f.id] = v;
   }
   const result = cfg.formula(vals);
@@ -2577,7 +2577,7 @@ function toggleVoice() {
         if (sessionId !== voiceSessionId) return;
         resetVoice();
         setVoiceStatus('Microphone access denied', '#C0392B');
-        setTimeout(() => alert('Microphone access denied. Please allow microphone in your browser settings and try again.'), 50);
+        setTimeout(() => alert(window.SB_LANG === 'es' ? 'Acceso al micrófono denegado. Por favor permite el micrófono en la configuración de tu navegador e intenta de nuevo.' : 'Microphone access denied. Please allow microphone in your browser settings and try again.'), 50);
       });
   } else {
     setVoiceStatus('Voice input not supported in this browser — try Chrome', '#C0392B');
@@ -2615,7 +2615,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // выставляется там, не здесь), тут только сообщаем человеку, что произошло
   const proParam = new URLSearchParams(window.location.search).get('pro');
   if (proParam === 'success') {
-    alert('🎉 You\'re subscribed to StackBid Pro! It may take a few seconds to activate — refresh if needed.');
+    alert(window.SB_LANG === 'es' ? '🎉 ¡Estás suscrito a StackBid Pro! Puede tardar unos segundos en activarse — actualiza la página si es necesario.' : 'You\'re subscribed to StackBid Pro! It may take a few seconds to activate — refresh if needed.');
     window.history.replaceState({}, '', window.location.pathname);
   } else if (proParam === 'cancelled') {
     window.history.replaceState({}, '', window.location.pathname);
@@ -2991,24 +2991,24 @@ async function openBillingPortal() {
       return;
     }
     if (resp.status === 404) {
-      alert("We couldn't find an active StackBid Pro subscription for this email.");
+      alert(window.SB_LANG === 'es' ? "No encontramos una suscripción activa de StackBid Pro para este correo." : "We couldn't find an active StackBid Pro subscription for this email.");
     } else {
-      alert("Couldn't open the billing portal — please try again in a moment.");
+      alert(window.SB_LANG === 'es' ? "No se pudo abrir el portal de facturación — por favor intenta de nuevo en un momento." : "Couldn't open the billing portal — please try again in a moment.");
     }
   } catch (e) {
-    alert("Couldn't open the billing portal — please try again in a moment.");
+    alert(window.SB_LANG === 'es' ? "No se pudo abrir el portal de facturación — por favor intenta de nuevo en un momento." : "Couldn't open the billing portal — please try again in a moment.");
   }
 }
 
 async function handleSubscribeClick() {
   const email = localStorage.getItem('sb_user_email');
   if (!email) {
-    alert('Please enter your email above first.');
+    alert(window.SB_LANG === 'es' ? 'Por favor ingresa tu correo arriba primero.' : 'Please enter your email above first.');
     return;
   }
   const consentBox = document.getElementById('paywall-consent');
   if (consentBox && !consentBox.checked) {
-    alert('Please check the box confirming you understand this is a recurring subscription.');
+    alert(window.SB_LANG === 'es' ? 'Por favor marca la casilla confirmando que entiendes que esta es una suscripción recurrente.' : 'Please check the box confirming you understand this is a recurring subscription.');
     return;
   }
   const btn = event?.target;
@@ -3040,12 +3040,12 @@ async function handleSubscribeClick() {
       return;
     }
     if (resp.status === 503) {
-      alert('Subscriptions are launching very soon! We\'ll email you at ' + email + ' the moment StackBid Pro is live.');
+      alert((window.SB_LANG === 'es' ? '¡Las suscripciones se lanzan muy pronto! Te enviaremos un correo a ' + email + ' en cuanto StackBid Pro esté disponible.' : 'Subscriptions are launching very soon! We\'ll email you at ' + email + ' the moment StackBid Pro is live.'));
     } else {
-      alert("Couldn't start checkout — please try again in a moment.");
+      alert(window.SB_LANG === 'es' ? "No se pudo iniciar el pago — por favor intenta de nuevo en un momento." : "Couldn't start checkout — please try again in a moment.");
     }
   } catch (e) {
-    alert("Couldn't start checkout — please try again in a moment.");
+    alert(window.SB_LANG === 'es' ? "No se pudo iniciar el pago — por favor intenta de nuevo en un momento." : "Couldn't start checkout — please try again in a moment.");
   }
   if (btn) { btn.textContent = originalText; btn.disabled = false; }
 }
@@ -3685,7 +3685,7 @@ function doPrint(mode) {
 
 function exportCSV() {
   const data = window.lastEstimateData;
-  if (!data || !data.categories) { alert('Please generate an estimate first.'); return; }
+  if (!data || !data.categories) { alert(window.SB_LANG === 'es' ? 'Por favor genera una estimación primero.' : 'Please generate an estimate first.'); return; }
   const rows = [['Category', 'Material', 'Spec', 'Qty', 'Unit', 'HD Retail Total', 'Wholesale Total', 'Local Supplier Total']];
   (data.categories || []).forEach(cat => {
     (cat.items || []).forEach(item => {
@@ -3714,7 +3714,7 @@ function exportCSV() {
 
 function submitEmail() {
   const email = document.getElementById('email-in').value;
-  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+  if (!email || !email.includes('@')) { alert(window.SB_LANG === 'es' ? 'Por favor ingresa un correo electrónico válido.' : 'Please enter a valid email address.'); return; }
   document.getElementById('email-form').style.display = 'none';
   document.getElementById('email-success').style.display = 'block';
 }
@@ -3731,7 +3731,7 @@ function installPWA() {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(() => { deferredPrompt = null; closePWABanner(); });
   } else {
-    alert('To install: tap the Share button (□↑) → "Add to Home Screen"');
+    alert(window.SB_LANG === 'es' ? 'Para instalar: toca el botón Compartir (□↑) → "Agregar a pantalla de inicio"' : 'To install: tap the Share button (□↑) → "Add to Home Screen"');
   }
 }
 function closePWABanner() {
@@ -4172,6 +4172,9 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     start_trial_pro: '🚀 Comenzar Prueba Gratis →',
     start_trial_handy: '🧰 Comenzar Prueba Gratis →',
     success_msg: '✓ ¡Ya estás activo! Tu prueba Pro está activa ahora. Revisa tu correo y guarda tu <a href="/contractor-dashboard.html" target="_blank" style="color:#155724;text-decoration:underline;">panel de contratista</a> para ver los clientes potenciales a medida que lleguen.',
+    pwa_title: 'Instalar StackBid',
+    pwa_sub: 'Agrega a la pantalla de inicio para acceso rápido',
+    pwa_btn: 'Instalar',
   };
 
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
