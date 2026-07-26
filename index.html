@@ -733,22 +733,22 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   <p class="section-sub" data-i18n="how_sub">No contractor. No waiting. No hourly fees for a number you could get yourself.</p>
   <div class="steps">
     <div class="step">
-      <div class="step-num">STEP 1</div>
+      <div class="step-num" data-i18n="step1_num">STEP 1</div>
       <div class="step-icon">🎙️</div>
-      <h3>Describe your project</h3>
-      <p>Type, speak, or upload a photo or PDF of your plans. "20×24 deck, composite boards, cable railing" is enough to start.</p>
+      <h3 data-i18n="step1_h3">Describe your project</h3>
+      <p data-i18n="step1_p">Type, speak, or upload a photo or PDF of your plans. "20×24 deck, composite boards, cable railing" is enough to start.</p>
     </div>
     <div class="step">
-      <div class="step-num">STEP 2</div>
+      <div class="step-num" data-i18n="step2_num">STEP 2</div>
       <div class="step-icon">📍</div>
-      <h3>Enter your ZIP code</h3>
-      <p>We find the nearest wholesale supplier — 84 Lumber, ProBuild, Menards — and pull their current 2026 pricing for your area.</p>
+      <h3 data-i18n="step2_h3">Enter your ZIP code</h3>
+      <p data-i18n="step2_p">We find the nearest wholesale supplier — 84 Lumber, ProBuild, Menards — and pull their current 2026 pricing for your area.</p>
     </div>
     <div class="step">
-      <div class="step-num">STEP 3</div>
+      <div class="step-num" data-i18n="step3_num">STEP 3</div>
       <div class="step-icon">📋</div>
-      <h3>Get your estimate</h3>
-      <p>A full bill of materials with three price columns: retail, wholesale, and your nearest local supplier. Save to PDF in one tap.</p>
+      <h3 data-i18n="step3_h3">Get your estimate</h3>
+      <p data-i18n="step3_p">A full bill of materials with three price columns: retail, wholesale, and your nearest local supplier. Save to PDF in one tap.</p>
     </div>
   </div>
 </section>
@@ -819,7 +819,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
               <option value="hi-IN">हिन्दी</option>
               <option value="vi-VN">Tiếng Việt</option>
             </select>
-            <span id="voiceStatus" style="font-size:13px; color:var(--muted); align-self:center;">or type your project details below</span>
+            <span id="voiceStatus" style="font-size:13px; color:var(--muted); align-self:center;" data-i18n="or_type_below">or type your project details below</span>
           </div>
 
           <div class="tf" style="margin-bottom:12px;">
@@ -922,12 +922,12 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div style="font-size:12px;color:var(--muted);margin-top:10px;">✓ Includes 10% waste factor (US standard)</div>
           </div>
           <button class="gen-btn" onclick="runCalc()">📐 Calculate</button>
-          <button class="gen-btn" id="calc-to-estimate" onclick="calcToEstimate()" style="display:none;margin-top:10px;background:var(--amber);color:var(--white);">⚡ Get prices for this quantity →</button>
+          <button class="gen-btn" id="calc-to-estimate" onclick="calcToEstimate()" style="display:none;margin-top:10px;background:var(--amber);color:var(--white);" data-i18n="calc_getprices">⚡ Get prices for this quantity →</button>
         </div>
         <div id="tab-upload" style="display:none;">
           <div id="upload-dropzone" style="border:2px dashed var(--border); border-radius:var(--radius); padding:40px 20px; text-align:center; cursor:pointer; margin-bottom:16px; transition:background 0.15s, border-color 0.15s;" onclick="document.getElementById('fup').click()" ondragover="event.preventDefault(); event.stopPropagation(); this.style.background='var(--offwhite)'; this.style.borderColor='var(--amber)';" ondragleave="event.preventDefault(); event.stopPropagation(); this.style.background=''; this.style.borderColor='var(--border)';" ondrop="event.preventDefault(); event.stopPropagation(); this.style.background=''; this.style.borderColor='var(--border)'; handleUpload(event.dataTransfer.files);">
             <div style="font-size:32px; margin-bottom:10px;">📄</div>
-            <div style="font-family:'DM Sans',sans-serif; font-weight:700; color:var(--ink); margin-bottom:6px;">Drop your plans here</div>
+            <div style="font-family:'DM Sans',sans-serif; font-weight:700; color:var(--ink); margin-bottom:6px;" data-i18n="drop_plans">Drop your plans here</div>
             <div style="font-size:13px; color:var(--muted);">PDF blueprints, photos, hand sketches · PDF JPG PNG</div>
             <input type="file" id="fup" style="display:none" multiple accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload(this.files)">
           </div>
@@ -958,7 +958,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
         <!-- PERMIT CHECKER TAB -->
         <div id="tab-permit" style="display:none;">
           <div style="margin-bottom:16px;">
-            <div style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6;">Enter your ZIP code and project type — we'll tell you exactly whether you need a building permit, estimated cost, and link to your local permit office.</div>
+            <div style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6;" data-i18n="permit_intro">Enter your ZIP code and project type — we'll tell you exactly whether you need a building permit, estimated cost, and link to your local permit office.</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
               <div class="tf">
                 <label>ZIP code</label>
@@ -981,7 +981,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
               </div>
             </div>
             <div class="tf" style="margin-bottom:14px;">
-              <label>Project size <span style="font-weight:400; color:var(--muted);">(optional — helps with accuracy)</span></label>
+              <label data-i18n="project_size_label">Project size <span style="font-weight:400; color:var(--muted);">(optional — helps with accuracy)</span></label>
               <input type="text" id="permit-size" placeholder="e.g. 20x24 ft deck, 6 ft fence 100 linear ft, 1,500 sq ft roof">
             </div>
           </div>
@@ -993,7 +993,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
         <!-- HD LIVE PRICES TAB -->
         <div id="tab-hdprices" style="display:none;">
-          <div style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6;">Look up current Home Depot prices for any material by ZIP code — then compare with wholesale and local supplier pricing.</div>
+          <div style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6;" data-i18n="hdprices_intro">Look up current Home Depot prices for any material by ZIP code — then compare with wholesale and local supplier pricing.</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
             <div class="tf">
               <label>ZIP code</label>
@@ -1016,14 +1016,14 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <label>Specific product <span style="font-weight:400; color:var(--muted);">(optional)</span></label>
             <input type="text" id="hd-product" placeholder='e.g. "2x4x8 stud", "GAF Timberline shingles", "Quikrete 80lb"'>
           </div>
-          <button class="gen-btn" onclick="lookupHDPrices()">🏷️ Get current HD prices + wholesale comparison</button>
+          <button class="gen-btn" onclick="lookupHDPrices()" data-i18n="hdprices_btn">🏷️ Get current HD prices + wholesale comparison</button>
           <div class="progress-bar" id="pbar-hd" style="display:none; margin-top:12px;"><div class="progress-fill" id="pfill-hd"></div></div>
           <div class="status-msg" id="smsg-hd" style="display:none;">Fetching current prices...</div>
           <div id="hd-out" style="display:none; margin-top:20px;"></div>
         </div>
 
         <div class="progress-bar" id="pbar"><div class="progress-fill" id="pfill"></div></div>
-        <div class="status-msg" id="smsg">Analyzing your project...</div>
+        <div class="status-msg" id="smsg" data-i18n="analyzing_placeholder">Analyzing your project...</div>
 
         <button class="gen-btn" id="main-gen-btn" onclick="generate()" data-i18n="gen_btn">⚡ Generate my estimate — free</button>
 
@@ -1034,35 +1034,35 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div style="background:#fff;border-radius:16px;padding:24px;max-width:420px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,0.25);">
               <div style="text-align:center;margin-bottom:16px;">
                 <div style="font-size:28px;margin-bottom:6px;">🔓</div>
-                <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:17px;color:var(--ink);">Your estimate is ready</div>
-                <div style="font-size:13px;color:var(--muted);margin-top:4px;">Enter your details to unlock the full breakdown</div>
+                <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:17px;color:var(--ink);" data-i18n="gate_title">Your estimate is ready</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:4px;" data-i18n="gate_sub">Enter your details to unlock the full breakdown</div>
               </div>
               <div id="gate-preview-items" style="background:var(--offwhite);border-radius:10px;padding:12px 14px;margin-bottom:16px;"></div>
               <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:16px;padding:0 2px;">
                 <span id="gate-items-count">— items</span>
-                <span>Save up to <strong id="gate-savings-num" style="color:var(--green);">$0</strong></span>
+                <span data-i18n="gate_saveupto_html">Save up to <strong id="gate-savings-num" style="color:var(--green);">$0</strong></span>
               </div>
               <div class="tf" style="margin-bottom:10px;">
-                <input type="text" id="gate-fname" placeholder="Your first name" style="width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                <input type="text" id="gate-fname" data-i18n-placeholder="gate_fname_ph" placeholder="Your first name" style="width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
               </div>
               <div class="tf" style="margin-bottom:10px;">
-                <input type="email" id="gate-email" placeholder="you@email.com" style="width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                <input type="email" id="gate-email" data-i18n-placeholder="email_ph" placeholder="you@email.com" style="width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
               </div>
               <div class="tf" style="margin-bottom:10px;">
                 <select id="gate-role" style="width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
-                  <option value="homeowner">I'm a homeowner</option>
-                  <option value="contractor">I'm a contractor</option>
-                  <option value="investor">I'm an investor</option>
-                  <option value="realtor">I'm a realtor</option>
-                  <option value="other">Other</option>
+                  <option value="homeowner" data-i18n="role_homeowner">I'm a homeowner</option>
+                  <option value="contractor" data-i18n="role_contractor">I'm a contractor</option>
+                  <option value="investor" data-i18n="role_investor">I'm an investor</option>
+                  <option value="realtor" data-i18n="role_realtor">I'm a realtor</option>
+                  <option value="other" data-i18n="role_other">Other</option>
                 </select>
               </div>
               <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);margin-bottom:14px;cursor:pointer;">
                 <input type="checkbox" id="gate-alerts" checked style="margin-top:2px;">
-                <span>Email me when local material prices drop</span>
+                <span data-i18n="gate_alerts_cb">Email me when local material prices drop</span>
               </label>
-              <button class="gen-btn" style="width:100%;" onclick="unlockEstimate()">🔓 Unlock full estimate — free</button>
-              <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;">No spam. Unsubscribe anytime.</div>
+              <button class="gen-btn" style="width:100%;" onclick="unlockEstimate()" data-i18n="gate_unlock_btn">🔓 Unlock full estimate — free</button>
+              <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;" data-i18n="gate_nospam">No spam. Unsubscribe anytime.</div>
             </div>
           </div>
 
@@ -1070,29 +1070,29 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div style="background:#fff;border-radius:16px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,0.25);">
               <div style="text-align:center;margin-bottom:18px;">
                 <div style="font-size:28px;margin-bottom:6px;">⭐</div>
-                <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:18px;color:var(--ink);">Unlock unlimited estimates</div>
-                <div style="font-size:13px;color:var(--muted);margin-top:6px;">Your first estimate was free. Keep planning with StackBid Pro.</div>
+                <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:18px;color:var(--ink);" data-i18n="paywall_title">Unlock unlimited estimates</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:6px;" data-i18n="paywall_sub">Your first estimate was free. Keep planning with StackBid Pro.</div>
               </div>
               <div style="background:var(--offwhite);border-radius:10px;padding:16px;margin-bottom:16px;">
                 <div style="display:flex;align-items:baseline;gap:6px;justify-content:center;margin-bottom:4px;">
                   <span style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:28px;color:var(--ink);">$9.99</span>
-                  <span style="font-size:13px;color:var(--muted);">/ month</span>
+                  <span style="font-size:13px;color:var(--muted);" data-i18n="per_month">/ month</span>
                 </div>
-                <div style="text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:12px;">Billed monthly. Renews automatically until canceled.</div>
+                <div style="text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:12px;" data-i18n="billed_monthly">Billed monthly. Renews automatically until canceled.</div>
                 <ul style="list-style:none;padding:0;margin:0;font-size:13px;color:var(--ink);display:flex;flex-direction:column;gap:8px;">
-                  <li>✓ Unlimited material estimates</li>
-                  <li>✓ Save your project history</li>
-                  <li>✓ Price drop alerts</li>
-                  <li>✓ Access to local contractor listings</li>
-                  <li>✓ Detailed supplier PDF reports</li>
+                  <li data-i18n="pw_f1">✓ Unlimited material estimates</li>
+                  <li data-i18n="pw_f2">✓ Save your project history</li>
+                  <li data-i18n="pw_f3">✓ Price drop alerts</li>
+                  <li data-i18n="pw_f4">✓ Access to local contractor listings</li>
+                  <li data-i18n="pw_f5">✓ Detailed supplier PDF reports</li>
                 </ul>
               </div>
               <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--ink);margin-bottom:14px;cursor:pointer;background:var(--offwhite);border-radius:8px;padding:10px 12px;">
                 <input type="checkbox" id="paywall-consent" style="margin-top:2px;" onchange="document.getElementById('paywall-subscribe-btn').disabled = !this.checked;">
-                <span>I understand this is a monthly subscription for $9.99 that renews automatically until canceled, and that I can cancel anytime in my account.</span>
+                <span data-i18n="paywall_consent">I understand this is a monthly subscription for $9.99 that renews automatically until canceled, and that I can cancel anytime in my account.</span>
               </label>
-              <button class="gen-btn" id="paywall-subscribe-btn" style="width:100%;" onclick="handleSubscribeClick()" disabled>Continue and unlock my plan</button>
-              <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;">You will not be charged unless you confirm this subscription.</div>
+              <button class="gen-btn" id="paywall-subscribe-btn" style="width:100%;" onclick="handleSubscribeClick()" disabled data-i18n="paywall_btn">Continue and unlock my plan</button>
+              <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;" data-i18n="not_charged">You will not be charged unless you confirm this subscription.</div>
               <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;">Cancel anytime. Questions? <a href="mailto:hello@stackbid.app" style="color:var(--muted);">hello@stackbid.app</a></div>
             </div>
           </div>
@@ -1148,9 +1148,9 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             </div>
             <div id="email-pdf-form" style="display:flex;gap:8px;flex-wrap:wrap;">
               <input type="email" id="email-pdf-input" placeholder="your@email.com" style="padding:10px 14px;border:none;border-radius:8px;font-size:14px;min-width:200px;outline:none;">
-              <button onclick="sendPdfEmail()" style="background:#0C2340;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;">Get PDF →</button>
+              <button onclick="sendPdfEmail()" style="background:#0C2340;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;" data-i18n="getpdf_btn">Get PDF →</button>
             </div>
-            <div id="email-pdf-success" style="display:none;color:#fff;font-weight:600;font-size:14px;">✓ Saved! Opening your PDF…</div>
+            <div id="email-pdf-success" style="display:none;color:#fff;font-weight:600;font-size:14px;" data-i18n="pdf_saved_msg">✓ Saved! Opening your PDF…</div>
           </div>
           <div id="local-matches" style="margin-top:24px;"></div>
           </div>
@@ -1367,7 +1367,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em;">Why StackBid Pro</div>
       <div style="display:flex;flex-direction:column;gap:16px;">
         <p style="color:#fff;font-size:15px;line-height:1.6;">Homeowners see their materials and estimated labor cost before they contact you — so conversations start with a real budget, not a guess.</p>
-        <p style="color:#fff;font-size:15px;line-height:1.6;">Every lead includes the project type, ZIP code, and estimated budget range, sent to you by email the moment a homeowner requests your contact info.</p>
+        <p style="color:#fff;font-size:15px;line-height:1.6;" data-i18n="every_lead">Every lead includes the project type, ZIP code, and estimated budget range, sent to you by email the moment a homeowner requests your contact info.</p>
       </div>
     </div>
   </div>
@@ -1607,7 +1607,7 @@ async function submitContactForm() {
     <img src="/logo.svg" alt="StackBid" width="28" height="28">
     <span class="footer-logo-text">Stack<span>Bid</span></span>
   </div>
-  <div style="font-size:13px;">© 2026 StackBid · Materials estimates for US homeowners</div>
+  <div style="font-size:13px;" data-i18n="footer_tagline">© 2026 StackBid · Materials estimates for US homeowners</div>
   <div class="footer-links">
     <a href="https://youtube.com/@stackbid" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;background:#ff0000;border-radius:8px;color:#fff;font-size:13px;font-weight:600;text-decoration:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M23.5 6.2s-.2-1.7-1-2.4c-.9-1-1.9-1-2.4-1.1C17.1 2.5 12 2.5 12 2.5s-5.1 0-8.1.2c-.5.1-1.5.1-2.4 1.1C.7 4.5.5 6.2.5 6.2S.3 8.1.3 10v1.9c0 1.9.2 3.8.2 3.8s.2 1.7 1 2.4c.9 1 2.1.9 2.6 1 1.9.2 8 .2 8 .2s5.1 0 8.1-.3c.5-.1 1.5-.1 2.4-1.1.8-.7 1-2.4 1-2.4s.2-1.9.2-3.8V10c0-1.9-.3-3.8-.3-3.8zM9.7 14.5V8.9l6.5 2.8-6.5 2.8z"/></svg> YouTube</a>
     <a href="https://t.me/stackbid" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;background:#229ED9;border-radius:8px;color:#fff;font-size:13px;font-weight:600;text-decoration:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.2 13.9l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.948.659z"/></svg> Telegram</a>
@@ -1790,7 +1790,9 @@ async function analyzePhoto() {
   document.getElementById('photo-gen-btn').style.display = 'none';
 
   const pfill = document.getElementById('pfill-photo');
-  const msgs = ['Analyzing material...','Identifying product...','Looking up 2026 prices...','Finding local supplier for ZIP ' + zip + '...'];
+  const msgs = window.SB_LANG === 'es'
+    ? ['Analizando material...','Identificando producto...','Buscando precios 2026...','Buscando proveedor local para el código postal ' + zip + '...']
+    : ['Analyzing material...','Identifying product...','Looking up 2026 prices...','Finding local supplier for ZIP ' + zip + '...'];
   let pct = 0, mi = 0;
   const iv = setInterval(() => {
     pct = Math.min(pct + 22, 88);
@@ -2670,7 +2672,13 @@ async function generate() {
   document.getElementById('pbar').style.display = 'block';
   document.getElementById('smsg').style.display = 'block';
 
-  const msgs = [
+  const msgs = window.SB_LANG === 'es' ? [
+    'Paso 1/5 · Analizando tu proyecto...',
+    'Paso 2/5 · Calculando cantidades de materiales...',
+    'Paso 3/5 · Buscando precios mayoristas 2026...',
+    'Paso 4/5 · Encontrando tu proveedor más cercano en el código postal ' + zip + '...',
+    'Paso 5/5 · Construyendo tu estimación...'
+  ] : [
     'Step 1/5 · Analyzing your project...',
     'Step 2/5 · Calculating material quantities...',
     'Step 3/5 · Looking up 2026 wholesale prices...',
@@ -4179,6 +4187,60 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     nika_placeholder: 'Pregunta sobre tu estimación o mano de obra...',
     nika_mic_title: 'Habla tu pregunta',
     nika_aria: 'Abrir Asistente de StackBid',
+
+    // How it works — 3 steps (was missed, only label/title were tagged)
+    step1_num: 'PASO 1',
+    step1_h3: 'Describe tu proyecto',
+    step1_p: 'Escribe, habla, o sube una foto o PDF de tus planos. "Terraza de 20×24, tablas de composite, barandal de cable" es suficiente para empezar.',
+    step2_num: 'PASO 2',
+    step2_h3: 'Ingresa tu código postal',
+    step2_p: 'Encontramos el proveedor mayorista más cercano — 84 Lumber, ProBuild, Menards — y obtenemos sus precios actuales de 2026 para tu área.',
+    step3_num: 'PASO 3',
+    step3_h3: 'Obtén tu estimación',
+    step3_p: 'Una lista completa de materiales con tres columnas de precios: minorista, mayorista, y tu proveedor local más cercano. Guarda en PDF con un toque.',
+
+    // Otras pestañas de la herramienta
+    or_type_below: 'o escribe los detalles de tu proyecto abajo',
+    calc_getprices: '⚡ Obtener precios para esta cantidad →',
+    drop_plans: 'Suelta tus planos aquí',
+    permit_intro: 'Ingresa tu código postal y tipo de proyecto — te diremos exactamente si necesitas un permiso de construcción, el costo estimado, y un enlace a tu oficina local de permisos.',
+    project_size_label: 'Tamaño del proyecto <span style="font-weight:400; color:var(--muted);">(opcional — ayuda con la precisión)</span>',
+    hdprices_intro: 'Busca los precios actuales de Home Depot para cualquier material por código postal — luego compara con precios mayoristas y de proveedores locales.',
+    hdprices_btn: '🏷️ Ver precios de HD + comparación mayorista',
+
+    // Ventana de desbloqueo de estimación (email-gate)
+    gate_title: 'Tu estimación está lista',
+    gate_sub: 'Ingresa tus datos para desbloquear el desglose completo',
+    gate_saveupto_html: 'Ahorra hasta <strong id="gate-savings-num" style="color:var(--green);">$0</strong>',
+    gate_fname_ph: 'Tu nombre',
+    role_homeowner: 'Soy propietario',
+    role_contractor: 'Soy contratista',
+    role_investor: 'Soy inversionista',
+    role_realtor: 'Soy agente inmobiliario',
+    role_other: 'Otro',
+    gate_alerts_cb: 'Avísame por correo cuando bajen los precios de materiales locales',
+    gate_unlock_btn: '🔓 Desbloquear estimación completa — gratis',
+    gate_nospam: 'Sin spam. Cancela cuando quieras.',
+    email_ph: 'tu@correo.com',
+
+    // Paywall de suscripción
+    paywall_title: 'Desbloquea estimaciones ilimitadas',
+    paywall_sub: 'Tu primera estimación fue gratis. Sigue planeando con StackBid Pro.',
+    per_month: '/ mes',
+    billed_monthly: 'Facturado mensualmente. Se renueva automáticamente hasta que canceles.',
+    pw_f1: '✓ Estimaciones de materiales ilimitadas',
+    pw_f2: '✓ Guarda tu historial de proyectos',
+    pw_f3: '✓ Alertas de bajada de precios',
+    pw_f4: '✓ Acceso a listados de contratistas locales',
+    pw_f5: '✓ Reportes detallados de proveedores en PDF',
+    paywall_consent: 'Entiendo que esta es una suscripción mensual de $9.99 que se renueva automáticamente hasta que la cancele, y que puedo cancelar en cualquier momento desde mi cuenta.',
+    paywall_btn: 'Continuar y desbloquear mi plan',
+    not_charged: 'No se te cobrará a menos que confirmes esta suscripción.',
+    getpdf_btn: 'Obtener PDF →',
+    pdf_saved_msg: '✓ ¡Guardado! Abriendo tu PDF…',
+    every_lead: 'Cada cliente potencial incluye el tipo de proyecto, código postal, y rango de presupuesto estimado, enviado a tu correo en el momento en que un propietario solicita tu información de contacto.',
+    footer_tagline: '© 2026 StackBid · Estimaciones de materiales para propietarios en EE.UU.',
+    analyzing_placeholder: 'Analizando tu proyecto...',
   };
 
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
