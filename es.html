@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
-<script>window.SB_LANG = 'es';</script>
 <head>
+<script>window.SB_LANG = 'es';</script>
 <meta name='impact-site-verification' value='60ad2775-c26b-4d94-a82a-ccda9e13b810'>
  <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-FRXYX65KWN"></script>
@@ -1105,48 +1105,48 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
             <div>
               <div class="estimate-title" id="etitle">—</div>
               <div class="estimate-meta" id="emeta">—</div>
-              <div style="font-size:11px; color:var(--muted); margin-top:2px;">Prices: estimated 2026 wholesale market rates — actual prices may vary</div>
+              <div style="font-size:11px; color:var(--muted); margin-top:2px;" data-i18n="prices_note">Prices: estimated 2026 wholesale market rates — actual prices may vary</div>
               <div id="eflagbanner" style="display:none;margin-top:8px;background:#FEF3C7;color:#92400E;font-size:12.5px;font-weight:600;padding:8px 12px;border-radius:8px;line-height:1.5;"></div>
             </div>
             <div class="export-row">
-              <button class="exp-btn" onclick="doPrint('estimate')">📄 Save PDF</button>
-              <button class="exp-btn" onclick="exportCSV()">📊 Excel</button>
-              <button class="exp-btn" onclick="shareEmail()">📧 Email</button>
-              <button class="exp-btn" onclick="shareiMessage()">💬 iMessage</button>
+              <button class="exp-btn" onclick="doPrint('estimate')" data-i18n="btn_savepdf">📄 Save PDF</button>
+              <button class="exp-btn" onclick="exportCSV()" data-i18n="btn_excel">📊 Excel</button>
+              <button class="exp-btn" onclick="shareEmail()" data-i18n="btn_email">📧 Email</button>
+              <button class="exp-btn" onclick="shareiMessage()" data-i18n="btn_imessage">💬 iMessage</button>
             </div>
           </div>
-          <div class="ios-tip" id="iostip">📱 On iPhone/iPad: tap "Save PDF" → tap the Share icon → "Save to Files" or "Print"</div>
+          <div class="ios-tip" id="iostip" data-i18n="ios_tip">📱 On iPhone/iPad: tap "Save PDF" → tap the Share icon → "Save to Files" or "Print"</div>
           <div id="total-project-box" style="display:none;background:#0C2340;border-radius:12px;padding:18px 22px;margin-bottom:16px;text-align:center;">
-            <div style="font-size:12px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Estimated Total Project Cost (materials + labor)</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;" data-i18n="total_project_label">Estimated Total Project Cost (materials + labor)</div>
             <div id="total-project-range" style="font-size:26px;font-weight:800;color:#F5A623;">—</div>
           </div>
           <div class="totals" id="etotals"></div>
           <div style="text-align:center;margin:-8px 0 16px;">
-            <a href="javascript:void(0)" onclick="sbAskNikaWhy()" style="font-size:13px;color:#4C6FA8;text-decoration:none;font-weight:600;">💬 Ask Nika why this costs this much →</a>
+            <a href="javascript:void(0)" onclick="sbAskNikaWhy()" style="font-size:13px;color:#4C6FA8;text-decoration:none;font-weight:600;" data-i18n="ask_nika_link">💬 Ask Nika why this costs this much →</a>
           </div>
           <div style="overflow-x:auto;">
             <table class="est-table" id="etable">
               <thead><tr>
-                <th style="width:30%">Material</th>
-                <th style="width:10%">Qty</th>
-                <th style="width:16%">HD retail</th>
-                <th style="width:16%; color:var(--green)">Wholesale</th>
-                <th style="width:16%; color:var(--blue)">Local supplier</th>
+                <th style="width:30%" data-i18n="th_material">Material</th>
+                <th style="width:10%" data-i18n="th_qty">Qty</th>
+                <th style="width:16%" data-i18n="th_hdretail">HD retail</th>
+                <th style="width:16%; color:var(--green)" data-i18n="th_wholesale">Wholesale</th>
+                <th style="width:16%; color:var(--blue)" data-i18n="th_localsupplier">Local supplier</th>
                 <th style="width:12%"></th>
               </tr></thead>
               <tbody id="etbody"></tbody>
             </table>
           </div>
           <div id="labor-estimate-box" style="display:none;margin-top:16px;background:var(--offwhite);border:1px solid var(--border);border-radius:12px;padding:18px 22px;">
-            <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;">🔨 Estimated Labor <span style="font-weight:400;color:var(--muted);">(separate from materials above)</span></div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;" data-i18n="labor_box_title">🔨 Estimated Labor <span style="font-weight:400;color:var(--muted);">(separate from materials above)</span></div>
             <div id="labor-range" style="font-size:22px;font-weight:800;color:var(--ink);margin-bottom:6px;">—</div>
             <div id="labor-note" style="font-size:12px;color:var(--muted);line-height:1.6;"></div>
           </div>
           <!-- EMAIL PDF CAPTURE -->
           <div id="email-pdf-box" style="margin-top:24px;background:linear-gradient(135deg,#F5A623,#E8870A);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
             <div style="flex:1;min-width:200px;">
-              <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">📄 Get this estimate as PDF</div>
-              <div style="font-size:13px;color:rgba(255,255,255,0.85);">We'll email you the PDF right now.</div>
+              <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;" data-i18n="pdf_capture_title">📄 Get this estimate as PDF</div>
+              <div style="font-size:13px;color:rgba(255,255,255,0.85);" data-i18n="pdf_capture_sub">We'll email you the PDF right now.</div>
             </div>
             <div id="email-pdf-form" style="display:flex;gap:8px;flex-wrap:wrap;">
               <input type="email" id="email-pdf-input" placeholder="your@email.com" style="padding:10px 14px;border:none;border-radius:8px;font-size:14px;min-width:200px;outline:none;">
@@ -3388,37 +3388,50 @@ async function loadLocalMatches(zip) {
     const hyState = handyman ? (handyman.state || '') : '';
     const hyVerifiedBadge = handyman && handyman.license_verified
       ? '<span style="display:inline-block;margin-left:6px;background:#E8F5E9;color:#2E7D32;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;vertical-align:middle;">✓ Verified</span>' : '';
+    const isEs2 = window.SB_LANG === 'es';
     const yearsLine = contractor && contractor.years_in_business
-      ? ' · ' + contractor.years_in_business + ' yrs in business' : '';
+      ? ' · ' + contractor.years_in_business + (isEs2 ? ' años en el negocio' : ' yrs in business') : '';
     const hyYearsLine = handyman && handyman.years_in_business
-      ? ' · ' + handyman.years_in_business + ' yrs in business' : '';
+      ? ' · ' + handyman.years_in_business + (isEs2 ? ' años en el negocio' : ' yrs in business') : '';
 
     window.currentContractorMatch = contractor ? { id: contractor.id, phone } : null;
     window.currentHandymanMatch = handyman ? { id: handyman.id, phone: hyPhone } : null;
 
+    const lm = isEs2 ? {
+      nearest: '🏪 Proveedor más cercano', wholesale: 'Precios mayoristas disponibles', findstore: '📍 Buscar tienda más cercana',
+      localcontractor: '🔨 Contratista Local', license: 'Licencia', quote: '📞 Solicitar Cotización',
+      handyman: '🧰 Manitas', handymandesc: 'Para trabajos pequeños y de múltiples oficios — no necesitas un contratista completo',
+      disclaimer: '⚠️ Los contratistas y proveedores listados no están avalados por StackBid. Los listados son solo para fines informativos. Siempre obtén varias cotizaciones. Los precios son estimaciones basadas en datos del mercado mayorista de 2026 y pueden variar según la ubicación y el proveedor.',
+    } : {
+      nearest: '🏪 Nearest Supplier', wholesale: 'Wholesale pricing available', findstore: '📍 Find nearest store',
+      localcontractor: '🔨 Local Contractor', license: 'License', quote: '📞 Request Quote',
+      handyman: '🧰 Handyman', handymandesc: 'For smaller jobs & multi-trade tasks — no need for a full contractor',
+      disclaimer: '⚠️ Contractors and suppliers listed are not endorsed by StackBid. Listings are for informational purposes only. Always get multiple quotes. Prices are estimates based on 2026 wholesale market data and may vary by location and supplier.',
+    };
+
     container.innerHTML =
       '<div class="local-matches-grid">' +
         '<div style="background:#fff;border:2px solid #2E86AB;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
-          '<div style="font-size:11px;font-weight:600;color:#2E86AB;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🏪 Nearest Supplier</div>' +
+          '<div style="font-size:11px;font-weight:600;color:#2E86AB;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">' + lm.nearest + '</div>' +
           '<div style="font-size:16px;font-weight:700;color:#0C2340;margin-bottom:6px;">' + supplierName + '</div>' +
           '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ZIP ' + zip + (supplierDist ? ' · ' + supplierDist : '') + '</div>' +
-          '<div style="font-size:13px;color:#666;margin-bottom:12px;">Wholesale pricing available</div>' +'<a href="https://www.google.com/maps/search/' + encodeURIComponent(supplierName + ' near ' + zip) + '" target="_blank" style="display:inline-block;background:#2E86AB;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">📍 Find nearest store</a>' +
+          '<div style="font-size:13px;color:#666;margin-bottom:12px;">' + lm.wholesale + '</div>' +'<a href="https://www.google.com/maps/search/' + encodeURIComponent(supplierName + ' near ' + zip) + '" target="_blank" style="display:inline-block;background:#2E86AB;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">' + lm.findstore + '</a>' +
         '</div>' +
         (contractor ?
         '<div style="background:#fff;border:2px solid #F5A623;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
-          '<div style="font-size:11px;font-weight:600;color:#E8870A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🔨 Local Contractor</div>' +
+          '<div style="font-size:11px;font-weight:600;color:#E8870A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">' + lm.localcontractor + '</div>' +
           '<div style="font-size:16px;font-weight:700;color:#0C2340;margin-bottom:4px;">' + esc(companyName) + verifiedBadge + '</div>' +
           '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ' + esc(city) + ', ' + esc(state) + yearsLine + '</div>' +
-          '<div style="font-size:13px;color:#666;margin-bottom:12px;">🔧 ' + esc(spec) + ' · License: ' + esc(license) + '</div>' +
-          '<button id="contractor-quote-btn" onclick="requestContractorQuote()" style="display:inline-block;background:#F5A623;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">📞 Request Quote</button>' +
+          '<div style="font-size:13px;color:#666;margin-bottom:12px;">🔧 ' + esc(spec) + ' · ' + lm.license + ': ' + esc(license) + '</div>' +
+          '<button id="contractor-quote-btn" onclick="requestContractorQuote()" style="display:inline-block;background:#F5A623;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">' + lm.quote + '</button>' +
         '</div>' : '') +
         (handyman ?
         '<div style="background:#fff;border:2px solid #4C956C;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
-          '<div style="font-size:11px;font-weight:600;color:#2E7D4F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🧰 Handyman</div>' +
+          '<div style="font-size:11px;font-weight:600;color:#2E7D4F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">' + lm.handyman + '</div>' +
           '<div style="font-size:16px;font-weight:700;color:#0C2340;margin-bottom:4px;">' + esc(hyName) + hyVerifiedBadge + '</div>' +
           '<div style="font-size:13px;color:#666;margin-bottom:4px;">📍 ' + esc(hyCity) + ', ' + esc(hyState) + hyYearsLine + '</div>' +
-          '<div style="font-size:13px;color:#666;margin-bottom:12px;">For smaller jobs & multi-trade tasks — no need for a full contractor</div>' +
-          '<button id="handyman-quote-btn" onclick="requestHandymanQuote()" style="display:inline-block;background:#4C956C;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">📞 Request Quote</button>' +
+          '<div style="font-size:13px;color:#666;margin-bottom:12px;">' + lm.handymandesc + '</div>' +
+          '<button id="handyman-quote-btn" onclick="requestHandymanQuote()" style="display:inline-block;background:#4C956C;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">' + lm.quote + '</button>' +
         '</div>' : '') +
       '</div>';
 
@@ -3429,9 +3442,12 @@ async function loadLocalMatches(zip) {
   // Add disclaimer
   const disclaimer = document.getElementById('local-matches');
   if (disclaimer) {
+    const isEs3 = window.SB_LANG === 'es';
     const disc = document.createElement('p');
     disc.style.cssText = 'font-size:11px;color:#999;margin-top:12px;line-height:1.5;';
-    disc.innerHTML = '⚠️ Contractors and suppliers listed are not endorsed by StackBid. Listings are for informational purposes only. Always get multiple quotes. Prices are estimates based on 2026 wholesale market data and may vary by location and supplier.';
+    disc.innerHTML = isEs3
+      ? '⚠️ Los contratistas y proveedores listados no están avalados por StackBid. Los listados son solo para fines informativos. Siempre obtén varias cotizaciones. Los precios son estimaciones basadas en datos del mercado mayorista de 2026 y pueden variar según la ubicación y el proveedor.'
+      : '⚠️ Contractors and suppliers listed are not endorsed by StackBid. Listings are for informational purposes only. Always get multiple quotes. Prices are estimates based on 2026 wholesale market data and may vary by location and supplier.';
     disclaimer.appendChild(disc);
   }
 }
@@ -4111,6 +4127,24 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     // Language switcher — on the Spanish page this points back to English
     lang_switch_text: '🌐 EN',
     lang_switch_href: '/',
+
+    // Estimate results static labels (was missed — these are visible on every generated estimate)
+    prices_note: 'Precios: tarifas mayoristas estimadas de 2026 — los precios reales pueden variar',
+    btn_savepdf: '📄 Guardar PDF',
+    btn_excel: '📊 Excel',
+    btn_email: '📧 Correo',
+    btn_imessage: '💬 iMessage',
+    ios_tip: '📱 En iPhone/iPad: toca "Guardar PDF" → toca el ícono de compartir → "Guardar en Archivos" o "Imprimir"',
+    total_project_label: 'Costo Total Estimado del Proyecto (materiales + mano de obra)',
+    ask_nika_link: '💬 Pregúntale a Nika por qué cuesta esto →',
+    th_material: 'Material',
+    th_qty: 'Cant.',
+    th_hdretail: 'Precio minorista',
+    th_wholesale: 'Mayorista',
+    th_localsupplier: 'Proveedor local',
+    labor_box_title: '🔨 Mano de Obra Estimada <span style="font-weight:400;color:var(--muted);">(separado de los materiales arriba)</span>',
+    pdf_capture_title: '📄 Recibe esta estimación en PDF',
+    pdf_capture_sub: 'Te enviaremos el PDF por correo ahora mismo.',
   };
 
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
