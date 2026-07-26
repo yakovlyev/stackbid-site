@@ -649,7 +649,6 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 .step-block.revealed { display: block; animation: stepFadeIn 0.35s ease; }
 @keyframes stepFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
   window.SUPABASE_URL = 'https://xbxknpsqecwahxzwsvpt.supabase.co';
   window.SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhieGtucHNxZWN3YWh4endzdnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMjc2NzMsImV4cCI6MjA5NzcwMzY3M30.dAnlBlr5OWRSZ-6Q5tQkISBtK9kND9KeE2tBlkCRkTk';
@@ -1379,31 +1378,31 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 <div id="pro-form-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;">
   <div style="background:#fff;border-radius:16px;padding:40px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;">
     <button onclick="document.getElementById('pro-form-overlay').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#999;">×</button>
-    <h2 style="font-size:24px;font-weight:800;color:#0C2340;margin-bottom:4px;">Join StackBid Pro</h2>
-    <p id="pro-form-price-note" style="font-size:14px;color:#666;margin-bottom:24px;">First 30 days free · $49/month after · Cancel anytime</p>
+    <h2 style="font-size:24px;font-weight:800;color:#0C2340;margin-bottom:4px;" data-i18n="pro_form_title">Join StackBid Pro</h2>
+    <p id="pro-form-price-note" style="font-size:14px;color:#666;margin-bottom:24px;" data-i18n="pro_form_price">First 30 days free · $49/month after · Cancel anytime</p>
 
     <div style="display:grid;gap:16px;">
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Full Name *</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_fullname">Full Name *</label>
         <input type="text" id="pro-name" placeholder="John Smith" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Company Name *</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_companyname">Company Name *</label>
         <input type="text" id="pro-company" placeholder="Smith Construction LLC" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Email *</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_email">Email *</label>
         <input type="email" id="pro-email" placeholder="john@smithconstruction.com" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Phone *</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_phone">Phone *</label>
         <input type="tel" id="pro-phone" placeholder="555-123-4567" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
-          <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">State *</label>
+          <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_state">State *</label>
           <select id="pro-state" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
-            <option value="">Select state</option>
+            <option value="" data-i18n="opt_selectstate">Select state</option>
             <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
             <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
             <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option>
@@ -1417,20 +1416,20 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           </select>
         </div>
         <div>
-          <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">ZIP Code *</label>
+          <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_zip">ZIP Code *</label>
           <input type="text" id="pro-zip" placeholder="90001" maxlength="5" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
         </div>
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">License Number *</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_license_required">License Number *</label>
         <input type="text" id="pro-license" placeholder="CA-GC-123456" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Years in Business</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_years">Years in Business</label>
         <input type="number" id="pro-years" placeholder="e.g. 12" min="0" max="100" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Specialization</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_specialization">Specialization</label>
         <select id="pro-spec" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
           <option>General Contractor</option>
           <option>Roofing</option>
@@ -1454,11 +1453,11 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       <div style="background:#f8f9fa;border-radius:8px;padding:14px;">
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
           <input type="checkbox" id="pro-agree" style="margin-top:2px;flex-shrink:0;">
-          <span id="pro-consent-text" style="font-size:13px;color:#555;line-height:1.5;">I agree to the <a href="/terms.html" target="_blank" style="color:#F5A623;">Terms of Service</a> and authorize StackBid to charge $49/month after the 30-day free trial. You'll enter your card on the next screen (secure Stripe checkout) — you won't be charged until the trial ends.</span>
+          <span id="pro-consent-text" style="font-size:13px;color:#555;line-height:1.5;" data-i18n="consent_pro">I agree to the <a href="/terms.html" target="_blank" style="color:#F5A623;">Terms of Service</a> and authorize StackBid to charge $49/month after the 30-day free trial. You'll enter your card on the next screen (secure Stripe checkout) — you won't be charged until the trial ends.</span>
         </label>
       </div>
-      <button onclick="submitProForm()" style="background:#F5A623;color:#0C2340;border:3px solid #0C2340;padding:14px;border-radius:8px;font-weight:800;font-size:16px;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(0,0,0,0.2);text-transform:uppercase;">🚀 Start Free Trial →</button>
-      <div id="pro-success" style="display:none;background:#d4edda;color:#155724;padding:14px;border-radius:8px;text-align:center;font-weight:600;">✓ You're live! Your Pro trial is active now. Check your email, and bookmark your <a href="/contractor-dashboard.html" target="_blank" style="color:#155724;text-decoration:underline;">contractor dashboard</a> to see leads as they come in.</div>
+      <button onclick="submitProForm()" style="background:#F5A623;color:#0C2340;border:3px solid #0C2340;padding:14px;border-radius:8px;font-weight:800;font-size:16px;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(0,0,0,0.2);text-transform:uppercase;" data-i18n="start_trial_pro">🚀 Start Free Trial →</button>
+      <div id="pro-success" style="display:none;background:#d4edda;color:#155724;padding:14px;border-radius:8px;text-align:center;font-weight:600;" data-i18n="success_msg">✓ You're live! Your Pro trial is active now. Check your email, and bookmark your <a href="/contractor-dashboard.html" target="_blank" style="color:#155724;text-decoration:underline;">contractor dashboard</a> to see leads as they come in.</div>
       <div id="pro-error" style="display:none;background:#f8d7da;color:#721c24;padding:14px;border-radius:8px;text-align:center;"></div>
     </div>
   </div>
@@ -1468,31 +1467,31 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 <div id="handyman-form-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;">
   <div style="background:#fff;border-radius:16px;padding:40px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;">
     <button onclick="document.getElementById('handyman-form-overlay').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#999;">×</button>
-    <h2 style="font-size:24px;font-weight:800;color:#0C2340;margin-bottom:4px;">🧰 Join as a Handyman</h2>
-    <p style="font-size:14px;color:#666;margin-bottom:24px;">First 30 days free · $29/month after · Cancel anytime</p>
+    <h2 style="font-size:24px;font-weight:800;color:#0C2340;margin-bottom:4px;" data-i18n="handy_form_title">🧰 Join as a Handyman</h2>
+    <p style="font-size:14px;color:#666;margin-bottom:24px;" data-i18n="handy_form_price">First 30 days free · $29/month after · Cancel anytime</p>
 
     <div style="display:grid;gap:16px;">
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Full Name *</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_fullname">Full Name *</label>
         <input type="text" id="handy-name" placeholder="John Smith" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Business Name *</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_businessname">Business Name *</label>
         <input type="text" id="handy-company" placeholder="Smith Handyman Services" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Email *</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_email">Email *</label>
         <input type="email" id="handy-email" placeholder="john@example.com" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Phone *</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_phone">Phone *</label>
         <input type="tel" id="handy-phone" placeholder="555-123-4567" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
-          <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">State *</label>
+          <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_state">State *</label>
           <select id="handy-state" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
-            <option value="">Select state</option>
+            <option value="" data-i18n="opt_selectstate">Select state</option>
             <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
             <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
             <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option>
@@ -1506,26 +1505,26 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           </select>
         </div>
         <div>
-          <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">ZIP Code *</label>
+          <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_zip">ZIP Code *</label>
           <input type="text" id="handy-zip" placeholder="90001" maxlength="5" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
         </div>
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">License Number (if applicable)</label>
-        <input type="text" id="handy-license" placeholder="Leave blank if not licensed" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_license_optional">License Number (if applicable)</label>
+        <input type="text" id="handy-license" data-i18n-placeholder="ph_leaveblank" placeholder="Leave blank if not licensed" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;">Years in Business</label>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_years">Years in Business</label>
         <input type="number" id="handy-years" placeholder="e.g. 5" min="0" max="100" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
       <div style="background:#f8f9fa;border-radius:8px;padding:14px;">
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
           <input type="checkbox" id="handy-agree" style="margin-top:2px;flex-shrink:0;">
-          <span style="font-size:13px;color:#555;line-height:1.5;">I agree to the <a href="/terms.html" target="_blank" style="color:#F5A623;">Terms of Service</a> and authorize StackBid to charge $29/month after the 30-day free trial. You'll enter your card on the next screen (secure Stripe checkout) — you won't be charged until the trial ends.</span>
+          <span style="font-size:13px;color:#555;line-height:1.5;" data-i18n="consent_handy">I agree to the <a href="/terms.html" target="_blank" style="color:#F5A623;">Terms of Service</a> and authorize StackBid to charge $29/month after the 30-day free trial. You'll enter your card on the next screen (secure Stripe checkout) — you won't be charged until the trial ends.</span>
         </label>
       </div>
-      <button onclick="submitHandymanForm()" style="background:#4C956C;color:#fff;border:3px solid #0C2340;padding:14px;border-radius:8px;font-weight:800;font-size:16px;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(0,0,0,0.2);text-transform:uppercase;">🧰 Start Free Trial →</button>
-      <div id="handy-success" style="display:none;background:#d4edda;color:#155724;padding:14px;border-radius:8px;text-align:center;font-weight:600;">✓ You're live! Your Pro trial is active now. Check your email, and bookmark your <a href="/contractor-dashboard.html" target="_blank" style="color:#155724;text-decoration:underline;">contractor dashboard</a> to see leads as they come in.</div>
+      <button onclick="submitHandymanForm()" style="background:#4C956C;color:#fff;border:3px solid #0C2340;padding:14px;border-radius:8px;font-weight:800;font-size:16px;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(0,0,0,0.2);text-transform:uppercase;" data-i18n="start_trial_handy">🧰 Start Free Trial →</button>
+      <div id="handy-success" style="display:none;background:#d4edda;color:#155724;padding:14px;border-radius:8px;text-align:center;font-weight:600;" data-i18n="success_msg">✓ You're live! Your Pro trial is active now. Check your email, and bookmark your <a href="/contractor-dashboard.html" target="_blank" style="color:#155724;text-decoration:underline;">contractor dashboard</a> to see leads as they come in.</div>
       <div id="handy-error" style="display:none;background:#f8d7da;color:#721c24;padding:14px;border-radius:8px;text-align:center;"></div>
     </div>
   </div>
@@ -1566,7 +1565,7 @@ async function submitContactForm() {
     status.style.display = 'block';
     status.style.background = 'rgba(255,80,80,0.15)';
     status.style.color = '#ff8080';
-    status.textContent = 'Please fill in all fields.';
+    status.textContent = window.SB_LANG === 'es' ? 'Por favor completa todos los campos.' : 'Please fill in all fields.';
     return;
   }
 
@@ -2610,7 +2609,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // already used their one free estimate (checked precisely server-side on submit).
   const mainBtn = document.getElementById('main-gen-btn');
   if (mainBtn && localStorage.getItem('sb_user_email')) {
-    mainBtn.innerHTML = '⚡ Generate my estimate';
+    mainBtn.innerHTML = window.SB_LANG === 'es' ? '⚡ Generar mi estimación' : '⚡ Generate my estimate';
   }
 
   // Возврат из Stripe Checkout — успех приходит через webhook (is_pro
@@ -3854,8 +3853,9 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
   // а так человек сразу видит, что есть кому задать вопрос.
   (function autoOpenOnce() {
     try {
-      if (sessionStorage.getItem('sb_assist_auto_opened')) return;
-      sessionStorage.setItem('sb_assist_auto_opened', '1');
+      var autoOpenKey = 'sb_assist_auto_opened_' + (window.SB_LANG || 'en');
+      if (sessionStorage.getItem(autoOpenKey)) return;
+      sessionStorage.setItem(autoOpenKey, '1');
     } catch (e) { /* privacy mode — просто не автооткрываем, не критично */ }
     setTimeout(function() {
       const panel = document.getElementById('sb-assist-panel');
@@ -4149,6 +4149,30 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     labor_box_title: '🔨 Mano de Obra Estimada <span style="font-weight:400;color:var(--muted);">(separado de los materiales arriba)</span>',
     pdf_capture_title: '📄 Recibe esta estimación en PDF',
     pdf_capture_sub: 'Te enviaremos el PDF por correo ahora mismo.',
+
+    // Contractor/Handyman signup forms (was completely missed — full English forms)
+    pro_form_title: 'Únete a StackBid Pro',
+    pro_form_price: 'Primeros 30 días gratis · $49/mes después · Cancela cuando quieras',
+    handy_form_title: '🧰 Únete como Manitas',
+    handy_form_price: 'Primeros 30 días gratis · $29/mes después · Cancela cuando quieras',
+    lbl_fullname: 'Nombre Completo *',
+    lbl_companyname: 'Nombre de la Empresa *',
+    lbl_businessname: 'Nombre del Negocio *',
+    lbl_email: 'Correo Electrónico *',
+    lbl_phone: 'Teléfono *',
+    lbl_state: 'Estado *',
+    opt_selectstate: 'Selecciona estado',
+    lbl_zip: 'Código Postal *',
+    lbl_license_required: 'Número de Licencia *',
+    lbl_license_optional: 'Número de Licencia (si aplica)',
+    ph_leaveblank: 'Déjalo en blanco si no tienes licencia',
+    lbl_years: 'Años en el Negocio',
+    lbl_specialization: 'Especialidad',
+    consent_pro: 'Acepto los <a href="/terms.html" target="_blank" style="color:#F5A623;">Términos de Servicio</a> y autorizo a StackBid a cobrar $49/mes después de la prueba gratuita de 30 días. Ingresarás tu tarjeta en la siguiente pantalla (Stripe Checkout seguro) — no se te cobrará hasta que termine la prueba.',
+    consent_handy: 'Acepto los <a href="/terms.html" target="_blank" style="color:#F5A623;">Términos de Servicio</a> y autorizo a StackBid a cobrar $29/mes después de la prueba gratuita de 30 días. Ingresarás tu tarjeta en la siguiente pantalla (Stripe Checkout seguro) — no se te cobrará hasta que termine la prueba.',
+    start_trial_pro: '🚀 Comenzar Prueba Gratis →',
+    start_trial_handy: '🧰 Comenzar Prueba Gratis →',
+    success_msg: '✓ ¡Ya estás activo! Tu prueba Pro está activa ahora. Revisa tu correo y guarda tu <a href="/contractor-dashboard.html" target="_blank" style="color:#155724;text-decoration:underline;">panel de contratista</a> para ver los clientes potenciales a medida que lleguen.',
   };
 
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
