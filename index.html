@@ -677,6 +677,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
     <img src="/logo.png" alt="StackBid icon" width="36" height="36">
     <span class="nav-logo-text">Stack<span>Bid</span></span>
   </a>
+  <a href="/es.html" class="lang-switch" id="lang-switch-link" data-i18n-href="lang_switch_href" style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);text-decoration:none;border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:4px 8px;margin-right:8px;white-space:nowrap;" data-i18n="lang_switch_text">🌐 ES</a>
   <div class="nav-links nav-mobile-hide">
     <a href="#how">How it works</a>
     <a href="#tool" data-i18n="nav_try">Try it free</a>
@@ -4105,6 +4106,10 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     cth_b4: 'Cancela cuando quieras — sin contratos',
     cth_freetrial: 'Primeros 30 días gratis · Cancela cuando quieras',
     cth_joinbtn: '🔨 ÚNETE COMO CONTRATISTA PRO →',
+
+    // Language switcher — on the Spanish page this points back to English
+    lang_switch_text: '🌐 EN',
+    lang_switch_href: '/',
   };
 
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
@@ -4114,6 +4119,10 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
   document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
     var key = el.getAttribute('data-i18n-placeholder');
     if (t[key] !== undefined) el.setAttribute('placeholder', t[key]);
+  });
+  document.querySelectorAll('[data-i18n-href]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-href');
+    if (t[key] !== undefined) el.setAttribute('href', t[key]);
   });
 })();
 </script>
