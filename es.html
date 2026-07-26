@@ -3804,16 +3804,16 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
   #sb-assist-send { background: #F5A623; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 16px; }
 </style>
 
-<button id="sb-assist-btn" onclick="sbAssistToggle()" aria-label="Open StackBid Assistant">💬</button>
+<button id="sb-assist-btn" onclick="sbAssistToggle()" data-i18n-aria="nika_aria" aria-label="Open StackBid Assistant">💬</button>
 <div id="sb-assist-panel">
   <div id="sb-assist-header">
-    <span>👋 Nika · StackBid Assistant</span>
+    <span data-i18n="nika_header">👋 Nika · StackBid Assistant</span>
     <span style="cursor:pointer;" onclick="sbAssistToggle()">✕</span>
   </div>
   <div id="sb-assist-messages"></div>
   <div id="sb-assist-input-row">
-    <button id="sb-assist-mic" onclick="sbAssistVoice()" title="Speak your question" style="background:none;border:1.5px solid #E5E9EF;border-radius:50%;width:36px;height:36px;font-size:15px;cursor:pointer;flex-shrink:0;">🎙️</button>
-    <input id="sb-assist-input" type="text" placeholder="Ask about your estimate or labor..." onkeydown="if(event.key==='Enter') sbAssistSend()">
+    <button id="sb-assist-mic" onclick="sbAssistVoice()" data-i18n-title="nika_mic_title" title="Speak your question" style="background:none;border:1.5px solid #E5E9EF;border-radius:50%;width:36px;height:36px;font-size:15px;cursor:pointer;flex-shrink:0;">🎙️</button>
+    <input id="sb-assist-input" type="text" placeholder="Ask about your estimate or labor..." data-i18n-placeholder="nika_placeholder" onkeydown="if(event.key==='Enter') sbAssistSend()">
     <button id="sb-assist-send" onclick="sbAssistSend()">➤</button>
   </div>
 </div>
@@ -3940,7 +3940,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
       });
       const data = await res.json();
       document.getElementById('sb-thinking')?.remove();
-      const reply = data.reply || "Sorry, I couldn't process that — try again?";
+      const reply = data.reply || (window.SB_LANG === 'es' ? 'Lo siento, no pude procesar eso — ¿intentamos de nuevo?' : "Sorry, I couldn't process that — try again?");
       sbAddMessage('bot', reply);
       sbHistory.push({ role: 'assistant', content: reply });
       sbMaybeSpeak(reply);
@@ -4176,6 +4176,10 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     pwa_title: 'Instalar StackBid',
     pwa_sub: 'Agrega a la pantalla de inicio para acceso rápido',
     pwa_btn: 'Instalar',
+    nika_header: '👋 Nika · Asistente de StackBid',
+    nika_placeholder: 'Pregunta sobre tu estimación o mano de obra...',
+    nika_mic_title: 'Habla tu pregunta',
+    nika_aria: 'Abrir Asistente de StackBid',
   };
 
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
@@ -4189,6 +4193,14 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
   document.querySelectorAll('[data-i18n-href]').forEach(function(el) {
     var key = el.getAttribute('data-i18n-href');
     if (t[key] !== undefined) el.setAttribute('href', t[key]);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-title');
+    if (t[key] !== undefined) el.setAttribute('title', t[key]);
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-aria');
+    if (t[key] !== undefined) el.setAttribute('aria-label', t[key]);
   });
 })();
 </script>
