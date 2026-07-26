@@ -3766,6 +3766,10 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     font-family: inherit;
   }
   #sb-assist-panel.open { display: flex; }
+  @media (max-height: 500px) and (orientation: landscape) {
+    #sb-assist-panel { max-height: 85vh; max-height: 85dvh; bottom: calc(60px + env(safe-area-inset-bottom)); }
+    #sb-assist-btn { width: 44px; height: 44px; font-size: 18px; bottom: calc(12px + env(safe-area-inset-bottom)); }
+  }
   #sb-assist-header {
     background: #0C2340; color: #fff; padding: 14px 16px;
     font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; align-items: center;
@@ -3940,7 +3944,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     nav_faq: 'Preguntas frecuentes',
     nav_pricing: 'Precios',
     nav_contact: 'Contacto',
-    nav_cta: 'Descubre cuánto estás pagando de más →',
+    nav_cta: 'Cuánto pagas de más →',
     hero_eyebrow: '● Con IA · Precios mayoristas 2026 · Sin tarjeta de crédito',
     hero_h1: 'Conoce el costo <em>real</em> de materiales <span style="white-space:nowrap;">y mano de obra</span> antes de hablar con un contratista',
     hero_sub: 'Escribe lo que vas a construir. Obtén una estimación completa de materiales y mano de obra con precios mayoristas locales — en menos de 3 minutos. Tu primera estimación es gratis.',
