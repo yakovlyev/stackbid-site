@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://stackbid.app/</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stackbid.app/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stackbid.app/es.html"/>
+  </url>
+  <url>
+    <loc>https://stackbid.app/es.html</loc>
+    <lastmod>2026-07-19</lastmod>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stackbid.app/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stackbid.app/es.html"/>
   </url>
   <url>
     <loc>https://stackbid.app/privacy.html</loc>
