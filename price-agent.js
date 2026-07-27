@@ -125,27 +125,31 @@ async function getActiveMaterials() {
 }
 
 function buildPrompt(material) {
-  return `Find the current typical US retail price for this construction material as sold at major home improvement retailers (Home Depot, Lowe's) in 2026:
+  return `Find the current typical US retail price for this construction material as sold at major home improvement retailers (Home Depot, Lowe's, Menards) in 2026:
 
 Product: ${material.name}
 Brand: ${material.brand || 'any major brand'}
 Specs: ${material.specs || 'n/a'}
 Unit: ${material.unit}
 
-IMPORTANT — how to find the actual price:
-Individual product pages (homedepot.com/p/... and lowes.com/pd/...) load their price via JavaScript AFTER the page loads, so a fetch of that page will NOT contain a price. Do not rely on product pages for the price.
+IMPORTANT — how to find the actual price. Try these approaches IN ORDER, moving to the next only if the previous one fails:
 
-Category/listing pages (homedepot.com/b/... and lowes.com/pl/...) DO show prices as plain text. This is where you should look:
-1. Use web_search to find the category or listing page for this type of material (aim for a /b/ or /pl/ URL, not a /p/ or /pd/ URL).
-2. Use web_fetch to open that listing page and read the prices shown for each product in the grid.
-3. Match the listed product that best fits the brand/specs given above, and report its price.
-4. Make sure the price you report is per exactly one ${material.unit} (not per pack, pallet, bundle, or case) — divide if needed and say so in the note.
-5. If your first search doesn't turn up a usable listing page, don't give up — within this same turn, try: the other retailer (Home Depot vs Lowe's), a broader/more generic search term (drop specific dimensions or the brand name), or a different phrasing. Only report "not found" after trying at least two different search angles.
+1. Category/listing pages (homedepot.com/b/... and lowes.com/pl/...) usually show prices as plain text in the product grid. Use web_search to find the listing page, then web_fetch it and read the price for the closest-matching product.
+
+2. If the listing page you fetched does NOT contain a visible price for the product (this happens increasingly often as retailers move pricing to JavaScript-rendered widgets even on listing pages) — do NOT give up. Instead, search for that specific product's individual page and fetch it, then look specifically for a <script type="application/ld+json"> block containing "@type":"Product" with an "offers" object — retailers embed this structured price data in the raw page source for Google Shopping/SEO purposes, and it is present even when the visible on-page price widget itself is JavaScript-rendered.
+
+3. If both of the above fail, try a plain web_search for the product name + "price" + the retailer name — search result snippets frequently show the price directly (pulled from the retailer's own structured data by the search engine), without you needing to fetch the page at all.
+
+4. If Home Depot and Lowe's both fail, try Menards, 84 Lumber, or a general contractor-supply site — do not assume the product doesn't exist just because two retailers' pages didn't yield a price.
+
+5. Make sure the price you report is per exactly one ${material.unit} (not per pack, pallet, bundle, or case) — divide if needed and say so in the note.
+
+6. Only report "not found" after trying at least steps 1-3 above with at least two different search angles (different retailer, or a broader/more generic search term dropping specific dimensions or the brand name).
 
 Do all searching and fetching first. Your FINAL message must contain ONLY a JSON object and nothing else — no markdown fences, no explanation before or after it:
-{"price": <number, USD, per ${material.unit}>, "confidence": "<high|medium|low>", "note": "<one short sentence: retailer, which product you matched, and whether you divided a multi-unit price>"}
+{"price": <number, USD, per ${material.unit}>, "confidence": "<high|medium|low>", "note": "<one short sentence: retailer, which product you matched, which technique found the price (listing page / JSON-LD / search snippet), and whether you divided a multi-unit price>"}
 
-If you truly cannot find a reliable current price after trying multiple search angles, respond with exactly {"price": null, "confidence": "low", "note": "not found"}`;
+If you truly cannot find a reliable current price after trying all the above, respond with exactly {"price": null, "confidence": "low", "note": "not found — tried: <list which of steps 1-4 you attempted>"}`;
 }
 
 function parseResult(data) {
@@ -238,11 +242,11 @@ async function submitNewBatch() {
       custom_id: customId,
       params: {
         model: 'claude-sonnet-4-6',
-        max_tokens: 1500,
+        max_tokens: 2000,
         messages: [{ role: 'user', content: buildPrompt(material) }],
         tools: [
-          { type: 'web_search_20250305', name: 'web_search', max_uses: 3 },
-          { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 3, max_content_tokens: 2000 },
+          { type: 'web_search_20250305', name: 'web_search', max_uses: 5 },
+          { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 5, max_content_tokens: 3000 },
         ],
       },
     };
