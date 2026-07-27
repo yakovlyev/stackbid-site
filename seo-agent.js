@@ -172,7 +172,12 @@ Instructions:
 - Write in plain, homeowner-friendly English: short paragraphs, concrete numbers, no filler, no corporate tone, no AI-sounding phrases like "in today's world", "when it comes to", or "it's important to note".
 - Structure: a direct-answer opening (answer the core question in the first 2-3 sentences), then supporting sections with real H2 headers, then a short FAQ section (3-5 Q&As) suitable for FAQPage schema.
 - Include exactly one natural mention of StackBid as a way to get an instant estimate for the reader's specific project — not a hard sell, not repeated elsewhere.
-- Suggest 2-4 internal links to relevant StackBid pages as anchor text plus a plausible URL path (e.g. /estimator, /projects/kitchen-remodel).
+- Internal links: StackBid is currently a single page (stackbid.app) with anchor sections, not a multi-page blog — there are no separate URLs like /projects/... or /guides/... yet. Only link to these REAL, currently-existing destinations, and only when genuinely relevant to a sentence (0-3 links is fine, don't force it if none fit naturally):
+  - https://stackbid.app/#tool — the estimate tool itself (use for "get an instant estimate" type mentions)
+  - https://stackbid.app/#faq — FAQ section
+  - https://stackbid.app/#why — pricing/why-three-prices explanation
+  - https://stackbid.app/#contractors — for contractors/handymen section
+  Never invent a path that doesn't exist above (no /estimator, no /projects/..., no /guides/...) — an invented link becomes a dead 404 the moment this article is published, which is worse than no link at all.
 - Never fabricate statistics, sources, or figures. Any number you state should come from what you actually found in search, not be invented.
 - Target length is 1200-1800 words, unless the topic genuinely does not support that length.
 
@@ -190,7 +195,7 @@ Do not use <cite> tags, citation markup, or any XML-like tags inside content_mar
   "meta_description": string (155 characters or fewer),
   "content_markdown": string (the full article body in plain Markdown, no citation tags),
   "faq": [{"question": string, "answer": string}, ...],
-  "internal_links": [{"anchor": string, "path": string}, ...],
+  "internal_links": [{"anchor": string, "path": string (must be one of the exact real URLs listed above)}, ...],
   "sources": [string, ...] (URLs you actually used from search)
 }`;
 
