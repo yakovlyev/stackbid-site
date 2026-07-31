@@ -250,6 +250,35 @@ const server = http.createServer(async (req, res) => {
     return handleUnsubscribe(parsed.query, res);
   }
 
+  // Nika (assistant) получает отдельный, потоковый маршрут — не через общую
+  // развилку ниже, потому что та буферизует ВЕСЬ ответ перед res.end() и
+  // ждать полный ответ ИИ целиком — именно та задержка, которую поправляли
+  // по аудиту 28.07. Здесь пишем в res по мере готовности токенов.
+  if (pathname === '/api/assistant' && req.method === 'POST') {
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+    if (!checkRateLimit(ip, 'assistant')) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Too many requests. Please wait a minute.' }));
+      return;
+    }
+    let sBody = '';
+    req.on('data', (d) => { sBody += d; });
+    req.on('end', async () => {
+      try {
+        await handlers['assistant'].streamHandler(sBody, res);
+      } catch (e) {
+        console.error('Assistant stream error:', e.message);
+        try { res.end(); } catch (_) {}
+      }
+    });
+    return;
+  }
+  if (pathname === '/api/assistant' && req.method === 'OPTIONS') {
+    res.writeHead(204, { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Access-Control-Allow-Methods': 'POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' });
+    res.end();
+    return;
+  }
+
   const apiMatch = pathname.match(/^\/api\/(.+)$/);
   if (apiMatch) {
     const handler = handlers[apiMatch[1]];
@@ -500,5 +529,3 @@ function scheduleNurtureCron() {
 }
 
 scheduleNurtureCron();
-
-
