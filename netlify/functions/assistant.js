@@ -24,6 +24,154 @@ Rules:
 - Never invent specific dollar prices beyond what's in the provided estimate context — for anything you're not sure about, say so plainly.
 - Never read out or list every line item / material / price one by one, even if asked for "the whole estimate" or "everything" — that's what the PDF is for. Give a short summary instead (1-2 sentences: total range and the biggest cost driver) and offer to email the full PDF.`;
 
+exports.streamHandler = async (rawBody, res) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': 'https://stackbid.app',
+    'Content-Type': 'text/plain; charset=utf-8',
+    'Transfer-Encoding': 'chunked',
+    'Cache-Control': 'no-cache',
+    'X-Content-Type-Options': 'nosniff',
+  };
+
+  let parsed;
+  try {
+    parsed = JSON.parse(rawBody || '{}');
+  } catch (e) {
+    res.writeHead(400, corsHeaders);
+    res.end("Sorry, something went wrong. Please try again.");
+    return;
+  }
+  const { messages, estimate, zip, labor, total_project_range, voice, lang } = parsed;
+  if (!Array.isArray(messages) || !messages.length) {
+    res.writeHead(400, corsHeaders);
+    res.end('messages required');
+    return;
+  }
+
+  const estimateContext = estimate
+    ? `Materials estimate context (JSON): ${JSON.stringify(estimate).slice(0, 6000)}\nZIP: ${zip || 'unknown'}\n` +
+      (labor ? `Estimated labor (already calculated for this project): ${JSON.stringify(labor)}\n` : 'Labor estimate: not yet calculated for this project.\n') +
+      (total_project_range ? `Total project cost range (materials + labor): $${total_project_range.low} - $${total_project_range.high}\n` : '')
+    : 'No estimate has been generated yet in this session.';
+
+  const systemPrompt = `${SYSTEM_PROMPT}\n\n${estimateContext}${voice ? '\n\nThis specific question was asked by voice and your answer will be read aloud via text-to-speech. Keep it to 1-2 short sentences max — a headline number and one key point, nothing more. Never speak a list of items or multiple prices in a row.' : ''}${lang === 'es' ? '\n\nRespond in Spanish. Use the term most widely understood by US Hispanic homeowners regardless of country of origin — for construction materials with noticeably different regional names (e.g. drywall vs tablaroca vs yeso), pick the most neutral/common one and include the English term in parentheses on first mention, e.g. "tablaroca (drywall)". This matters — sounding like machine translation loses trust with this audience fast. Keep dollar amounts as $ figures (do not convert currency).' : ''}`;
+
+  res.writeHead(200, corsHeaders);
+
+  let anthropicRes;
+  try {
+    anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: voice ? 200 : 800,
+        system: systemPrompt,
+        messages,
+        stream: true,
+        tools: [
+          {
+            name: 'send_pdf_email',
+            description: 'Email the current estimate as a PDF attachment to the given address. Only call this once you have a plausible email address from the user.',
+            input_schema: {
+              type: 'object',
+              properties: { email: { type: 'string', description: 'The email address to send the PDF to' } },
+              required: ['email'],
+            },
+          },
+        ],
+      }),
+    });
+  } catch (e) {
+    res.end("Sorry, something went wrong. Please try again.");
+    return;
+  }
+
+  if (!anthropicRes.ok || !anthropicRes.body) {
+    res.end("Sorry, something went wrong. Please try again.");
+    return;
+  }
+
+  // Разбираем SSE-поток Anthropic вручную (без доп. зависимостей): читаем
+  // куски, режем по строкам, интересуют только event: content_block_delta
+  // (текст — пишем сразу клиенту) и tool_use блоки (копим, не стримим —
+  // это редкий путь "отправь мне PDF", там всё равно нужен реальный экшн
+  // после, синтетическое подтверждение важнее скорости здесь).
+  const reader = anthropicRes.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let sentAnyText = false;
+  let toolUseId = null;
+  let toolUseJsonBuffer = '';
+  let sawToolUse = false;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop(); // последняя строка может быть неполной — оставляем в буфере
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      let evt;
+      try {
+        evt = JSON.parse(line.slice(6));
+      } catch (e) {
+        continue;
+      }
+
+      if (evt.type === 'content_block_start' && evt.content_block?.type === 'tool_use') {
+        sawToolUse = true;
+        toolUseId = evt.content_block.id;
+      } else if (evt.type === 'content_block_delta') {
+        if (evt.delta?.type === 'text_delta' && evt.delta.text) {
+          res.write(evt.delta.text);
+          sentAnyText = true;
+        } else if (evt.delta?.type === 'input_json_delta' && sawToolUse) {
+          toolUseJsonBuffer += evt.delta.partial_json || '';
+        }
+      }
+    }
+  }
+
+  // Если модель вызвала send_pdf_email — выполняем реальный экшн и дописываем
+  // синтетическое подтверждение (та же логика, что раньше в нестримовом пути)
+  if (sawToolUse) {
+    let email = null;
+    try { email = JSON.parse(toolUseJsonBuffer || '{}').email; } catch (e) { /* оставляем null */ }
+
+    let actionResult = null;
+    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && estimate) {
+      try {
+        const pdfBuffer = await buildPdfBuffer(estimate, zip);
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: 'StackBid <hello@stackbid.app>',
+          to: email,
+          subject: `Your StackBid estimate${estimate.title ? ': ' + estimate.title : ''}`,
+          html: `<p>Hi,</p><p>Here's the materials estimate you asked our assistant to send — attached as a PDF.</p><p>Thanks for using StackBid!</p>`,
+          attachments: [{ filename: 'stackbid-estimate.pdf', content: pdfBuffer }],
+        });
+        actionResult = { sent: true, email };
+      } catch (e) {
+        actionResult = { sent: false, error: e.message };
+      }
+    } else {
+      actionResult = { sent: false, error: 'invalid_email' };
+    }
+
+    const confirmText = actionResult.sent
+      ? `✅ Sent! Check ${actionResult.email} for your PDF estimate.`
+      : `I couldn't send that — ${actionResult.error === 'invalid_email' ? "that email address doesn't look valid, could you double-check it?" : 'something went wrong on our end, please try again in a moment.'}`;
+    res.write(confirmText);
+    sentAnyText = true;
+  }
+
+  if (!sentAnyText) res.write("I'm here to help with your estimate — what would you like to know?");
+  res.end();
+};
+
 exports.handler = async (event) => {
   const cors = { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Access-Control-Allow-Methods': 'POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors, body: '' };
