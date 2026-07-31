@@ -29,6 +29,13 @@
   .lead-actions button { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #DDD; background: white; font-size: 12.5px; font-weight: 600; cursor: pointer; }
   .empty { text-align: center; color: #889; padding: 40px 0; font-size: 14px; }
   .verified { display:inline-block; margin-left:6px; background:#E8F5E9; color:#2E7D32; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; }
+  .grow-box { background: white; border-radius: 12px; padding: 18px 18px; margin-top: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .grow-box h2 { font-size: 15px; margin: 0 0 4px; }
+  .grow-box .sub { margin-bottom: 14px; }
+  .grow-list { display: grid; gap: 10px; }
+  .grow-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1.5px solid #EDEEF2; border-radius: 8px; font-size: 13.5px; }
+  .grow-item a { color: #0C2340; font-weight: 700; text-decoration: none; }
+  .grow-item span { color: #667; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -42,6 +49,18 @@
   </div>
 
   <div id="content"></div>
+
+  <div class="grow-box">
+    <h2>📈 Get found beyond StackBid</h2>
+    <div class="sub" style="color:#667;font-size:12.5px;">Homeowners check these before hiring. Free listings, takes ~10 minutes each.</div>
+    <div class="grow-list">
+      <div class="grow-item"><a href="https://www.google.com/business/" target="_blank" rel="noopener">Google Business Profile</a><span>free · shows in local search & maps</span></div>
+      <div class="grow-item"><a href="https://www.houzz.com/professionals" target="_blank" rel="noopener">Houzz</a><span>free · strong for kitchen/bath photos</span></div>
+      <div class="grow-item"><a href="https://www.angi.com/" target="_blank" rel="noopener">Angi</a><span>free listing tier available</span></div>
+      <div class="grow-item"><a href="https://pro.homeadvisor.com/" target="_blank" rel="noopener">HomeAdvisor</a><span>free listing tier available</span></div>
+      <div class="grow-item"><a href="https://biz.yelp.com/" target="_blank" rel="noopener">Yelp for Business</a><span>free · good for local trust signals</span></div>
+    </div>
+  </div>
 </div>
 
 <script>
