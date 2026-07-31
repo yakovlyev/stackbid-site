@@ -104,15 +104,36 @@ exports.handler = async (event) => {
     const isPro = !!existing.is_pro;
     const canUseFree = !existing.free_estimate_used;
 
+    // Ценностная лестница: Handyman ($29) и Contractor Pro ($49) — тарифы
+    // дороже Homeowner Pro ($9.99), поэтому их подписка ДОЛЖНА включать в
+    // себя как минимум всё, что даёт Homeowner Pro (безлимитные сметы,
+    // история, PDF) — иначе получается, что кто платит больше, получает
+    // меньше по умолчанию (баг, найден и исправлен 28.07). Проверяем по
+    // тому же email, активна ли подписка контрактора/хендимена.
+    let isProViaContractor = false;
+    try {
+      const cr = await fetch(
+        `${SUPABASE_URL}/rest/v1/contractors?email=eq.${encodeURIComponent(email)}&subscription_active=eq.true&select=id&limit=1`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+      );
+      const crRows = await cr.json();
+      isProViaContractor = !!(crRows && crRows[0]);
+    } catch (e) {
+      // сбой этой проверки не должен ронять весь access-check — просто не
+      // даём бонус в этот раз, основной is_pro всё ещё работает
+    }
+
+    const effectivePro = isPro || isProViaContractor;
+
     return {
       statusCode: 200,
       headers: { ...cors, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         can_use_free: canUseFree,
-        is_pro: isPro,
+        is_pro: effectivePro,
         access_token: accessToken,
-        // доступ разрешён, если это первая бесплатная смета ИЛИ активна подписка Pro
-        access_granted: canUseFree || isPro
+        // доступ разрешён, если это первая бесплатная смета ИЛИ активна подписка Pro (напрямую или через Contractor/Handyman)
+        access_granted: canUseFree || effectivePro
       })
     };
   } catch (err) {
