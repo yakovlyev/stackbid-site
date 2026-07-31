@@ -43,10 +43,26 @@ exports.handler = async (event) => {
     );
     const estimates = await estR.json();
 
+    // Тот же принцип, что в check-access.js (исправлено 28.07): активная
+    // подписка Contractor Pro/Handyman должна включать в себя как минимум
+    // всё, что даёт Homeowner Pro — иначе тот, кто платит больше, получает
+    // меньше по умолчанию.
+    let isProViaContractor = false;
+    try {
+      const cr = await fetch(
+        `${SUPABASE_URL}/rest/v1/contractors?email=eq.${encodeURIComponent(email)}&subscription_active=eq.true&select=id&limit=1`,
+        { headers }
+      );
+      const crRows = await cr.json();
+      isProViaContractor = !!(crRows && crRows[0]);
+    } catch (e) {
+      // не критично — просто не даём бонус в этот раз
+    }
+
     return {
       statusCode: 200,
       headers: { ...cors, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ is_pro: !!user.is_pro, first_name: user.first_name, estimates: estimates || [] })
+      body: JSON.stringify({ is_pro: !!user.is_pro || isProViaContractor, first_name: user.first_name, estimates: estimates || [] })
     };
   } catch (err) {
     return { statusCode: 500, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: err.message }) };
