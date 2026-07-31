@@ -3881,6 +3881,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     div.textContent = text;
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
+    return div;
   }
 
   // Голосовой ввод вопроса — тот же Web Speech API, что уже используется для
@@ -3947,12 +3948,40 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
           lang: window.SB_LANG || 'en',
         }),
       });
-      const data = await res.json();
+
+      if (!res.body || !res.body.getReader) {
+        const fallbackText = await res.text();
+        document.getElementById('sb-thinking')?.remove();
+        sbAddMessage('bot', fallbackText || "Sorry, something went wrong. Please try again.");
+        sbHistory.push({ role: 'assistant', content: fallbackText });
+        sbMaybeSpeak(fallbackText);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let full = '';
+      let bubble = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        if (!chunk) continue;
+        if (!bubble) {
+          document.getElementById('sb-thinking')?.remove();
+          bubble = sbAddMessage('bot', '');
+        }
+        full += chunk;
+        if (bubble) bubble.textContent = full;
+        document.getElementById('sb-assist-messages').scrollTop = document.getElementById('sb-assist-messages').scrollHeight;
+      }
+
       document.getElementById('sb-thinking')?.remove();
-      const reply = data.reply || (window.SB_LANG === 'es' ? 'Lo siento, no pude procesar eso — ¿intentamos de nuevo?' : "Sorry, I couldn't process that — try again?");
-      sbAddMessage('bot', reply);
-      sbHistory.push({ role: 'assistant', content: reply });
-      sbMaybeSpeak(reply);
+      if (!full) full = 'Lo siento, no pude procesar eso — ¿intentamos de nuevo?';
+      if (!bubble) sbAddMessage('bot', full);
+      sbHistory.push({ role: 'assistant', content: full });
+      sbMaybeSpeak(full);
     } catch (e) {
       document.getElementById('sb-thinking')?.remove();
       sbAddMessage('bot', "Sorry, something went wrong. Please try again.");
