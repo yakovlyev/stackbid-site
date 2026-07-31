@@ -49,8 +49,8 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 800,
-        system: `${SYSTEM_PROMPT}\n\n${estimateContext}${voice ? '\n\nThis specific question was asked by voice and your answer will be read aloud via text-to-speech. Keep it to 1-2 short sentences max — a headline number and one key point, nothing more. Never speak a list of items or multiple prices in a row.' : ''}${lang === 'es' ? '\n\nRespond in natural Latin American Spanish, suitable for a US Hispanic homeowner. Keep dollar amounts as $ figures (do not convert currency).' : ''}`,
+        max_tokens: voice ? 200 : 800, // голосовой режим должен быть коротким и быстрым — жёсткий потолок токенов напрямую снижает время ответа, не только длину
+        system: `${SYSTEM_PROMPT}\n\n${estimateContext}${voice ? '\n\nThis specific question was asked by voice and your answer will be read aloud via text-to-speech. Keep it to 1-2 short sentences max — a headline number and one key point, nothing more. Never speak a list of items or multiple prices in a row.' : ''}${lang === 'es' ? '\n\nRespond in Spanish. Use the term most widely understood by US Hispanic homeowners regardless of country of origin — for construction materials with noticeably different regional names (e.g. drywall vs tablaroca vs yeso), pick the most neutral/common one and include the English term in parentheses on first mention, e.g. "tablaroca (drywall)". This matters — sounding like machine translation loses trust with this audience fast. Keep dollar amounts as $ figures (do not convert currency).' : ''}`,
         messages,
         tools: [
           {
