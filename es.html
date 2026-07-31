@@ -2278,7 +2278,8 @@ Return ONLY valid JSON:
 }
 
 Include 6-8 most relevant items. Use realistic 2026 HD shelf prices for this region.
-wholesale_price = 20-28% below HD. local_price = 5-10% below wholesale. Return JSON only.`;
+wholesale_price = 20-28% below HD. local_price = 5-10% below wholesale. Return JSON only.
+${window.SB_LANG === 'es' ? 'Write "category_name", item "name", "brand", "spec", and "price_note" fields in Spanish. Use the term most widely understood by US Hispanic homeowners regardless of country of origin — for materials with noticeably different regional names, pick the most neutral/common one and include the English term in parentheses on first mention, e.g. "tablaroca (drywall)". Avoid sounding like machine translation.' : ''}`;
 
   try {
     const resp = await fetch('/api/estimate', {
@@ -2733,7 +2734,7 @@ Rules:
 - 4-6 relevant categories for this project type
 - Use realistic current 2026 prices reflecting US construction market conditions
 - alt_note: keep it to one short sentence, plain language, no brand names, clearly a suggestion not a guaranteed price (e.g. "OSB is typically 15-20% cheaper than plywood here but has lower moisture resistance" or "3/4in vs 1/2in adds load capacity for heavier flooring loads, worth it if this is a workshop/gym area")
-${window.SB_LANG === 'es' ? '- Write "name", "note", and "alt_note" fields in Spanish (Latin American Spanish, natural for a US Hispanic homeowner). Keep "unit" as standard abbreviations. Category "name" fields also in Spanish.' : ''}
+${window.SB_LANG === 'es' ? '- Write "name", "note", and "alt_note" fields in Spanish. Use the term most widely understood by US Hispanic homeowners regardless of country of origin (Mexican, Central American, Caribbean, etc) — when a material has noticeably different regional names (e.g. drywall vs tablaroca vs yeso vs panel de yeso), pick the most neutral/common one and include the English term in parentheses on first mention, e.g. "tablaroca (drywall)". This avoids sounding like machine translation to a reader from a different region. Keep "unit" as standard abbreviations. Category "name" fields also in Spanish, same rule.' : ''}
 - Return JSON only`;
 
   try {
