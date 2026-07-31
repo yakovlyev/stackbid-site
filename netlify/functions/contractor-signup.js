@@ -19,7 +19,7 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors, body: '' };
 
   try {
-    const { name, company, email, phone, state, zip, license, specialization, years_in_business } = JSON.parse(event.body || '{}');
+    const { name, company, email, phone, state, zip, license, specialization, years_in_business, how_heard } = JSON.parse(event.body || '{}');
 
     if (!name || !company || !email || !phone || !state || !zip || !license) {
       return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Missing required fields' }) };
@@ -53,6 +53,7 @@ exports.handler = async (event) => {
         leads_received: 0,
         leads_converted: 0,
         source: 'pro_signup',
+        how_heard: how_heard || null, // self-reported marketing channel — отдельно от source (тип формы), это реальный канал, который назвал сам подрядчик
       }),
     });
 
