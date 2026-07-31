@@ -1449,6 +1449,20 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           <option>Other</option>
         </select>
       </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_how_heard">How did you hear about us?</label>
+        <select id="pro-how-heard" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          <option value="" data-i18n="opt_selectoption">Select an option</option>
+          <option>Google Search</option>
+          <option>Instagram</option>
+          <option>Facebook</option>
+          <option>Reddit</option>
+          <option>Referral from another contractor</option>
+          <option>Print guide / local flyer</option>
+          <option>WhatsApp</option>
+          <option data-i18n="opt_other">Other</option>
+        </select>
+      </div>
       <div style="background:#f8f9fa;border-radius:8px;padding:14px;">
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
           <input type="checkbox" id="pro-agree" style="margin-top:2px;flex-shrink:0;">
@@ -1515,6 +1529,20 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
       <div>
         <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_years">Years in Business</label>
         <input type="number" id="handy-years" placeholder="e.g. 5" min="0" max="100" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;color:#0C2340;display:block;margin-bottom:6px;" data-i18n="lbl_how_heard">How did you hear about us?</label>
+        <select id="handy-how-heard" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          <option value="" data-i18n="opt_selectoption">Select an option</option>
+          <option>Google Search</option>
+          <option>Instagram</option>
+          <option>Facebook</option>
+          <option>Reddit</option>
+          <option>Referral from another contractor</option>
+          <option>Print guide / local flyer</option>
+          <option>WhatsApp</option>
+          <option data-i18n="opt_other">Other</option>
+        </select>
       </div>
       <div style="background:#f8f9fa;border-radius:8px;padding:14px;">
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
@@ -3521,6 +3549,7 @@ async function submitHandymanForm() {
   const zip = document.getElementById('handy-zip').value.trim();
   const license = document.getElementById('handy-license').value.trim() || 'N/A';
   const years = document.getElementById('handy-years').value.trim();
+  const howHeard = document.getElementById('handy-how-heard').value;
   const agree = document.getElementById('handy-agree').checked;
 
   const errEl = document.getElementById('handy-error');
@@ -3549,6 +3578,7 @@ async function submitHandymanForm() {
         name, company, email, phone, state, zip,
         license, specialization: 'Handyman',
         years_in_business: years ? parseInt(years, 10) : null,
+        how_heard: howHeard || null,
       }),
     });
     const result = await res.json();
@@ -3582,6 +3612,7 @@ async function submitProForm() {
   const license = document.getElementById('pro-license').value.trim();
   const years = document.getElementById('pro-years').value.trim();
   const spec = document.getElementById('pro-spec').value;
+  const howHeard = document.getElementById('pro-how-heard').value;
   const agree = document.getElementById('pro-agree').checked;
 
   const errEl = document.getElementById('pro-error');
@@ -3610,6 +3641,7 @@ async function submitProForm() {
         name, company, email, phone, state, zip,
         license, specialization: spec,
         years_in_business: years ? parseInt(years, 10) : null,
+        how_heard: howHeard || null,
       }),
     });
     const result = await res.json();
@@ -3879,6 +3911,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     div.textContent = text;
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
+    return div;
   }
 
   // Голосовой ввод вопроса — тот же Web Speech API, что уже используется для
@@ -3945,12 +3978,43 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
           lang: window.SB_LANG || 'en',
         }),
       });
-      const data = await res.json();
+
+      // Стримим ответ по мере поступления, вместо ожидания всего JSON целиком —
+      // так текст начинает появляться сразу, а не одним куском после паузы.
+      if (!res.body || !res.body.getReader) {
+        // Фолбэк на случай окружения без поддержки потоковых fetch-ответов
+        const fallbackText = await res.text();
+        document.getElementById('sb-thinking')?.remove();
+        sbAddMessage('bot', fallbackText || "Sorry, something went wrong. Please try again.");
+        sbHistory.push({ role: 'assistant', content: fallbackText });
+        sbMaybeSpeak(fallbackText);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let full = '';
+      let bubble = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        if (!chunk) continue;
+        if (!bubble) {
+          document.getElementById('sb-thinking')?.remove();
+          bubble = sbAddMessage('bot', '');
+        }
+        full += chunk;
+        if (bubble) bubble.textContent = full;
+        document.getElementById('sb-assist-messages').scrollTop = document.getElementById('sb-assist-messages').scrollHeight;
+      }
+
       document.getElementById('sb-thinking')?.remove();
-      const reply = data.reply || (window.SB_LANG === 'es' ? 'Lo siento, no pude procesar eso — ¿intentamos de nuevo?' : "Sorry, I couldn't process that — try again?");
-      sbAddMessage('bot', reply);
-      sbHistory.push({ role: 'assistant', content: reply });
-      sbMaybeSpeak(reply);
+      if (!full) full = window.SB_LANG === 'es' ? 'Lo siento, no pude procesar eso — ¿intentamos de nuevo?' : "Sorry, I couldn't process that — try again?";
+      if (!bubble) sbAddMessage('bot', full);
+      sbHistory.push({ role: 'assistant', content: full });
+      sbMaybeSpeak(full);
     } catch (e) {
       document.getElementById('sb-thinking')?.remove();
       sbAddMessage('bot', "Sorry, something went wrong. Please try again.");
