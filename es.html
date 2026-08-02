@@ -96,8 +96,13 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(12,35,64,0.97); b
 .nav-links { display: flex; align-items: center; gap: 28px; }
 .nav-links a { color: rgba(255,255,255,0.7); font-size: 14px; text-decoration: none; transition: color 0.2s; }
 .nav-links a:hover { color: var(--white); }
-.nav-cta { background: var(--amber); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; padding: 8px 20px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; border: 2px solid #C9952A; box-shadow: 0 3px 10px rgba(197,149,42,0.3); }
+.nav-cta { background: var(--amber); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; padding: 8px 20px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; border: 2px solid #C9952A; box-shadow: 0 3px 10px rgba(197,149,42,0.3); white-space: nowrap; }
 .nav-cta:hover { opacity: 0.9; }
+.nav-cta-short { display: none; }
+@media (max-width: 420px) {
+  .nav-cta-full { display: none; }
+  .nav-cta-short { display: inline; }
+}
 .nav-mobile-hide { display: flex; }
 
 /* MOBILE NAV */
@@ -686,7 +691,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
     <a href="#why" data-i18n="nav_pricing">Pricing</a>
     <a href="#contact" data-i18n="nav_contact">Contact</a>
   </div>
-  <a href="#tool" class="nav-cta" data-i18n="nav_cta">Check how much you overpay →</a>
+  <a href="#tool" class="nav-cta" aria-label="Check how much you overpay"><span class="nav-cta-full" data-i18n="nav_cta">Check how much you overpay →</span><span class="nav-cta-short" data-i18n="nav_cta_short">Check now →</span></a>
 </nav>
 
 <!-- HERO -->
@@ -4047,6 +4052,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     nav_pricing: 'Precios',
     nav_contact: 'Contacto',
     nav_cta: 'Cuánto pagas de más →',
+    nav_cta_short: 'Ver ahora →',
     hero_eyebrow: '● Con IA · Precios mayoristas 2026 · Sin tarjeta de crédito',
     hero_h1: 'Conoce el costo <em>real</em> de materiales <span style="white-space:nowrap;">y mano de obra</span> antes de hablar con un contratista',
     hero_sub: 'Escribe lo que vas a construir. Obtén una estimación completa de materiales y mano de obra con precios mayoristas locales — en menos de 3 minutos. Tu primera estimación es gratis.',
