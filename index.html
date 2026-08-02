@@ -3766,6 +3766,9 @@ window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
   document.getElementById('pwa-banner').classList.add('show');
+  // Баннер появляется асинхронно, позже основной загрузки — без этого
+  // иконки остаются на месте, посчитанном ДО появления баннера (01.08 баг)
+  setTimeout(positionFloatingIcons, 50);
 });
 function installPWA() {
   if (deferredPrompt) {
@@ -3804,6 +3807,10 @@ function positionFloatingIcons() {
   if (panel) panel.style.top = (bottom + 52) + 'px';
 }
 window.addEventListener('load', positionFloatingIcons);
+// Подстраховка от других похожих гонок состояний (шрифты, картинки,
+// другие асинхронные сдвиги вёрстки) — пересчитываем ещё несколько раз
+// в первую секунду после загрузки, не полагаясь только на один момент.
+[100, 300, 800, 1500].forEach(ms => setTimeout(positionFloatingIcons, ms));
 window.addEventListener('resize', positionFloatingIcons);
 window.addEventListener('orientationchange', () => setTimeout(positionFloatingIcons, 200));
 document.addEventListener('DOMContentLoaded', positionFloatingIcons);
