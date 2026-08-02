@@ -43,3 +43,42 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+
+  # Бесплатный обходной путь для холодного старта free-плана: стучится на
+  # сайт каждые 10 минут, чтобы Render не успевал усыплять инстанс (засыпает
+  # после 15 минут простоя). НЕ настоящий фикс — настоящий фикс это платный
+  # план (Render → Settings → Instance Type → Starter, от $7/мес), который
+  # вообще убирает автоусыпление. Это временная мера, пока не решили платить.
+  - type: cron
+    name: stackbid-keep-alive
+    runtime: node
+    schedule: "*/10 * * * *"
+    buildCommand: "true"
+    startCommand: "curl -sf https://stackbid-app.onrender.com/ -o /dev/null || true"
+
+  # Отчёт-аналитик раз в 3 дня — регистрации/сметы/тарифы/how_heard.
+  # НЕ дублирует Google Analytics (трафик/страницы уже там, G-FRXYX65KWN) —
+  # это только бизнес-метрики из наших таблиц.
+  - type: cron
+    name: stackbid-analytics-agent
+    runtime: node
+    schedule: "0 9 */3 * *"
+    buildCommand: npm install
+    startCommand: node analytics-agent.js
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ZOHO_CLIENT_ID
+        sync: false
+      - key: ZOHO_CLIENT_SECRET
+        sync: false
+      - key: ZOHO_REFRESH_TOKEN
+        sync: false
+      - key: ZOHO_ACCOUNT_ID
+        sync: false
+      - key: REPORT_TO_EMAIL
+        sync: false

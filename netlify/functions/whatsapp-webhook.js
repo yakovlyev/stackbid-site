@@ -1,10 +1,25 @@
-// StackBid — WhatsApp Bot (v2 — фото + память диалога, 27.07)
+// StackBid — WhatsApp Bot (v4 — голос + консультант + фото + память, 31.07)
 //
 // Точка входа: WhatsApp Business Cloud API (Meta) шлёт сюда вебхуки при
-// новом входящем сообщении. Бот понимает и текст, и фото проекта, помнит
-// историю переписки по номеру телефона (иначе теряет смысл как ассистент —
-// прямое требование Игоря), генерирует смету и отвечает форматированным
-// текстом (WhatsApp не поддерживает HTML/таблицы).
+// новом входящем сообщении. Бот понимает текст, фото и ГОЛОСОВЫЕ сообщения,
+// помнит историю переписки по номеру телефона, генерирует смету или
+// отвечает на общий вопрос, и отвечает форматированным текстом — а если
+// вопрос пришёл голосом, ещё и озвученным ответом.
+//
+// v4 (31.07) — Игорь: мексиканская испаноговорящая аудитория предпочитает
+// голосовые сообщения набору текста, особенно на естественной скорости речи
+// ("тараторят"). Добавлено: приём голосовых (Whisper — распознавание речи)
+// и озвученный ответ (TTS), поверх существующего текстового ответа.
+//
+// v3 (31.07) — Игорь: испаноязычная аудитория не будет переключаться на
+// другой канал ради общих вопросов про стройку, они хотят получить всё в
+// одном месте (WhatsApp, на родном языке). Раньше бот умел ТОЛЬКО считать
+// смету — любой вопрос вне этого сценария он пытался силой превратить в
+// смету. Теперь бот сам решает: если пришло описание проекта — считает
+// смету (как раньше); если пришёл общий вопрос про стройку (разрешения,
+// как выбрать подрядчика, что означает термин, и т.д.) — отвечает как
+// консультант, тем же прожективным анти-галлюцинационным ограничением, что
+// у Ники на сайте (не выдумывать цифры/факты, признавать неуверенность).
 //
 // v2 добавляет к v1:
 //   - Фото: скачивание через WhatsApp Media API → анализ тем же vision-подходом,
@@ -20,33 +35,42 @@
 // Требуемые переменные окружения (Render, сервис stackbid-app):
 //   ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (уже есть)
 //   WHATSAPP_VERIFY_TOKEN, WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID
+//   OPENAI_API_KEY — НОВАЯ, для распознавания (Whisper) и синтеза речи (TTS)
 //
 // Требуемая таблица: whatsapp_sessions (см. whatsapp-sessions-schema.sql)
 
 const MAX_HISTORY_TURNS = 6; // 6 пар user/assistant — достаточно для контекста, не раздувает промпт
 
-const ESTIMATE_SYSTEM_PROMPT = `You are StackBid's construction cost estimator, replying inside an ongoing WhatsApp conversation with a homeowner. Messages may be in English or Spanish, and may reference earlier turns in this same conversation (e.g. "what if I used composite instead?", "what about a bigger size?") — use the conversation history to understand follow-ups and adjust the PREVIOUS estimate rather than starting from scratch when the user is clearly following up.
+const ESTIMATE_SYSTEM_PROMPT = `You are StackBid's WhatsApp assistant, replying inside an ongoing conversation with a homeowner. Messages may be in English or Spanish, and may reference earlier turns (e.g. "what if I used composite instead?") — use the conversation history to understand follow-ups.
 
-The user's message may include a photo of their project (already analyzed and described to you as text) and/or a text description and/or a ZIP code.
+The user's message may include a photo of their project (already analyzed and described to you as text) and/or a text description and/or a ZIP code and/or a general question about construction/renovation.
+
+You handle TWO kinds of messages — decide which this one is:
+
+1. PROJECT ESTIMATE — the user describes or shows a specific project they want priced (has a project type, ideally size/scope). Generate a materials + cost estimate.
+
+2. GENERAL QUESTION — anything else construction/renovation-related: permits, how to choose a contractor, what a material or process is, typical timelines, whether they need a professional vs DIY, how StackBid itself works, etc. Answer directly and conversationally, 2-5 sentences, WhatsApp-length (not a wall of text). Same grounding rules as StackBid's on-site assistant Nika: never invent specific prices, codes, regulations, or facts you're not confident about — if unsure, say so plainly and suggest checking with a local professional or authority rather than guessing. Never claim StackBid does something it doesn't (e.g. it does not pull permits, does not guarantee contractor quality beyond what's on their profile).
 
 Extract:
-- language: "es" if the current message is in Spanish, otherwise "en" (default to the conversation's established language if the current message is just a short follow-up like a number or "yes")
-- project_type
-- zip (5-digit US ZIP if present anywhere in this message or recent history, else null)
-- Then generate (or update) a materials estimate.
+- type: "estimate" or "answer"
+- language: "es" if the current message is in Spanish, otherwise "en" (default to the conversation's established language for short follow-ups)
+- If type is "estimate": zip (5-digit US ZIP if present anywhere in this message or recent history, else null), project_type, then generate the estimate.
+- If type is "answer": just the answer text, in the same language as the current message.
 
 Return ONLY this JSON, no other text:
 {
+  "type": "estimate" | "answer",
   "language": "en" | "es",
-  "zip_found": boolean,
-  "project_type": string,
-  "items": [ { "name": string, "qty": number, "unit": string, "retail_unit": number, "wholesale_unit": number, "local_unit": number } ],
-  "total_retail": number,
-  "total_wholesale": number,
-  "total_local": number
+  "text": string,               // ONLY for type "answer" — the conversational reply
+  "zip_found": boolean,         // ONLY for type "estimate"
+  "project_type": string,       // ONLY for type "estimate"
+  "items": [ { "name": string, "qty": number, "unit": string, "retail_unit": number, "wholesale_unit": number, "local_unit": number } ],  // ONLY for type "estimate"
+  "total_retail": number,       // ONLY for type "estimate"
+  "total_wholesale": number,    // ONLY for type "estimate"
+  "total_local": number         // ONLY for type "estimate"
 }
 
-Rules:
+Rules for estimates:
 - If zip_found is false, still generate the estimate using national average pricing.
 - retail_unit = current 2026 Home Depot/Lowe's shelf price. wholesale_unit = 20-28% below retail. local_unit = 5-10% below wholesale.
 - 4-8 realistic line items. Item "name" in the same language as the current message.
@@ -140,6 +164,105 @@ async function sendWhatsAppMessage(to, text) {
     headers: { Authorization: `Bearer ${ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ messaging_product: 'whatsapp', to, type: 'text', text: { body: text } }),
   });
+}
+
+// ---------- Голос (v4, 31.07): приём и озвученный ответ ----------
+// Игорь: мексиканская испаноговорящая аудитория предпочитает голосовые
+// сообщения набору текста, особенно на скорости естественной речи — бот
+// должен и понимать голосовые, и отвечать голосом, не только текстом.
+// Это требует отдельного сервиса распознавания/синтеза речи — у Anthropic
+// Claude API нет приёма/генерации аудио напрямую. Используем OpenAI
+// (Whisper для распознавания, TTS для синтеза) — один провайдер, один ключ.
+//
+// НОВАЯ переменная окружения: OPENAI_API_KEY
+
+async function transcribeAudio(base64, mimeType) {
+  const buffer = Buffer.from(base64, 'base64');
+  const ext = mimeType.includes('ogg') ? 'ogg' : mimeType.includes('mp4') ? 'mp4' : 'ogg';
+  const form = new FormData();
+  form.append('file', new Blob([buffer], { type: mimeType }), `voice.${ext}`);
+  form.append('model', 'whisper-1');
+  // Без параметра language — Whisper сам определяет язык (EN/ES), это надёжнее,
+  // чем угадывать заранее по номеру телефона или истории разговора.
+
+  const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+    body: form,
+  });
+  if (!res.ok) throw new Error(`Whisper transcription failed: ${res.status} ${await res.text()}`);
+  const data = await res.json();
+  return (data.text || '').trim();
+}
+
+async function synthesizeSpeech(text) {
+  const res = await fetch('https://api.openai.com/v1/audio/speech', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'tts-1',
+      voice: 'nova', // нейтральный, дружелюбный голос; OpenAI TTS сам произносит текст на языке самого текста
+      input: text,
+      response_format: 'opus', // WhatsApp voice notes ожидают audio/ogg (opus)
+    }),
+  });
+  if (!res.ok) throw new Error(`TTS synthesis failed: ${res.status} ${await res.text()}`);
+  const arrayBuffer = await res.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+async function uploadWhatsAppMedia(buffer, mimeType) {
+  const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+  const form = new FormData();
+  form.append('messaging_product', 'whatsapp');
+  form.append('file', new Blob([buffer], { type: mimeType }), 'reply.ogg');
+
+  const res = await fetch(`https://graph.facebook.com/v20.0/${PHONE_NUMBER_ID}/media`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+    body: form,
+  });
+  if (!res.ok) throw new Error(`WhatsApp media upload failed: ${res.status} ${await res.text()}`);
+  const data = await res.json();
+  return data.id;
+}
+
+async function sendWhatsAppVoiceReply(to, text) {
+  try {
+    const audioBuffer = await synthesizeSpeech(text);
+    const mediaId = await uploadWhatsAppMedia(audioBuffer, 'audio/ogg');
+    const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+    const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+    await fetch(`https://graph.facebook.com/v20.0/${PHONE_NUMBER_ID}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messaging_product: 'whatsapp', to, type: 'audio', audio: { id: mediaId } }),
+    });
+  } catch (e) {
+    console.error('[whatsapp] voice reply failed, falling back to text-only:', e.message);
+    // не роняем весь ответ, если синтез/отправка голоса не удалась — текстовый
+    // ответ уже отправлен отдельно до этого вызова
+  }
+}
+
+// Короткая, пригодная для озвучки версия ответа — полная текстовая смета с
+// построчной разбивкой хорошо читается, но плохо звучит вслух. Для голоса
+// собираем компактную сводку из тех же чисел, без построения нового запроса
+// к модели (дешевле и быстрее).
+function buildSpokenSummary(data, labor) {
+  const es = data.language === 'es';
+  if (data.type === 'answer') return data.text;
+  if (es) {
+    let s = `Tu estimado para ${data.project_type}: materiales alrededor de $${Math.round(data.total_local).toLocaleString()}.`;
+    if (labor) s += ` Mano de obra entre $${labor.laborLow.toLocaleString()} y $${labor.laborHigh.toLocaleString()}. Total estimado entre $${labor.totalLow.toLocaleString()} y $${labor.totalHigh.toLocaleString()}.`;
+    s += ' Te mandé el desglose completo por escrito arriba.';
+    return s;
+  }
+  let s = `Your ${data.project_type} estimate: materials around $${Math.round(data.total_local).toLocaleString()}.`;
+  if (labor) s += ` Labor between $${labor.laborLow.toLocaleString()} and $${labor.laborHigh.toLocaleString()}. Estimated total between $${labor.totalLow.toLocaleString()} and $${labor.totalHigh.toLocaleString()}.`;
+  s += ' I sent the full written breakdown above.';
+  return s;
 }
 
 // ---------- Фото: скачивание через WhatsApp Media API ----------
@@ -240,6 +363,7 @@ exports.handler = async (event) => {
 
     const from = message.from;
     let userText = null;
+    let isVoiceInput = false;
 
     if (message.type === 'text') {
       userText = message.text?.body || null;
@@ -254,18 +378,32 @@ exports.handler = async (event) => {
         await sendWhatsAppMessage(from, "Sorry, I couldn't process that photo — try again, or describe your project in text.\n\nLo siento, no pude procesar esa foto — intenta de nuevo, o describe tu proyecto en texto.");
         return { statusCode: 200, body: 'ok' };
       }
+    } else if (message.type === 'audio') {
+      try {
+        const { base64, mimeType } = await downloadWhatsAppMedia(message.audio.id);
+        userText = await transcribeAudio(base64, mimeType);
+        isVoiceInput = true;
+        if (!userText) {
+          await sendWhatsAppMessage(from, "Sorry, I couldn't make out that voice message — could you try again or type it?\n\nLo siento, no pude entender ese mensaje de voz — ¿puedes intentar de nuevo o escribirlo?");
+          return { statusCode: 200, body: 'ok' };
+        }
+      } catch (e) {
+        console.error('[whatsapp] voice processing failed:', e.message);
+        await sendWhatsAppMessage(from, "Sorry, I couldn't process that voice message — try again, or send text instead.\n\nLo siento, no pude procesar ese mensaje de voz — intenta de nuevo, o envía texto.");
+        return { statusCode: 200, body: 'ok' };
+      }
     }
 
     const session = await loadSession(from);
 
     if (!userText) {
-      const greeting = "👋 I'm the StackBid bot / Soy el bot de StackBid! Text me what you're building, or send a photo of the project (e.g. \"20x24 deck, ZIP 77001\") — Escríbeme qué construyes, o envía una foto del proyecto — and I'll send you a materials + labor cost estimate.";
+      const greeting = "👋 Hi! I'm the StackBid AI assistant. I'll help you know your real materials & labor cost before you talk to a contractor. Text me what you're building, send a photo, or send a voice message — e.g. \"20x24 deck, ZIP 77001\".\n\n¡Hola! Soy el asistente de IA de StackBid. Te ayudaré a conocer el costo real de materiales y mano de obra antes de hablar con un contratista. Escríbeme qué construyes, envía una foto, o mándame un audio.";
       await sendWhatsAppMessage(from, greeting);
       return { statusCode: 200, body: 'ok' };
     }
 
     if (session.history.length === 0 && /^(hi|hello|hey|start|hola|buenas|empezar)$/i.test(userText.trim())) {
-      await sendWhatsAppMessage(from, "👋 Hi! I'm the StackBid bot. Tell me what you're building (text or photo) and your ZIP code — e.g. \"garage door replacement, ZIP 90210\" — and I'll send a materials + labor cost estimate in under a minute. I'll remember our conversation, so feel free to ask follow-ups like \"what if I used a different material?\"\n\n¡Hola! Soy el bot de StackBid. Dime qué proyecto tienes (texto o foto) y tu código postal — y te enviaré un estimado en menos de un minuto. Recuerdo nuestra conversación, así que puedes hacer preguntas de seguimiento.");
+      await sendWhatsAppMessage(from, "👋 Hi! I'm the StackBid AI assistant. I'll help you know your real materials & labor cost before you talk to a contractor. Tell me what you're building (text, photo, or voice) and your ZIP code — e.g. \"garage door replacement, ZIP 90210\" — and I'll send an estimate in under a minute. I'll remember our conversation, so feel free to ask follow-ups like \"what if I used a different material?\"\n\n¡Hola! Soy el asistente de IA de StackBid. Te ayudaré a conocer el costo real de materiales y mano de obra antes de hablar con un contratista. Dime qué proyecto tienes (texto, foto o audio) y tu código postal — y te enviaré un estimado en menos de un minuto. Recuerdo nuestra conversación, así que puedes hacer preguntas de seguimiento.");
       return { statusCode: 200, body: 'ok' };
     }
 
@@ -297,17 +435,39 @@ exports.handler = async (event) => {
     }
     const data = JSON.parse(match[0]);
 
-    const zipMatch = userText.match(/\b\d{5}\b/);
-    const zip = zipMatch ? zipMatch[0] : null;
-    const labor = await getLaborEstimate(data.project_type, zip, data.total_local);
+    // v3: бот теперь отвечает и на общие вопросы, не только считает сметы —
+    // ветвимся по полю type, которое возвращает модель
+    let reply;
+    let historyNote;
 
-    const reply = formatWhatsAppReply(data, labor);
+    let labor = null;
+    if (data.type === 'answer') {
+      reply = data.text || (data.language === 'es'
+        ? 'Lo siento, no pude procesar eso — intenta de nuevo.'
+        : "Sorry, I couldn't process that — try again.");
+      historyNote = `[Answered a general question]`;
+    } else {
+      const zipMatch = userText.match(/\b\d{5}\b/);
+      const zip = zipMatch ? zipMatch[0] : null;
+      labor = await getLaborEstimate(data.project_type, zip, data.total_local);
+      reply = formatWhatsAppReply(data, labor);
+      historyNote = `[Estimate given: ${data.project_type}, total local $${Math.round(data.total_local)}]`;
+    }
+
     await sendWhatsAppMessage(from, reply);
+
+    // Если вопрос пришёл голосом — отвечаем и голосом тоже, коротким устным
+    // резюме (полная построчная смета плохо звучит вслух), сверх текста,
+    // который уже отправлен выше как письменный документ на память.
+    if (isVoiceInput) {
+      const spoken = buildSpokenSummary(data, labor);
+      await sendWhatsAppVoiceReply(from, spoken);
+    }
 
     const newHistory = [
       ...session.history,
       { role: 'user', content: userText },
-      { role: 'assistant', content: `[Estimate given: ${data.project_type}, total local $${Math.round(data.total_local)}]` },
+      { role: 'assistant', content: historyNote },
     ];
     await saveSession(from, newHistory, data.language);
 
