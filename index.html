@@ -3778,6 +3778,7 @@ function installPWA() {
 function closePWABanner() {
   document.getElementById('pwa-banner').classList.remove('show');
   sessionStorage.setItem('pwa-dismissed','1');
+  positionFloatingIcons();
 }
 if (sessionStorage.getItem('pwa-dismissed')) {
   const b = document.getElementById('pwa-banner');
@@ -3786,6 +3787,27 @@ if (sessionStorage.getItem('pwa-dismissed')) {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 }
+
+// Плавающие иконки (Nika + WhatsApp) должны сидеть сразу под меню — но
+// баннер "Install StackBid" над меню то есть, то закрыт крестиком, и по-
+// разному высок на разных устройствах. Вместо гадания числом в CSS —
+// реально измеряем, где заканчивается меню, и ставим иконки туда.
+function positionFloatingIcons() {
+  const nav = document.querySelector('nav');
+  const waBtn = document.getElementById('wa-fab-btn');
+  const nikaBtn = document.getElementById('sb-assist-btn');
+  const panel = document.getElementById('sb-assist-panel');
+  if (!nav || !waBtn || !nikaBtn) return;
+  const bottom = Math.round(nav.getBoundingClientRect().bottom) + 10;
+  waBtn.style.top = bottom + 'px';
+  nikaBtn.style.top = bottom + 'px';
+  if (panel) panel.style.top = (bottom + 52) + 'px';
+}
+window.addEventListener('load', positionFloatingIcons);
+window.addEventListener('resize', positionFloatingIcons);
+window.addEventListener('orientationchange', () => setTimeout(positionFloatingIcons, 200));
+document.addEventListener('DOMContentLoaded', positionFloatingIcons);
+
 
 // Animate counters in hero
 function animateCounters() {
@@ -3815,7 +3837,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
      тянуться через открытое окно чата. */
   #sb-assist-btn {
     position: fixed; box-sizing: border-box;
-    top: calc(58px + env(safe-area-inset-top) + 10px);
+    top: calc(58px + 70px + env(safe-area-inset-top) + 10px);
     right: calc(5% + 52px); z-index: 9990;
     width: 44px; height: 44px; border-radius: 50%;
     background: #0C2340; color: #F5A623; border: 1.5px solid #F5A623;
@@ -3825,7 +3847,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
   }
   #wa-fab-btn {
     position: fixed; box-sizing: border-box;
-    top: calc(58px + env(safe-area-inset-top) + 10px);
+    top: calc(58px + 70px + env(safe-area-inset-top) + 10px);
     right: 5%; z-index: 9991;
     width: 44px; height: 44px; border-radius: 50%;
     background: #25D366; border: none; cursor: pointer;
@@ -3845,7 +3867,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
   }
   #sb-assist-panel {
     position: fixed; box-sizing: border-box;
-    top: calc(58px + env(safe-area-inset-top) + 62px); right: 5%; z-index: 9990;
+    top: calc(58px + 70px + env(safe-area-inset-top) + 62px); right: 5%; z-index: 9990;
     width: 320px; max-width: calc(100% - 32px);
     max-height: 400px;
     background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);
