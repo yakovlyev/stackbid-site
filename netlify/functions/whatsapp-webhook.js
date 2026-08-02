@@ -402,8 +402,10 @@ exports.handler = async (event) => {
       return { statusCode: 200, body: 'ok' };
     }
 
-    if (session.history.length === 0 && /^(hi|hello|hey|start|hola|buenas|empezar)$/i.test(userText.trim())) {
-      await sendWhatsAppMessage(from, "👋 Hi! I'm the StackBid AI assistant. I'll help you know your real materials & labor cost before you talk to a contractor. Tell me what you're building (text, photo, or voice) and your ZIP code — e.g. \"garage door replacement, ZIP 90210\" — and I'll send an estimate in under a minute. I'll remember our conversation, so feel free to ask follow-ups like \"what if I used a different material?\"\n\n¡Hola! Soy el asistente de IA de StackBid. Te ayudaré a conocer el costo real de materiales y mano de obra antes de hablar con un contratista. Dime qué proyecto tienes (texto, foto o audio) y tu código postal — y te enviaré un estimado en menos de un minuto. Recuerdo nuestra conversación, así que puedes hacer preguntas de seguimiento.");
+    if (session.history.length === 0) {
+      await sendWhatsAppMessage(from, "👋 Hi! I'm the StackBid AI assistant. I'll help you know your real materials & labor cost before you talk to a contractor. Tell me what you're building (text, photo, or voice) and your ZIP code — e.g. \"garage door replacement, ZIP 90210\" — and I'll send an estimate in under a minute. You can also ask me general questions about construction, permits, or hiring a contractor. I'll remember our conversation, so feel free to ask follow-ups like \"what if I used a different material?\"\n\n¡Hola! Soy el asistente de IA de StackBid. Te ayudaré a conocer el costo real de materiales y mano de obra antes de hablar con un contratista. Dime qué proyecto tienes (texto, foto o audio) y tu código postal — y te enviaré un estimado en menos de un minuto. También puedes hacerme preguntas generales sobre construcción, permisos o cómo elegir un contratista. Recuerdo nuestra conversación, así que puedes hacer preguntas de seguimiento.");
+      const newHistory = [{ role: 'user', content: userText }, { role: 'assistant', content: '[Sent standard greeting]' }];
+      await saveSession(from, newHistory, 'en');
       return { statusCode: 200, body: 'ok' };
     }
 
