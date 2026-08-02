@@ -164,7 +164,7 @@ async function buildReport() {
 
   // Новые регистрации подрядчиков/хендименов — по тарифу и по how_heard
   const contractors = await supabaseFetch(
-    `contractors?select=subscription_tier,specialization,how_heard,subscription_active,created_at&created_at=gte.${since}&limit=1000`
+    `contractors?select=subscription_tier,specializations,how_heard,subscription_active,created_at&created_at=gte.${since}&limit=1000`
   );
 
   // Новые пользователи сайта (email-gate) и сколько из них стали Pro
