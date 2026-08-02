@@ -3778,27 +3778,25 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
 <style>
   #sb-assist-btn {
     position: fixed; box-sizing: border-box;
-    bottom: calc(20px + env(safe-area-inset-bottom)); right: 16px; z-index: 9990;
+    top: 46%; right: 16px; z-index: 9990;
     width: 52px; height: 52px; border-radius: 50%;
     background: #0C2340; color: #F5A623; border: none;
     font-size: 15px; font-weight: 800; letter-spacing: 0.02em; cursor: pointer;
     box-shadow: 0 4px 16px rgba(12,35,64,0.35);
     display: flex; align-items: center; justify-content: center;
   }
-  /* WhatsApp AI-бот — плавающая иконка над Nika. Настоящий силуэт лого
-     WhatsApp + бейдж "AI", без текстовой подписи. Поднимается выше, когда
-     открыта панель Nika, чтобы не перекрываться. */
+  /* WhatsApp AI-бот — плавающая иконка над Nika. 01.08: перенесены обе
+     иконки из нижнего угла (перекрывали текст) в свободное место повыше —
+     фиксированная точка по высоте экрана. */
   #wa-fab-btn {
     position: fixed; box-sizing: border-box;
-    bottom: calc(84px + env(safe-area-inset-bottom)); right: 16px; z-index: 9991;
+    top: calc(46% - 60px); right: 16px; z-index: 9991;
     width: 52px; height: 52px; border-radius: 50%;
     background: #25D366; border: none; cursor: pointer;
     box-shadow: 0 4px 16px rgba(37,211,102,0.4);
     display: flex; align-items: center; justify-content: center;
-    transition: bottom 0.25s ease;
     text-decoration: none;
   }
-  #wa-fab-btn.raised { bottom: calc(500px + env(safe-area-inset-bottom)); }
   #wa-fab-badge {
     position: absolute; top: -4px; right: -4px;
     background: #F5A623; color: #0C2340;
@@ -3807,7 +3805,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
   }
   #sb-assist-panel {
     position: fixed; box-sizing: border-box;
-    bottom: calc(88px + env(safe-area-inset-bottom)); right: 16px; z-index: 9990;
+    top: calc(46% + 60px); right: 16px; z-index: 9990;
     width: 320px; max-width: calc(100% - 32px);
     max-height: 400px;
     background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);
@@ -3816,10 +3814,9 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
   }
   #sb-assist-panel.open { display: flex; }
   @media (max-height: 500px) and (orientation: landscape) {
-    #sb-assist-panel { max-height: calc(100% - 24px); bottom: calc(60px + env(safe-area-inset-bottom)); }
-    #sb-assist-btn { width: 44px; height: 44px; font-size: 13px; bottom: calc(12px + env(safe-area-inset-bottom)); }
-    #wa-fab-btn { width: 44px; height: 44px; bottom: calc(64px + env(safe-area-inset-bottom)); }
-    #wa-fab-btn.raised { bottom: calc(320px + env(safe-area-inset-bottom)); }
+    #sb-assist-panel { max-height: calc(100% - 24px); top: 8px; }
+    #sb-assist-btn { width: 44px; height: 44px; font-size: 13px; }
+    #wa-fab-btn { width: 44px; height: 44px; }
   }
   #sb-assist-header {
     background: #0C2340; color: #fff; padding: 14px 16px;
@@ -3863,8 +3860,6 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
   window.sbAssistToggle = function() {
     const panel = document.getElementById('sb-assist-panel');
     panel.classList.toggle('open');
-    const waBtn = document.getElementById('wa-fab-btn');
-    if (waBtn) waBtn.classList.toggle('raised', panel.classList.contains('open'));
     if (!sbOpened && panel.classList.contains('open')) {
       sbOpened = true;
       sbAddMessage('bot', window.SB_LANG === 'es'
