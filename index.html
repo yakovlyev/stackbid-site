@@ -157,6 +157,11 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(15,31,46,0.97); b
 @media (max-width: 640px) { .tool-body { padding: 16px; } }
 .tool-tabs-wrap { position: relative; margin-bottom: 4px; }
 .tool-tabs-scroll-hint { font-size: 12px; font-weight: 700; color: var(--amber); text-align: right; margin-bottom: 6px; letter-spacing: 0.03em; display: block; clear: both; }
+@media (min-width: 641px) {
+  .tool-tabs-scroll-hint { display: none; }
+  .tool-tabs { overflow-x: visible; }
+  .tool-tab { flex: 1; min-width: 0; }
+}
 .tool-tabs::-webkit-scrollbar { display: none; }
 @media (max-width: 480px) { .pricing-grid { grid-template-columns: 1fr !important; } }
 .ptype-btn:hover, .ptype-btn:active { border-color: var(--amber); color: var(--ink); }
@@ -270,16 +275,16 @@ a[href], button, [onclick], .exp-btn, .gen-btn, .gate-submit {
   cursor: pointer !important;
 }
 /* Make all inline action buttons obvious */
-a[style*="background"][style*="border-radius"] {
+a[style*="background"][style*="border-radius"], button[style*="background"][style*="border-radius"] {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
   transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s !important;
 }
-a[style*="background"][style*="border-radius"]:hover {
+a[style*="background"][style*="border-radius"]:hover, button[style*="background"][style*="border-radius"]:hover {
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 20px rgba(0,0,0,0.2) !important;
   opacity: 0.92 !important;
 }
-a[style*="background"][style*="border-radius"]:active {
+a[style*="background"][style*="border-radius"]:active, button[style*="background"][style*="border-radius"]:active {
   transform: translateY(0) scale(0.98) !important;
 }
 /* Export buttons */
@@ -1135,65 +1140,86 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
     <div class="pricing-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:760px;margin:0 auto;">
 
       <!-- Free plan -->
-      <div style="border:2px solid #e2e8f0;border-radius:16px;padding:32px;text-align:left;">
-        <div style="font-size:13px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;" data-i18n="p1_label">Homeowner — Try it</div>
+      <div style="border:2px solid #e2e8f0;border-radius:16px;padding:32px;text-align:left;display:flex;flex-direction:column;height:100%;">
+        <div style="height:24px;margin-bottom:0;"></div>
+        <div style="font-size:13px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;" data-i18n="p1_label">📋 Homeowner — Try it</div>
         <div style="font-size:42px;font-weight:800;color:#0C2340;margin-bottom:4px;" data-i18n="p1_price">Free</div>
         <div style="font-size:14px;color:#999;margin-bottom:24px;" data-i18n="p1_sub">Your first estimate. Just your email — no credit card.</div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p1_f1">1 free estimate</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p1_f2">3 price columns</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p1_f3">Save PDF</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p1_f4">Local supplier finder</span></div>
-          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p1_f5">Photo recognition</span></div>
-          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p1_f6">Just your email — no credit card</span></div>
         </div>
-        <a href="#tool" style="display:block;text-align:center;background:#0C2340;color:#fff;padding:12px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;" data-i18n="p1_btn">Get my free estimate →</a>
+        <details style="margin-bottom:16px;">
+          <summary style="font-size:13px;color:#F5A623;font-weight:600;cursor:pointer;">+2 more</summary>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+            <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p1_f5">Photo recognition</span></div>
+            <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p1_f6">Just your email — no credit card</span></div>
+          </div>
+        </details>
+        <a href="#tool" style="display:block;text-align:center;background:#0C2340;color:#fff;padding:12px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;margin-top:auto;" data-i18n="p1_btn">Get my free estimate →</a>
       </div>
 
       <!-- Homeowner Pro plan -->
-      <div style="border:2px solid #F5A623;border-radius:16px;padding:32px;text-align:left;position:relative;background:#fffdf7;">
-        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#F5A623;color:#0C2340;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;" data-i18n="p2_badge">MOST POPULAR</div>
-        <div style="font-size:13px;font-weight:600;color:#F5A623;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;" data-i18n="p2_label">Homeowner Pro</div>
+      <div style="border:2px solid #F5A623;border-radius:16px;padding:32px;text-align:left;position:relative;background:#fffdf7;display:flex;flex-direction:column;height:100%;">
+        <div style="height:24px;margin-bottom:0;position:relative;">
+          <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#F5A623;color:#0C2340;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;" data-i18n="p2_badge">MOST POPULAR</div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:#F5A623;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;" data-i18n="p2_label">⭐ Homeowner Pro</div>
         <div style="font-size:42px;font-weight:800;color:#0C2340;margin-bottom:4px;">$9.99<span style="font-size:18px;font-weight:400;color:#999;">/month</span></div>
         <div style="font-size:14px;color:#999;margin-bottom:24px;" data-i18n="p2_sub">For more than one project. Cancel anytime.</div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p2_f1">Unlimited estimates</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p2_f2">Everything in the free estimate</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p2_f3">Save unlimited PDFs</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p2_f4">Priority support</span></div>
         </div>
-        <button onclick="handleSubscribeClick()" style="width:100%;background:#F5A623;color:#0C2340;border:2px solid #C9952A;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 14px rgba(197,149,42,0.35);" data-i18n="p2_btn">Join Homeowner Pro →</button>
+        <div style="margin-bottom:16px;height:0;"></div>
+        <button onclick="handleSubscribeClick()" style="width:100%;background:#F5A623;color:#0C2340;border:2px solid #C9952A;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;margin-top:auto;" data-i18n="p2_btn">Join Homeowner Pro →</button>
       </div>
 
       <!-- Handyman Pro plan — separate card, separate flow, not a dropdown option buried inside Contractor -->
-      <div style="border:2px solid #4C956C;border-radius:16px;padding:32px;text-align:left;">
+      <div style="border:2px solid #4C956C;border-radius:16px;padding:32px;text-align:left;display:flex;flex-direction:column;height:100%;">
+        <div style="height:24px;margin-bottom:0;"></div>
         <div style="font-size:13px;font-weight:600;color:#4C956C;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;" data-i18n="p3_label">🧰 Handyman</div>
         <div style="font-size:42px;font-weight:800;color:#0C2340;margin-bottom:4px;">$29<span style="font-size:18px;font-weight:400;color:#999;">/month</span></div>
         <div style="font-size:14px;color:#999;margin-bottom:24px;" data-i18n="p34_sub">First 30 days free. Cancel anytime.</div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> <span data-i18n="p3_f1">Dedicated "Find a Handyman" window</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> <span data-i18n="p3_f2">Priority listing placement</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> <span data-i18n="p3_f3">Pre-qualified leads for small jobs</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> <span data-i18n="p3_f4">Verified badge</span></div>
-          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> <span data-i18n="p3_f5">Direct lead notifications</span></div>
         </div>
-        <button onclick="document.getElementById('handyman-form-overlay').style.display='flex'" style="width:100%;background:#4C956C;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;" data-i18n="p3_btn">Join as Handyman →</button>
+        <details style="margin-bottom:16px;">
+          <summary style="font-size:13px;color:#4C956C;font-weight:600;cursor:pointer;">+1 more</summary>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+            <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#4C956C;">✓</span> <span data-i18n="p3_f5">Direct lead notifications</span></div>
+          </div>
+        </details>
+        <button onclick="document.getElementById('handyman-form-overlay').style.display='flex'" style="width:100%;background:#4C956C;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;margin-top:auto;" data-i18n="p3_btn">Join as Handyman →</button>
       </div>
 
-      <!-- Contractor Pro plan -->
-      <div style="border:2px solid #e2e8f0;border-radius:16px;padding:32px;text-align:left;">
-        <div style="font-size:13px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;" data-i18n="p4_label">Contractor Pro</div>
+      <!-- Contractor Pro plan — recolored navy (was grey like Free, despite being the highest tier) -->
+      <div style="border:2px solid #0C2340;border-radius:16px;padding:32px;text-align:left;background:#f7f8fb;display:flex;flex-direction:column;height:100%;">
+        <div style="height:24px;margin-bottom:0;"></div>
+        <div style="font-size:13px;font-weight:600;color:#0C2340;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;" data-i18n="p4_label">🔨 Contractor Pro</div>
         <div style="font-size:42px;font-weight:800;color:#0C2340;margin-bottom:4px;">$49<span style="font-size:18px;font-weight:400;color:#999;">/month</span></div>
         <div style="font-size:14px;color:#999;margin-bottom:24px;" data-i18n="p34_sub">First 30 days free. Cancel anytime.</div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
-          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p4_f1">Priority listing placement</span></div>
-          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p4_f2">Pre-qualified leads — homeowners already know their budget</span></div>
-          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p4_f3">Verified contractor badge</span></div>
-          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p4_f4">Direct lead notifications</span></div>
-          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p4_f5">Contractor profile page</span></div>
-          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p4_f6">CRM dashboard</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#0C2340;">✓</span> <span data-i18n="p4_f1">Priority listing placement</span></div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#0C2340;">✓</span> <span data-i18n="p4_f2">Pre-qualified leads — homeowners already know their budget</span></div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#0C2340;">✓</span> <span data-i18n="p4_f3">Verified contractor badge</span></div>
+          <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#0C2340;">✓</span> <span data-i18n="p4_f4">Direct lead notifications</span></div>
         </div>
-        <button onclick="document.getElementById('pro-form-overlay').style.display='flex'" style="width:100%;background:#0C2340;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;" data-i18n="p4_btn">Join as Contractor Pro →</button>
+        <details style="margin-bottom:16px;">
+          <summary style="font-size:13px;color:#0C2340;font-weight:600;cursor:pointer;">+2 more</summary>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+            <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#0C2340;">✓</span> <span data-i18n="p4_f5">Contractor profile page</span></div>
+            <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#0C2340;">✓</span> <span data-i18n="p4_f6">CRM dashboard</span></div>
+          </div>
+        </details>
+        <button onclick="document.getElementById('pro-form-overlay').style.display='flex'" style="width:100%;background:#0C2340;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;margin-top:auto;" data-i18n="p4_btn">Join as Contractor Pro →</button>
       </div>
 
     </div>
@@ -4045,7 +4071,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     faq9_a: 'Regístrate directamente en el sitio para una prueba gratuita de 30 días ($49/mes para contratistas, $29/mes para manitas) — la colocación prioritaria y las notificaciones de clientes potenciales comienzan de inmediato. Se añade una insignia verificada una vez que StackBid confirme tu licencia. ¿Preguntas? <a href="mailto:hello@stackbid.app" style="color:#F5A623;">hello@stackbid.app</a>',
 
     // Pricing cards
-    p1_label: 'Propietario — Pruébalo',
+    p1_label: '📋 Propietario — Pruébalo',
     p1_price: 'Gratis',
     p1_sub: 'Tu primera estimación. Solo tu correo — sin tarjeta de crédito.',
     p1_f1: '1 estimación gratis',
@@ -4056,7 +4082,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     p1_f6: 'Solo tu correo — sin tarjeta de crédito',
     p1_btn: 'Obtener mi estimación gratis →',
     p2_badge: 'MÁS POPULAR',
-    p2_label: 'Propietario Pro',
+    p2_label: '⭐ Propietario Pro',
     p2_sub: 'Para más de un proyecto. Cancela cuando quieras.',
     p2_f1: 'Estimaciones ilimitadas',
     p2_f2: 'Todo lo de la estimación gratis',
@@ -4071,7 +4097,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     p3_f4: 'Insignia verificada',
     p3_f5: 'Notificaciones directas de clientes potenciales',
     p3_btn: 'Únete como Manitas →',
-    p4_label: 'Contratista Pro',
+    p4_label: '🔨 Contratista Pro',
     p4_f1: 'Colocación prioritaria',
     p4_f2: 'Clientes potenciales precalificados — los propietarios ya conocen su presupuesto',
     p4_f3: 'Insignia de contratista verificado',
