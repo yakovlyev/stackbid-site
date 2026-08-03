@@ -872,7 +872,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
 
         <!-- HD LIVE PRICES TAB -->
         <div id="tab-hdprices" style="display:none;">
-          <div style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6;" data-i18n="hdprices_intro">Look up current US retail prices for any material by ZIP code — then compare with wholesale and local supplier pricing.</div>
+          <div style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6;" data-i18n="hdprices_intro">Look up current retail prices for any material by ZIP code — then compare with wholesale and local supplier pricing.</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
             <div class="tf">
               <label>ZIP code</label>
@@ -1006,7 +1006,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
               <thead><tr>
                 <th style="width:30%" data-i18n="th_material">Material</th>
                 <th style="width:10%" data-i18n="th_qty">Qty</th>
-                <th style="width:16%" data-i18n="th_hdretail">US retail</th>
+                <th style="width:16%" data-i18n="th_hdretail">Retail</th>
                 <th style="width:16%; color:var(--green)" data-i18n="th_wholesale">Wholesale</th>
                 <th style="width:16%; color:var(--blue)" data-i18n="th_localsupplier">Local supplier</th>
                 <th style="width:12%"></th>
@@ -1046,7 +1046,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
   <p class="section-sub" data-i18n="why3_sub">Most homeowners overpay because they don't know wholesale exists — or where to find it.</p>
   <div class="price-cols" style="margin-top:40px;">
     <div class="price-col">
-      <h3 data-i18n="pc1_h3">US retail estimate</h3>
+      <h3 data-i18n="pc1_h3">Retail estimate</h3>
       <p data-i18n="pc1_p">Walk-in shelf price. Convenient, but the most expensive way to buy materials for a serious project.</p>
       <div class="price-col-tag" data-i18n="pc1_tag">Baseline reference</div>
     </div>
@@ -1825,7 +1825,7 @@ function renderPhotoResult(d, zip) {
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
       <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">US retail</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Retail</div>
         <div style="font-size:11px;text-decoration:line-through;color:var(--muted);">$${parseFloat(totalHD).toLocaleString()}</div>
         <div style="font-size:12px;color:var(--muted);">$${d.hd_unit}/unit</div>
       </div>
@@ -2261,7 +2261,7 @@ function renderHDPrices(d, liveData) {
           <tr style="background:var(--offwhite);">
             <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);">Product</th>
             <th style="padding:9px 8px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);">Unit</th>
-            <th style="padding:9px 8px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);">US Retail</th>
+            <th style="padding:9px 8px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);">Retail</th>
             <th style="padding:9px 8px;font-size:11px;font-weight:600;color:#1A7F5A;text-transform:uppercase;border-bottom:1px solid var(--border);">Wholesale</th>
             <th style="padding:9px 8px;font-size:11px;font-weight:600;color:#1A4F9C;text-transform:uppercase;border-bottom:1px solid var(--border);">Local</th>
             <th style="padding:9px 8px;border-bottom:1px solid var(--border);"></th>
@@ -2272,7 +2272,7 @@ function renderHDPrices(d, liveData) {
     </div>
 
     <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.5;">
-      Prices reflect current 2026 market rates for ZIP ${d.zip}. US retail prices vary by store location. Wholesale and local supplier prices are estimates — contact your nearest supplier for exact quote.
+      Prices reflect current 2026 market rates for ZIP ${d.zip}. retail prices vary by store location. Wholesale and local supplier prices are estimates — contact your nearest supplier for exact quote.
     </div>
   `;
   document.getElementById('hd-out').style.display = 'block';
@@ -2300,14 +2300,14 @@ function shareWhatsApp() {
   const retail = document.getElementById('total-retail') ? document.getElementById('total-retail').textContent : '';
   const local  = document.getElementById('total-local')  ? document.getElementById('total-local').textContent  : '';
   const savings= document.getElementById('total-savings')? document.getElementById('total-savings').textContent: '';
-  const text = `🏠 *StackBid Materials Estimate*\n\n*Project:* ${title}\n*${meta}*\n\n💰 US Retail: ${retail}\n✅ Local Supplier: ${local}\n🎯 *You save: ${savings}*\n\nGet your free estimate 👉 https://stackbid.app`;
+  const text = `🏠 *StackBid Materials Estimate*\n\n*Project:* ${title}\n*${meta}*\n\n💰 Retail: ${retail}\n✅ Local Supplier: ${local}\n🎯 *You save: ${savings}*\n\nGet your free estimate 👉 https://stackbid.app`;
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
 function shareTelegram() {
   const title  = document.getElementById('etitle').textContent;
   const savings= document.getElementById('total-savings')? document.getElementById('total-savings').textContent: '';
-  const text   = `🏠 StackBid estimate: ${title}\n💰 Potential savings: ${savings} vs US retail\n\nGet your free estimate 👉 https://stackbid.app`;
+  const text   = `🏠 StackBid estimate: ${title}\n💰 Potential savings: ${savings} vs retail\n\nGet your free estimate 👉 https://stackbid.app`;
   window.open(`https://t.me/share/url?url=https://stackbid.app&text=${encodeURIComponent(text)}`, '_blank');
 }
 
@@ -3601,7 +3601,7 @@ function doPrint(mode) {
 function exportCSV() {
   const data = window.lastEstimateData;
   if (!data || !data.categories) { alert(window.SB_LANG === 'es' ? 'Por favor genera una estimación primero.' : 'Please generate an estimate first.'); return; }
-  const rows = [['Category', 'Material', 'Spec', 'Qty', 'Unit', 'US Retail Total', 'Wholesale Total', 'Local Supplier Total']];
+  const rows = [['Category', 'Material', 'Spec', 'Qty', 'Unit', 'Retail Total', 'Wholesale Total', 'Local Supplier Total']];
   (data.categories || []).forEach(cat => {
     (cat.items || []).forEach(item => {
       const r = (item.retail_unit * item.qty).toFixed(2);
@@ -4191,7 +4191,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     drop_plans: 'Suelta tus planos aquí',
     permit_intro: 'Ingresa tu código postal y tipo de proyecto — te diremos exactamente si necesitas un permiso de construcción, el costo estimado, y un enlace a tu oficina local de permisos.',
     project_size_label: 'Tamaño del proyecto <span style="font-weight:400; color:var(--muted);">(opcional — ayuda con la precisión)</span>',
-    hdprices_intro: 'Busca los precios minoristas actuales en EE. UU. para cualquier material por código postal — luego compara con precios mayoristas y de proveedores locales.',
+    hdprices_intro: 'Busca los precios minoristas actuales para cualquier material por código postal — luego compara con precios mayoristas y de proveedores locales.',
     hdprices_btn: '🏷️ Ver precios de HD + comparación mayorista',
 
     // Ventana de desbloqueo de estimación (email-gate)
