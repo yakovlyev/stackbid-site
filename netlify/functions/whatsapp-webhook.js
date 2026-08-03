@@ -327,7 +327,7 @@ async function saveSession(phone, history, language) {
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const trimmed = history.slice(-MAX_HISTORY_TURNS * 2);
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/whatsapp_sessions?on_conflict=phone`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/whatsapp_sessions?on_conflict=phone`, {
       method: 'POST',
       headers: {
         apikey: SUPABASE_KEY,
@@ -337,6 +337,14 @@ async function saveSession(phone, history, language) {
       },
       body: JSON.stringify({ phone, history: trimmed, language, updated_at: new Date().toISOString() }),
     });
+    // 01.08: раньше ошибка тут проглатывалась молча — fetch() не бросает
+    // исключение на HTTP-ошибки (400/500), только на сетевой сбой. Из-за
+    // этого отсутствие уникального ограничения на phone в базе (теперь
+    // исправлено отдельно) роняло каждое сохранение без единого следа в
+    // логах — бот "забывал" разговор на каждом сообщении.
+    if (!res.ok) {
+      console.error('[whatsapp] saveSession got non-OK response:', res.status, await res.text());
+    }
   } catch (e) {
     console.error('[whatsapp] saveSession failed:', e.message);
   }
