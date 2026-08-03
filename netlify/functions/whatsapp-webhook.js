@@ -379,6 +379,14 @@ exports.handler = async (event) => {
         return { statusCode: 200, body: 'ok' };
       }
     } else if (message.type === 'audio') {
+      // Пока OPENAI_API_KEY не настроен на сервере — честно говорим об
+      // этом сразу, а не пытаемся вызвать Whisper и падаем с невнятной
+      // ошибкой "попробуйте ещё раз" (которая всё равно не поможет,
+      // повтор без ключа снова не сработает).
+      if (!process.env.OPENAI_API_KEY) {
+        await sendWhatsAppMessage(from, "Voice messages aren't set up yet on my end — could you type your question instead? I can still help with photos and text right away.\n\nLos mensajes de voz aún no están disponibles de mi lado — ¿puedes escribir tu pregunta? Puedo ayudarte con fotos y texto de inmediato.");
+        return { statusCode: 200, body: 'ok' };
+      }
       try {
         const { base64, mimeType } = await downloadWhatsAppMedia(message.audio.id);
         userText = await transcribeAudio(base64, mimeType);
