@@ -151,6 +151,7 @@ nav { position: sticky; top: 0; z-index: 100; background: rgba(15,31,46,0.97); b
 .tool-tabs-wrap { position: relative; margin-bottom: 4px; }
 .tool-tabs-scroll-hint { font-size: 12px; font-weight: 700; color: var(--amber); text-align: right; margin-bottom: 6px; letter-spacing: 0.03em; display: block; clear: both; }
 .tool-tabs::-webkit-scrollbar { display: none; }
+@media (max-width: 480px) { .pricing-grid { grid-template-columns: 1fr !important; } }
 .ptype-btn:hover, .ptype-btn:active { border-color: var(--amber); color: var(--ink); }
 @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
 .voice-btn:hover, .voice-btn.rec { border-color: var(--amber); background: var(--amber); color: #1a1a1a; }
@@ -398,8 +399,8 @@ h1,h2,h3,h4 { font-family: 'DM Sans', sans-serif; }
 .tool-header-title { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: var(--white); }
 .tool-badge { background: rgba(232,160,32,0.2); color: var(--amber); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
 .tool-body { padding: 28px; }
-.tool-tabs { display: flex; gap: 6px; margin-bottom: 24px; padding: 0; }
-.tool-tab { flex: 1; padding: 10px 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; background: var(--white); border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--muted); transition: all 0.15s; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.tool-tabs { display: flex; gap: 6px; margin-bottom: 24px; padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
+.tool-tab { flex: 0 0 auto; min-width: 84px; padding: 10px 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; background: var(--white); border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--muted); transition: all 0.15s; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); scroll-snap-align: start; }
 .tool-tab:hover { border-color: var(--amber); color: var(--ink); }
 .tool-tab:active { transform: scale(0.95); }
 .tool-tab.active { background: var(--ink); color: var(--white); border-color: var(--ink); box-shadow: 0 2px 8px rgba(12,35,64,0.2); }
@@ -1132,7 +1133,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
     <h2 style="font-size:32px;font-weight:800;color:#0C2340;margin-bottom:12px;" data-i18n="pricing_title">Simple, transparent pricing</h2>
     <p style="font-size:16px;color:#666;margin-bottom:48px;" data-i18n="pricing_sub">Your first estimate is free. Unlimited estimates from $9.99/month.</p>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;max-width:1180px;margin:0 auto;">
+    <div class="pricing-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:760px;margin:0 auto;">
 
       <!-- Free plan -->
       <div style="border:2px solid #e2e8f0;border-radius:16px;padding:32px;text-align:left;">
@@ -1162,7 +1163,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p2_f3">Save unlimited PDFs</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p2_f4">Priority support</span></div>
         </div>
-        <button onclick="handleSubscribeClick()" style="width:100%;background:#F5A623;color:#0C2340;border:2px solid #C9952A;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 14px rgba(197,149,42,0.35);" data-i18n="p2_btn">Subscribe to Pro →</button>
+        <button onclick="handleSubscribeClick()" style="width:100%;background:#F5A623;color:#0C2340;border:2px solid #C9952A;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 14px rgba(197,149,42,0.35);" data-i18n="p2_btn">Join Homeowner Pro →</button>
       </div>
 
       <!-- Handyman Pro plan — separate card, separate flow, not a dropdown option buried inside Contractor -->
@@ -1193,7 +1194,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p4_f5">Contractor profile page</span></div>
           <div style="display:flex;gap:8px;font-size:14px;color:#444;"><span style="color:#F5A623;">✓</span> <span data-i18n="p4_f6">CRM dashboard</span></div>
         </div>
-        <button onclick="document.getElementById('pro-form-overlay').style.display='flex'" style="width:100%;background:#0C2340;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;" data-i18n="p4_btn">Start free trial →</button>
+        <button onclick="document.getElementById('pro-form-overlay').style.display='flex'" style="width:100%;background:#0C2340;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;" data-i18n="p4_btn">Join as Contractor Pro →</button>
       </div>
 
     </div>
@@ -3642,7 +3643,8 @@ function positionFloatingIcons() {
   const nikaBtn = document.getElementById('sb-assist-btn');
   const panel = document.getElementById('sb-assist-panel');
   if (!nav || !waBtn || !nikaBtn) return;
-  const bottom = Math.round(nav.getBoundingClientRect().bottom) + 10;
+  let bottom = Math.round(nav.getBoundingClientRect().bottom) + 10;
+  if (bottom < 50) bottom = 50;
   waBtn.style.top = bottom + 'px';
   nikaBtn.style.top = bottom + 'px';
   if (panel) panel.style.top = (bottom + 52) + 'px';
@@ -4004,7 +4006,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     p2_f2: 'Todo lo de la estimación gratis',
     p2_f3: 'Guarda PDFs ilimitados',
     p2_f4: 'Soporte prioritario',
-    p2_btn: 'Suscribirse a Pro →',
+    p2_btn: 'Únete a Homeowner Pro →',
     p3_label: '🧰 Manitas',
     p34_sub: 'Primeros 30 días gratis. Cancela cuando quieras.',
     p3_f1: 'Ventana dedicada "Buscar un Manitas"',
@@ -4020,7 +4022,7 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     p4_f4: 'Notificaciones directas de clientes potenciales',
     p4_f5: 'Página de perfil de contratista',
     p4_f6: 'Panel de CRM',
-    p4_btn: 'Iniciar prueba gratis →',
+    p4_btn: 'Únete como Contratista Pro →',
 
     // Footer
     footer_privacy: 'Política de Privacidad',
