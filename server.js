@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const crypto = require('crypto');
-const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
 const { marked } = require('marked');
 
@@ -184,8 +183,13 @@ async function handleUnsubscribe(query, res) {
   }
 
   try {
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-    await supabase.from('users').update({ unsubscribed: true }).eq('email', email);
+    const SB_URL = process.env.SUPABASE_URL;
+    const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    await fetch(`${SB_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}`, {
+      method: 'PATCH',
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ unsubscribed: true })
+    });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
     res.end(page('You\'re unsubscribed', `${email} won't receive any more marketing emails from StackBid. Transactional emails about your account may still be sent.`));
   } catch (e) {
@@ -483,17 +487,18 @@ server.listen(PORT, () => console.log(`StackBid running on port ${PORT}`));
 
 async function sendFeedbackEmails() {
   try {
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const SB_URL = process.env.SUPABASE_URL;
+    const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const headers = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` };
     const resend = new Resend(process.env.RESEND_API_KEY);
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-    const { data: users, error } = await supabase
-      .from('users')
-      .select('id, name, email, estimate_date')
-      .eq('feedback_sent', false)
-      .lte('estimate_date', fiveDaysAgo.toISOString())
-      .not('email', 'is', null);
-    if (error) { console.error('Feedback cron error:', error); return; }
+    const r = await fetch(
+      `${SB_URL}/rest/v1/users?feedback_sent=eq.false&estimate_date=lte.${fiveDaysAgo.toISOString()}&email=not.is.null&select=id,name,email,estimate_date`,
+      { headers }
+    );
+    if (!r.ok) { console.error('Feedback cron error:', r.status, await r.text()); return; }
+    const users = await r.json();
     for (const user of users) {
       try {
         await resend.emails.send({
@@ -508,7 +513,11 @@ async function sendFeedbackEmails() {
             <p style="color:#6B7A8D;font-size:13px;">Thanks,<br>The StackBid Team</p>
           </div>`
         });
-        await supabase.from('users').update({ feedback_sent: true }).eq('id', user.id);
+        await fetch(`${SB_URL}/rest/v1/users?id=eq.${user.id}`, {
+          method: 'PATCH',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ feedback_sent: true })
+        });
       } catch (e) { console.error(`Feedback failed: ${user.email}`, e.message); }
     }
   } catch (e) { console.error('Feedback cron failed:', e.message); }
@@ -598,17 +607,16 @@ async function sendNurtureEmails() {
     return;
   }
   try {
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const SB_URL = process.env.SUPABASE_URL;
+    const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const headers = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` };
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const { data: users, error } = await supabase
-      .from('users')
-      .select('id, name, email, estimate_date, nurture1_sent, nurture2_sent, nurture3_sent')
-      .eq('free_estimate_used', true)
-      .eq('is_pro', false)
-      .eq('unsubscribed', false)
-      .not('email', 'is', null)
-      .not('estimate_date', 'is', null);
-    if (error) { console.error('Nurture cron error:', error); return; }
+    const r = await fetch(
+      `${SB_URL}/rest/v1/users?free_estimate_used=eq.true&is_pro=eq.false&unsubscribed=eq.false&email=not.is.null&estimate_date=not.is.null&select=id,name,email,estimate_date,nurture1_sent,nurture2_sent,nurture3_sent`,
+      { headers }
+    );
+    if (!r.ok) { console.error('Nurture cron error:', r.status, await r.text()); return; }
+    const users = await r.json();
 
     const now = Date.now();
     for (const user of users) {
@@ -628,7 +636,11 @@ async function sendNurtureEmails() {
           subject: template.subject,
           html: template.html(user, unsubUrl)
         });
-        await supabase.from('users').update({ [`nurture${stage}_sent`]: true }).eq('id', user.id);
+        await fetch(`${SB_URL}/rest/v1/users?id=eq.${user.id}`, {
+          method: 'PATCH',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [`nurture${stage}_sent`]: true })
+        });
       } catch (e) {
         console.error(`Nurture stage ${stage} failed for ${user.email}:`, e.message);
       }
