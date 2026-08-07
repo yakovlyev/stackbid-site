@@ -387,29 +387,36 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Blog — GET only, read-only, does not touch the landing page
+  // Blog — GET only, read-only, does not touch the landing page.
+  // Uses plain fetch() against the Supabase REST API rather than the
+  // @supabase/supabase-js client — that client tries to set up a realtime
+  // WebSocket connection on Node 20 (no native WebSocket), which threw
+  // "native WebSocket not found" here even though we never use realtime.
+  // Same fetch-based pattern already used elsewhere in this file (line ~101).
   if (req.method === 'GET' && (pathname === '/blog' || pathname === '/blog/' || pathname.startsWith('/blog/'))) {
     try {
-      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+      const SB_URL = process.env.SUPABASE_URL;
+      const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      const headers = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` };
       if (pathname === '/blog' || pathname === '/blog/') {
-        const { data: articles, error } = await supabase
-          .from('seo_articles')
-          .select('title, slug, meta_description, created_at')
-          .eq('status', 'published')
-          .order('created_at', { ascending: false });
-        if (error) throw error;
+        const r = await fetch(
+          `${SB_URL}/rest/v1/seo_articles?status=eq.published&select=title,slug,meta_description,created_at&order=created_at.desc`,
+          { headers }
+        );
+        if (!r.ok) throw new Error(`Supabase REST ${r.status}: ${await r.text()}`);
+        const articles = await r.json();
         res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
         res.end(renderBlogIndex(articles || []));
         return;
       }
       const slug = pathname.replace(/^\/blog\//, '').split('/')[0];
-      const { data: article, error } = await supabase
-        .from('seo_articles')
-        .select('title, slug, meta_description, content_markdown, faq_json, internal_links, created_at')
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .maybeSingle();
-      if (error) throw error;
+      const r = await fetch(
+        `${SB_URL}/rest/v1/seo_articles?slug=eq.${encodeURIComponent(slug)}&status=eq.published&select=title,slug,meta_description,content_markdown,faq_json,internal_links,created_at&limit=1`,
+        { headers }
+      );
+      if (!r.ok) throw new Error(`Supabase REST ${r.status}: ${await r.text()}`);
+      const rows = await r.json();
+      const article = Array.isArray(rows) ? rows[0] : null;
       if (!article) {
         res.writeHead(404, { 'Content-Type': 'text/html; charset=UTF-8' });
         res.end(renderBlogNotFound());
