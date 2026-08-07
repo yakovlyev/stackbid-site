@@ -99,7 +99,7 @@ async function handleContact(req, res) {
       if (!validateEmail(email)) { res.writeHead(400); res.end('{"error":"Invalid email"}'); return; }
 
       const SUPABASE_URL = process.env.SUPABASE_URL;
-      const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+      const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
       const resendKey = process.env.RESEND_API_KEY;
 
       if (SUPABASE_URL && SUPABASE_KEY) {
@@ -184,7 +184,7 @@ async function handleUnsubscribe(query, res) {
   }
 
   try {
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     await supabase.from('users').update({ unsubscribed: true }).eq('email', email);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
     res.end(page('You\'re unsubscribed', `${email} won't receive any more marketing emails from StackBid. Transactional emails about your account may still be sent.`));
@@ -390,7 +390,7 @@ const server = http.createServer(async (req, res) => {
   // Blog — GET only, read-only, does not touch the landing page
   if (req.method === 'GET' && (pathname === '/blog' || pathname === '/blog/' || pathname.startsWith('/blog/'))) {
     try {
-      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY);
+      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
       if (pathname === '/blog' || pathname === '/blog/') {
         const { data: articles, error } = await supabase
           .from('seo_articles')
@@ -476,7 +476,7 @@ server.listen(PORT, () => console.log(`StackBid running on port ${PORT}`));
 
 async function sendFeedbackEmails() {
   try {
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     const resend = new Resend(process.env.RESEND_API_KEY);
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
@@ -591,7 +591,7 @@ async function sendNurtureEmails() {
     return;
   }
   try {
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { data: users, error } = await supabase
       .from('users')

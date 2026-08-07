@@ -106,7 +106,7 @@ exports.handler = async (event) => {
   const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
   const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
   const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!STRIPE_SECRET_KEY || !STRIPE_WEBHOOK_SECRET) {
     return { statusCode: 503, body: JSON.stringify({ error: 'Stripe webhook not configured' }) };

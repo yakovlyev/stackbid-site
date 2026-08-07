@@ -15,7 +15,7 @@ exports.handler = async (event) => {
     }
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const ip = (event.headers?.['x-forwarded-for'] || '').split(',')[0].trim() || event.headers?.['x-real-ip'] || null;
     const userAgent = event.headers?.['user-agent'] || null;
 

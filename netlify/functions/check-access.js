@@ -70,7 +70,7 @@ exports.handler = async (event) => {
     }
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY; // service role — обходить RLS, тут довірений сервер-сайд код, не браузер
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; // service role — обходить RLS, тут довірений сервер-сайд код, не браузер
 
     const ip = (event.headers?.['x-forwarded-for'] || '').split(',')[0].trim() || event.headers?.['x-real-ip'] || null;
     await logAccessAndCheckSharing(SUPABASE_URL, SUPABASE_KEY, normalizedEmail, ip);

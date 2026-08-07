@@ -4,7 +4,7 @@
 // price) or Dismiss (keep the old price, mark reviewed) in one click.
 const crypto = require('crypto');
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ADMIN_SECRET = process.env.ADMIN_SECRET; // shared secret, set in Render env vars
 
 async function sb(path, options = {}) {

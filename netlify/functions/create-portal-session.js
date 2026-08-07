@@ -18,7 +18,7 @@ exports.handler = async (event) => {
     const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
     const SITE_URL = process.env.SITE_URL || 'https://stackbid.app';
     const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!STRIPE_SECRET_KEY) {
       return { statusCode: 503, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Billing management is not configured yet' }) };
