@@ -390,7 +390,7 @@ const server = http.createServer(async (req, res) => {
   // Blog — GET only, read-only, does not touch the landing page
   if (req.method === 'GET' && (pathname === '/blog' || pathname === '/blog/' || pathname.startsWith('/blog/'))) {
     try {
-      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY);
       if (pathname === '/blog' || pathname === '/blog/') {
         const { data: articles, error } = await supabase
           .from('seo_articles')
