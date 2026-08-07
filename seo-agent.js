@@ -179,6 +179,7 @@ Instructions:
   - https://stackbid.app/#contractors — for contractors/handymen section
   Never invent a path that doesn't exist above (no /estimator, no /projects/..., no /guides/...) — an invented link becomes a dead 404 the moment this article is published, which is worse than no link at all.
 - Never fabricate statistics, sources, or figures. Any number you state should come from what you actually found in search, not be invented.
+- STRICT rule on named-source citations (this has been violated before — take it seriously): if you write "according to [Organization]" or attribute a specific percentage/number to a named company, publication, or association, that exact claim must have come from an actual page you found in search — and the URL for it must be in your "sources" array. If you cannot point to the specific source URL for a named-organization claim, do NOT name the organization — either drop the attribution and state the range plainly (e.g. "typically 5-15%" instead of "according to Metal Roofing Alliance, 14.2%"), or omit the claim entirely. A plausible-sounding statistic with a real org's name attached is worse than no statistic — it looks authoritative but isn't verifiable, and that's exactly the kind of thing that erodes trust when someone checks it.
 - Target length is 1200-1800 words, unless the topic genuinely does not support that length.
 
 Decision logic:

@@ -5,6 +5,7 @@ const url = require('url');
 const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
+const { marked } = require('marked');
 
 const UNSUB_SECRET = process.env.UNSUB_SECRET || '';
 function unsubscribeToken(email) {
@@ -23,6 +24,7 @@ const rateMap = new Map();
 const LIMITS = {
   estimate: { max: 10, window: 60000 },   // 10 AI requests/min
   permit:   { max: 10, window: 60000 },
+  'quote-audit': { max: 5, window: 60000 },
   contact:  { max: 5,  window: 60000 },   // 5 contact form submissions/min
   default:  { max: 60, window: 60000 }    // 60 general requests/min
 };
@@ -78,7 +80,8 @@ const handlers = {
   'whatsapp-webhook': require('./netlify/functions/whatsapp-webhook'),
   'contractor-signup': require('./netlify/functions/contractor-signup'),
   'contractor-lead': require('./netlify/functions/contractor-lead'),
-  'contractor-dashboard': require('./netlify/functions/contractor-dashboard')
+  'contractor-dashboard': require('./netlify/functions/contractor-dashboard'),
+  'quote-audit': require('./netlify/functions/quote-audit')
 };
 
 // Contact form handler
@@ -199,6 +202,80 @@ const ALLOWED_ORIGINS = [
   'https://stackbid-app.onrender.com'
 ];
 
+// ============================================================
+// BLOG — renders published seo_articles from Supabase (read-only)
+// Articles are written by seo-agent.js as drafts; publishing = manually
+// flipping seo_articles.status to 'published' in Supabase. Nothing here
+// writes to the DB or touches the existing landing page.
+// ============================================================
+function blogLayout(title, description, bodyHtml, canonicalPath) {
+  const canonical = `https://stackbid.app${canonicalPath}`;
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${title} | StackBid</title>
+<meta name="description" content="${description || ''}">
+<link rel="canonical" href="${canonical}">
+<link rel="icon" href="/logo.svg">
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;color:#1B2A3A;background:#F7F8FA;line-height:1.6;}
+  header{background:#0C2340;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;}
+  header a.home{color:#fff;font-weight:700;font-size:20px;text-decoration:none;}
+  header a.cta{color:#0C2340;background:#C9952A;padding:8px 16px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;}
+  main{max-width:760px;margin:0 auto;padding:32px 20px 60px;}
+  article h1{font-size:28px;color:#0C2340;margin-bottom:8px;}
+  article{background:#fff;border-radius:12px;padding:32px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  article h2{color:#0C2340;font-size:20px;margin-top:32px;}
+  article p{font-size:16px;}
+  article a{color:#C9952A;}
+  .related{margin-top:24px;padding-top:20px;border-top:1px solid #E5E9EF;font-size:14px;}
+  .related a{color:#0C2340;font-weight:600;text-decoration:none;margin-right:16px;}
+  .card{background:#fff;border-radius:10px;padding:20px 24px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+  .card a{color:#0C2340;font-weight:700;font-size:17px;text-decoration:none;}
+  .card p{color:#6B7A8D;font-size:14px;margin:6px 0 0;}
+  footer{text-align:center;color:#6B7A8D;font-size:13px;padding:24px;}
+</style>
+</head>
+<body>
+<header><a class="home" href="/">StackBid</a><a class="cta" href="/#estimate">Get my estimate</a></header>
+<main>${bodyHtml}</main>
+<footer>&copy; ${new Date().getFullYear()} StackBid</footer>
+</body>
+</html>`;
+}
+
+function renderBlogIndex(articles) {
+  const list = articles.length
+    ? articles.map(a => `<div class="card"><a href="/blog/${a.slug}">${a.title}</a><p>${a.meta_description || ''}</p></div>`).join('')
+    : `<p>No articles published yet — check back soon.</p>`;
+  return blogLayout('Guides & Cost Data', 'Real construction cost guides for US homeowners.', `<h1 style="color:#0C2340;">Guides &amp; Cost Data</h1>${list}`, '/blog');
+}
+
+function renderBlogNotFound() {
+  return blogLayout('Not found', '', `<h1>Article not found</h1><p><a href="/blog">Back to guides</a></p>`, '/blog');
+}
+
+function renderBlogArticle(article) {
+  const contentHtml = marked.parse(article.content_markdown || '');
+  let faqHtml = '';
+  let faqSchema = '';
+  if (Array.isArray(article.faq_json) && article.faq_json.length) {
+    faqHtml = '<h2>FAQ</h2>' + article.faq_json.map(f => `<p><strong>${f.question}</strong><br>${f.answer}</p>`).join('');
+    faqSchema = `<script type="application/ld+json">${JSON.stringify({
+      '@context': 'https://schema.org', '@type': 'FAQPage',
+      mainEntity: article.faq_json.map(f => ({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } }))
+    })}</script>`;
+  }
+  let relatedHtml = '';
+  if (Array.isArray(article.internal_links) && article.internal_links.length) {
+    relatedHtml = `<div class="related">${article.internal_links.map(l => `<a href="${l.path}">${l.anchor}</a>`).join('')}</div>`;
+  }
+  const body = `<article><h1>${article.title}</h1>${contentHtml}${faqHtml}${relatedHtml}</article>${faqSchema}`;
+  return blogLayout(article.title, article.meta_description, body, `/blog/${article.slug}`);
+}
+
 const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
   const pathname = parsed.pathname;
@@ -308,6 +385,45 @@ const server = http.createServer(async (req, res) => {
       }
     });
     return;
+  }
+
+  // Blog — GET only, read-only, does not touch the landing page
+  if (req.method === 'GET' && (pathname === '/blog' || pathname === '/blog/' || pathname.startsWith('/blog/'))) {
+    try {
+      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+      if (pathname === '/blog' || pathname === '/blog/') {
+        const { data: articles, error } = await supabase
+          .from('seo_articles')
+          .select('title, slug, meta_description, created_at')
+          .eq('status', 'published')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
+        res.end(renderBlogIndex(articles || []));
+        return;
+      }
+      const slug = pathname.replace(/^\/blog\//, '').split('/')[0];
+      const { data: article, error } = await supabase
+        .from('seo_articles')
+        .select('title, slug, meta_description, content_markdown, faq_json, internal_links, created_at')
+        .eq('slug', slug)
+        .eq('status', 'published')
+        .maybeSingle();
+      if (error) throw error;
+      if (!article) {
+        res.writeHead(404, { 'Content-Type': 'text/html; charset=UTF-8' });
+        res.end(renderBlogNotFound());
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
+      res.end(renderBlogArticle(article));
+      return;
+    } catch (e) {
+      console.error('Blog route error:', e.message);
+      res.writeHead(500, { 'Content-Type': 'text/html; charset=UTF-8' });
+      res.end('<h1>Something went wrong</h1><p><a href="/">Back to StackBid</a></p>');
+      return;
+    }
   }
 
   // Static files

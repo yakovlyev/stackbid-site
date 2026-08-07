@@ -45,6 +45,20 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"StackBid","applicationCategory":"UtilitiesApplication","operatingSystem":"Web, iOS, Android","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"AI-powered wholesale construction materials estimator for US homeowners","url":"https://stackbid.app"}
 </script>
+<!-- Schema.org: Organization + sameAs — links this domain to all official social profiles, the standard signal search engines and AI answer engines use to confirm brand presence across the web -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization","name":"StackBid","url":"https://stackbid.app","logo":"https://stackbid.app/logo.svg","sameAs":[
+"https://youtube.com/@stackbid",
+"https://www.tiktok.com/@stackbid",
+"https://www.instagram.com/stackbid1",
+"https://www.facebook.com/profile.php?id=61591721780978",
+"https://www.threads.com/@stackbid",
+"https://x.com/StackBid1",
+"https://www.reddit.com/u/StackBid",
+"https://www.pinterest.com/stackbid",
+"https://t.me/stackbid"
+]}
+</script>
 <!-- Schema.org: FAQPage (GEO — enables AI answer engines to cite these Q&As directly) -->
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
@@ -82,7 +96,7 @@
   --safe-bottom: env(safe-area-inset-bottom);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100vw; }
+html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100vw; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body { font-family: 'Inter', sans-serif; background: var(--white); color: var(--ink); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; max-width: 100vw; position: relative; }
 h1,h2,h3,h4 { font-family: 'DM Sans', sans-serif; }
 
@@ -655,6 +669,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           <button class="tool-tab" onclick="setTab('upload')"><span data-i18n="tab_upload">📎 Upload</span></button>
           <button class="tool-tab" onclick="setTab('permit')"><span data-i18n="tab_permit">🏛️ Permit</span></button>
           <button class="tool-tab" onclick="setTab('hdprices')"><span data-i18n="tab_prices">🏷️ Prices</span></button>
+          <button class="tool-tab" onclick="setTab('audit')"><span data-i18n="tab_audit">🧾 Audit</span></button>
         </div></div>
 
         <!-- TEXT TAB -->
@@ -670,9 +685,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
               <div class="ptype-btn" onclick="setPtype(this,'Siding or facade')"><div class="ptype-icon">🧱</div><span data-i18n="pt_siding">Siding</span></div>
               <div class="ptype-btn" onclick="setPtype(this,'Foundation')"><div class="ptype-icon">⬛</div><span data-i18n="pt_foundation">Foundation</span></div>
             </div>
-            <div style="margin-top:10px;background:#FEF3C7;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400E;line-height:1.5;" data-i18n="garage_roi_html">
-              💡 <strong>Did you know?</strong> Garage door replacement has the highest ROI of any home improvement project — <strong>193.9%</strong> (Remodeling Magazine, Cost vs. Value). Check your materials cost above.
-            </div>
+            <div id="roi-callout" style="margin-top:10px;background:#FEF3C7;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400E;line-height:1.5;display:none;"></div>
           </div>
 
           <div class="voice-row">
@@ -900,6 +913,21 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           <div id="hd-out" style="display:none; margin-top:20px;"></div>
         </div>
 
+        <div id="tab-audit" style="display:none;">
+          <div style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6;" data-i18n="audit_intro">Got a quote from a contractor already? Upload the PDF and we'll check it against our tracked material prices — no guessing, just what's actually written in the quote compared to real numbers.</div>
+          <div id="audit-dropzone" style="border:2px dashed var(--border); border-radius:var(--radius); padding:32px 20px; text-align:center; cursor:pointer; margin-bottom:16px;" onclick="document.getElementById('audit-fup').click()">
+            <div style="font-size:28px; margin-bottom:8px;">🧾</div>
+            <div style="font-family:'DM Sans',sans-serif; font-weight:700; color:var(--ink); margin-bottom:4px;" data-i18n="audit_drop">Drop the contractor's quote PDF here</div>
+            <div style="font-size:12px; color:var(--muted);" data-i18n="audit_drop_sub">PDF only</div>
+            <input type="file" id="audit-fup" style="display:none" accept=".pdf" onchange="handleAuditUpload(this.files)">
+          </div>
+          <div id="audit-filename" style="font-size:13px;color:var(--ink);margin-bottom:14px;display:none;"></div>
+          <button class="gen-btn" id="audit-btn" onclick="runQuoteAudit()" disabled data-i18n="audit_btn">🧾 Analyze this quote</button>
+          <div class="progress-bar" id="pbar-audit" style="display:none; margin-top:12px;"><div class="progress-fill" id="pfill-audit"></div></div>
+          <div class="status-msg" id="smsg-audit" style="display:none;" data-i18n="audit_analyzing">Reading your PDF and checking against our price data...</div>
+          <div id="audit-out" style="display:none; margin-top:20px;"></div>
+        </div>
+
         <div class="progress-bar" id="pbar"><div class="progress-fill" id="pfill"></div></div>
         <div class="status-msg" id="smsg" data-i18n="analyzing_placeholder">Analyzing your project...</div>
 
@@ -1029,6 +1057,14 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
               <button onclick="sendPdfEmail()" style="background:#0C2340;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;" data-i18n="getpdf_btn">Get PDF →</button>
             </div>
             <div id="email-pdf-success" style="display:none;color:#fff;font-weight:600;font-size:14px;" data-i18n="pdf_saved_msg">✓ Saved! Opening your PDF…</div>
+          </div>
+          <!-- SHARE TO COMMUNITY -->
+          <div id="share-community-box" style="margin-top:16px;background:var(--offwhite);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;">
+              <div style="font-size:14px;font-weight:700;color:var(--ink);" data-i18n="share_community_title">💬 Asking r/HomeImprovement or Nextdoor if this sounds right?</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;" data-i18n="share_community_sub">Copy a ready-to-post summary of your numbers.</div>
+            </div>
+            <button onclick="copyEstimateForCommunity()" id="share-community-btn" style="background:#0C2340;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;" data-i18n="share_community_btn">Copy summary</button>
           </div>
           <div id="local-matches" style="margin-top:24px;"></div>
           </div>
@@ -1624,12 +1660,37 @@ const tagSets = {
 }
 renderTags('New home build');
 
+// Real Zonda/Remodeling Magazine 2025 Cost vs. Value Report, Top 10 nationally —
+// verified directly from the publisher (zondahome.com/2025-cost-vs-value-report),
+// not a secondary aggregator. Only project types actually in that top-10 list get
+// a number; everything else shows nothing rather than a guessed figure.
+const ROI_DATA = {
+  'Garage door replacement': { pct: '267.7%', en: 'Garage door replacement has the highest ROI of any home improvement project nationally', es: 'El cambio de puerta de garaje tiene el mayor retorno de inversión de cualquier proyecto de mejoras para el hogar a nivel nacional' },
+  'Deck or patio':           { pct: '94.9%',  en: 'A wood deck addition recoups nearly all of its cost at resale nationally (composite decks run close behind at 88.5%)', es: 'Añadir una terraza de madera recupera casi todo su costo al vender la casa a nivel nacional (las terrazas de composite quedan cerca, con 88.5%)' },
+  'Siding or facade':        { pct: '96.5%',  en: 'Vinyl siding replacement recoups most of its cost at resale nationally (fiber-cement siding runs even higher, at 113.7%)', es: 'El revestimiento de vinilo recupera la mayor parte de su costo al vender la casa a nivel nacional (el revestimiento de fibrocemento es aún mayor, 113.7%)' },
+};
+
+function updateRoiCallout(type) {
+  const box = document.getElementById('roi-callout');
+  if (!box) return;
+  const d = ROI_DATA[type];
+  if (!d) { box.style.display = 'none'; return; }
+  const isEs = window.SB_LANG === 'es';
+  const label = isEs ? '¿Sabías que?' : 'Did you know?';
+  const source = isEs ? 'Informe Cost vs. Value 2025, Remodeling Magazine/Zonda' : '2025 Cost vs. Value Report, Remodeling Magazine/Zonda';
+  const text = isEs ? d.es : d.en;
+  const checkNote = isEs ? 'Revisa el costo de materiales arriba.' : 'Check your materials cost above.';
+  box.innerHTML = `💡 <strong>${label}</strong> ${text} — <strong>${d.pct}</strong> (${source}). ${checkNote}`;
+  box.style.display = 'block';
+}
+
 function setPtype(el, type) {
   document.querySelectorAll('.ptype-btn').forEach(b => b.classList.remove('sel'));
   el.classList.add('sel');
   selType = type;
   renderTags(type);
   revealSteps();
+  updateRoiCallout(type);
 }
 
 function revealSteps() {
@@ -1645,7 +1706,7 @@ function addTag(t) {
 function setTab(tab) {
   document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
   if (event && event.target) event.target.classList.add('active');
-  const tabs = ['text','photo','calc','upload','permit','hdprices'];
+  const tabs = ['text','photo','calc','upload','permit','hdprices','audit'];
   tabs.forEach(t => {
     const el = document.getElementById('tab-' + t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
@@ -1657,6 +1718,98 @@ function setTab(tab) {
   if (mainBtn)  mainBtn.style.display  = showMain ? 'flex' : 'none';
   if (mainBar)  mainBar.style.display  = 'none';
   if (mainMsg)  mainMsg.style.display  = 'none';
+}
+
+/* ─── QUOTE AUDIT (upload contractor's PDF, cross-check vs our price DB) ─── */
+let auditPdfBase64 = null;
+
+function handleAuditUpload(files) {
+  const f = files && files[0];
+  if (!f) return;
+  if (f.type !== 'application/pdf') { alert(window.SB_LANG === 'es' ? 'Solo archivos PDF' : 'PDF files only'); return; }
+  if (f.size > 15 * 1024 * 1024) { alert(window.SB_LANG === 'es' ? 'Archivo demasiado grande (máx 15MB)' : 'File too large (max 15MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    auditPdfBase64 = reader.result.split(',')[1];
+    document.getElementById('audit-filename').style.display = 'block';
+    document.getElementById('audit-filename').textContent = '📄 ' + f.name;
+    document.getElementById('audit-btn').disabled = false;
+  };
+  reader.readAsDataURL(f);
+}
+
+async function runQuoteAudit() {
+  if (!auditPdfBase64) return;
+  const isEs = window.SB_LANG === 'es';
+  const btn = document.getElementById('audit-btn');
+  const bar = document.getElementById('pbar-audit');
+  const msg = document.getElementById('smsg-audit');
+  const out = document.getElementById('audit-out');
+  btn.disabled = true;
+  bar.style.display = 'block';
+  msg.style.display = 'block';
+  out.style.display = 'none';
+  out.innerHTML = '';
+  try {
+    const zip = (document.getElementById('zip') || {}).value || '';
+    const res = await fetch('/api/quote-audit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdf_base64: auditPdfBase64, zip })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Analysis failed');
+    renderAuditResult(data, isEs);
+  } catch (e) {
+    out.style.display = 'block';
+    out.innerHTML = `<div style="color:#B91C1C;font-size:13px;">${isEs ? 'No se pudo analizar el PDF. Intenta con un archivo más claro.' : "Couldn't analyze the PDF. Try a clearer file."}</div>`;
+  } finally {
+    btn.disabled = false;
+    bar.style.display = 'none';
+    msg.style.display = 'none';
+  }
+}
+
+function renderAuditResult(data, isEs) {
+  const out = document.getElementById('audit-out');
+  out.style.display = 'block';
+  if (!data.is_valid_quote) {
+    out.innerHTML = `<div style="background:#FEF2F2;border-radius:10px;padding:16px;color:#B91C1C;font-size:13px;">${esc(data.summary || (isEs ? 'Este PDF no parece ser una cotización de construcción.' : "This PDF doesn't look like a construction quote."))}</div>`;
+    return;
+  }
+  let html = `<div style="background:var(--offwhite);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:14px;">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">${esc(data.contractor_name || (isEs ? 'Contratista' : 'Contractor'))}${data.quote_total ? ' · $' + Number(data.quote_total).toLocaleString() : ''}</div>
+    <div style="font-size:14px;color:var(--ink);line-height:1.6;">${esc(data.summary || '')}</div>
+    ${!data.has_materials_labor_split ? `<div style="margin-top:8px;font-size:12px;color:#92400E;background:#FEF3C7;border-radius:6px;padding:6px 10px;">⚠ ${isEs ? 'Esta cotización no separa materiales de mano de obra — la comparación es limitada.' : "This quote doesn't separate materials from labor — comparison is limited."}</div>` : ''}
+  </div>`;
+
+  if (Array.isArray(data.line_items) && data.line_items.length) {
+    html += `<div style="font-size:12px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">${isEs ? 'Partidas' : 'Line items'}</div>`;
+    data.line_items.forEach(item => {
+      const ref = item.db_reference;
+      html += `<div style="border-bottom:1px solid var(--border);padding:10px 0;">
+        <div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;">
+          <span style="color:var(--ink);">${esc(item.description || '')}</span>
+          <span style="color:var(--ink);font-weight:600;white-space:nowrap;">${item.amount ? '$' + Number(item.amount).toLocaleString() : ''}</span>
+        </div>
+        ${item.note ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">${esc(item.note)}</div>` : ''}
+        ${ref ? `<div style="font-size:11px;color:#0C6E4E;margin-top:4px;">✓ ${isEs ? 'Nuestro precio de referencia rastreado' : 'Our tracked reference price'}: ${esc(ref.matched_name)} — $${Number(ref.tracked_price).toLocaleString()}/${esc(ref.unit)} <span style="color:var(--muted);">(${isEs ? 'al' : 'as of'} ${new Date(ref.as_of).toLocaleDateString()})</span></div>` : ''}
+      </div>`;
+    });
+  }
+
+  if (Array.isArray(data.observations) && data.observations.length) {
+    html += `<div style="margin-top:14px;font-size:12px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">${isEs ? 'Observaciones' : 'Observations'}</div>`;
+    html += data.observations.map(o => `<div style="font-size:13px;color:var(--ink);margin-bottom:6px;">• ${esc(o)}</div>`).join('');
+  }
+
+  if (Array.isArray(data.questions_to_ask_contractor) && data.questions_to_ask_contractor.length) {
+    html += `<div style="margin-top:14px;font-size:12px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">${isEs ? 'Preguntas para tu contratista' : 'Questions to ask your contractor'}</div>`;
+    html += data.questions_to_ask_contractor.map(q => `<div style="font-size:13px;color:var(--ink);margin-bottom:6px;">• ${esc(q)}</div>`).join('');
+  }
+
+  html += `<div style="margin-top:14px;font-size:11px;color:var(--muted);">${isEs ? 'No sustituye una segunda opinión de un profesional con licencia.' : 'Not a substitute for a licensed second opinion.'}</div>`;
+  out.innerHTML = html;
 }
 
 /* ─── PHOTO RECOGNITION ──────────────────────────────── */
@@ -3210,6 +3363,33 @@ function renderEstimate(data, zip) {
   loadLaborEstimate(data.project_type, zip, Math.round(tL));
 }
 
+function copyEstimateForCommunity() {
+  const data = window.lastEstimateData;
+  const zip = window.lastEstimateZip;
+  if (!data) return;
+  const totalLocalEl = document.getElementById('total-local');
+  const totalRetailEl = document.getElementById('total-retail');
+  const localTotal = totalLocalEl ? totalLocalEl.textContent : '—';
+  const retailTotal = totalRetailEl ? totalRetailEl.textContent : '—';
+  const laborEl = document.getElementById('labor-range');
+  const laborLine = (laborEl && laborEl.textContent && laborEl.textContent !== '—')
+    ? `Estimated labor: ${laborEl.textContent}\n`
+    : '';
+  const isEs = window.SB_LANG === 'es';
+  const title = data.title || (isEs ? 'Mi proyecto' : 'My project');
+  const text = isEs
+    ? `${title} (ZIP ${zip})\nMateriales al por mayor estimados: ${localTotal} (precio minorista: ${retailTotal})\n${laborLine}¿Les parece razonable? — estimado con StackBid (stackbid.app), datos de precios reales, no inventados.`
+    : `${title} (ZIP ${zip})\nEstimated wholesale materials: ${localTotal} (retail: ${retailTotal})\n${laborLine}Does this sound right? — estimated with StackBid (stackbid.app), real pricing data, not made up.`;
+  const btn = document.getElementById('share-community-btn');
+  const restoreLabel = btn ? btn.textContent : '';
+  const done = () => { if (btn) { btn.textContent = isEs ? '✓ Copiado' : '✓ Copied'; setTimeout(() => { btn.textContent = restoreLabel; }, 2000); } };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => { prompt(isEs ? 'Copia el texto:' : 'Copy this text:', text); });
+  } else {
+    prompt(isEs ? 'Copia el texto:' : 'Copy this text:', text);
+  }
+}
+
 async function loadLaborEstimate(projectType, zip, materialsTotal) {
   const box = document.getElementById('labor-estimate-box');
   const totalBox = document.getElementById('total-project-box');
@@ -4034,7 +4214,6 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     pt_roofing: 'Techo',
     pt_siding: 'Revestimiento',
     pt_foundation: 'Cimientos',
-    garage_roi_html: '💡 <strong>¿Sabías que?</strong> Reemplazar la puerta de garaje tiene el mayor retorno de inversión de cualquier proyecto de mejoras para el hogar — <strong>193.9%</strong> (Remodeling Magazine, Cost vs. Value). Revisa el costo de materiales arriba.',
     voice_speak: '🎙️ Hablar',
     voice_uptotwomin: 'hasta 2 min',
     desc_label: 'Descripción del proyecto',
@@ -4197,6 +4376,15 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     th_localsupplier: 'Proveedor local',
     labor_box_title: '🔨 Mano de Obra Estimada <span style="font-weight:400;color:var(--muted);">(separado de los materiales arriba)</span>',
     pdf_capture_title: '📄 Recibe esta estimación en PDF',
+    share_community_title: '💬 ¿Vas a preguntar en r/HomeImprovement o Nextdoor?',
+    tab_audit: '🧾 Auditar',
+    audit_intro: '¿Ya tienes una cotización de un contratista? Sube el PDF y la revisaremos contra nuestros precios de materiales rastreados — sin adivinar, solo lo que dice la cotización comparado con números reales.',
+    audit_drop: 'Suelta aquí el PDF de la cotización del contratista',
+    audit_drop_sub: 'Solo PDF',
+    audit_btn: '🧾 Analizar esta cotización',
+    audit_analyzing: 'Leyendo tu PDF y comparando con nuestros datos de precios...',
+    share_community_sub: 'Copia un resumen listo para publicar.',
+    share_community_btn: 'Copiar resumen',
     pdf_capture_sub: 'Te enviaremos el PDF por correo ahora mismo.',
 
     // Contractor/Handyman signup forms (was completely missed — full English forms)
