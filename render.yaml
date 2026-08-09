@@ -82,3 +82,7 @@ services:
         sync: false
       - key: REPORT_TO_EMAIL
         sync: false
+      - key: GA4_PROPERTY_ID
+        sync: false
+      - key: GA4_SERVICE_ACCOUNT_JSON
+        sync: false
