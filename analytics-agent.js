@@ -212,6 +212,8 @@ async function buildReport() {
     <h2>StackBid — отчёт за последние 3 дня</h2>
     <p style="color:#666;">${new Date(since).toLocaleDateString('ru-RU')} — ${new Date().toLocaleDateString('ru-RU')}</p>
 
+    ${ga4Html}
+
     <h3>📊 Сметы: ${estimates.length} всего</h3>
     <table>${rows('project_type', estimatesByType)}</table>
 
@@ -225,8 +227,8 @@ async function buildReport() {
     <p>Из них купили Homeowner Pro: <b>${newProUsers}</b></p>
 
     <p style="color:#999;font-size:13px;margin-top:24px;">
-      Это данные из наших таблиц (реальные регистрации/сметы), не из Google Analytics.
-      Источники трафика и посещаемость страниц — в GA4 (G-FRXYX65KWN), analytics.google.com.
+      Бизнес-метрики выше (сметы/регистрации/пользователи) — из наших таблиц, не из Google Analytics.
+      Полная детализация трафика — в GA4 (G-FRXYX65KWN), analytics.google.com.
     </p>
   `;
 
