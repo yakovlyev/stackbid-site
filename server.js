@@ -284,6 +284,17 @@ const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
   const pathname = parsed.pathname;
 
+  // Canonical host: www.stackbid.app -> stackbid.app (301).
+  // Search Console was reporting www.stackbid.app as "blocked by robots.txt" /
+  // duplicate — a single canonical host removes that ambiguity for Google
+  // and avoids duplicate-content indexing between the two hosts.
+  const hostHeader = (req.headers.host || '').toLowerCase();
+  if (hostHeader === 'www.stackbid.app') {
+    res.writeHead(301, { Location: `https://stackbid.app${req.url}` });
+    res.end();
+    return;
+  }
+
   // Block suspicious paths
   const blocked = ['.php', '.asp', '.env', 'wp-admin', 'wp-login', '.git', 'xmlrpc', 'eval(', 'base64'];
   if (blocked.some(b => pathname.toLowerCase().includes(b))) {
