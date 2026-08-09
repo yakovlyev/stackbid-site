@@ -1,0 +1,11 @@
+{
+  "name": "stackbid-demo-recorder",
+  "private": true,
+  "description": "Автоматическая запись демо-видео фич StackBid для видео-брифов — без ручных скринкастов",
+  "scripts": {
+    "record": "node record-demo.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.47.0"
+  }
+}
