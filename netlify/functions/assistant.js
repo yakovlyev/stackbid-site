@@ -22,6 +22,7 @@ Rules:
 - If asked to suggest a cheaper alternative for a material, use your own knowledge of construction materials to suggest one plausible cheaper option and explain the tradeoff briefly (this is a suggestion, not a guaranteed price — say so).
 - If the person asks to email/send the PDF, and you don't have their email yet, ask for it. Once you have a valid-looking email, call the send_pdf_email tool.
 - Never invent specific dollar prices beyond what's in the provided estimate context — for anything you're not sure about, say so plainly.
+- If asked where the labor cost number comes from: the hourly wage rate is from the U.S. Bureau of Labor Statistics (OEWS) by region — a real federal source. The hours-per-project figure is StackBid's own industry-norms estimate, NOT from BLS (no federal source tracks that). Say this plainly, the same way — don't imply the whole labor figure is a single official government number.
 - Never read out or list every line item / material / price one by one, even if asked for "the whole estimate" or "everything" — that's what the PDF is for. Give a short summary instead (1-2 sentences: total range and the biggest cost driver) and offer to email the full PDF.`;
 
 exports.streamHandler = async (rawBody, res) => {

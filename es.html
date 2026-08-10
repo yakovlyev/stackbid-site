@@ -1022,7 +1022,7 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           <div class="ios-tip" id="iostip" data-i18n="ios_tip">📱 On iPhone/iPad: tap "Save PDF" → tap the Share icon → "Save to Files" or "Print"</div>
           <div id="total-project-box" style="display:none;background:#0C2340;border-radius:12px;padding:18px 22px;margin-bottom:16px;text-align:center;">
             <div style="font-size:12px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;" data-i18n="total_project_label">Estimated Total Project Cost (materials + labor)</div>
-            <div id="total-project-range" style="font-size:26px;font-weight:800;color:#F5A623;">—</div>
+            <div style="font-size:26px;font-weight:800;color:#F5A623;"><span id="total-project-range">—</span><a href="#labor-source-note" style="color:#F5A623;text-decoration:none;font-size:16px;vertical-align:super;">*</a></div>
           </div>
           <div class="totals" id="etotals"></div>
           <div style="text-align:center;margin:-8px 0 16px;">
@@ -1043,8 +1043,11 @@ footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: 40px 5%
           </div>
           <div id="labor-estimate-box" style="display:none;margin-top:16px;background:var(--offwhite);border:1px solid var(--border);border-radius:12px;padding:18px 22px;">
             <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;" data-i18n="labor_box_title">🔨 Estimated Labor <span style="font-weight:400;color:var(--muted);">(separate from materials above)</span></div>
-            <div id="labor-range" style="font-size:22px;font-weight:800;color:var(--ink);margin-bottom:6px;">—</div>
+            <div style="font-size:22px;font-weight:800;color:var(--ink);margin-bottom:6px;"><span id="labor-range">—</span><a href="#labor-source-note" style="color:var(--ink);text-decoration:none;font-size:14px;vertical-align:super;">*</a></div>
             <div id="labor-note" style="font-size:12px;color:var(--muted);line-height:1.6;"></div>
+            <div id="labor-source-note" style="font-size:11px;color:var(--muted);line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+              <span data-i18n="labor_source_prefix">* Hourly wage rate from the </span><a href="https://www.bls.gov/oes/" target="_blank" rel="noopener" style="color:var(--ink);text-decoration:underline;">U.S. Bureau of Labor Statistics (OEWS)</a><span data-i18n="labor_source_suffix"> — a real federal source, not made up. The hours-per-project figure is StackBid's own industry-norms estimate (BLS doesn't track that), not a federal statistic. Together they form an estimate, not a quote — actual labor cost depends on your specific contractor and project.</span>
+            </div>
           </div>
           <!-- EMAIL PDF CAPTURE -->
           <div id="email-pdf-box" style="margin-top:24px;background:linear-gradient(135deg,#F5A623,#E8870A);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -4318,6 +4321,8 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     th_wholesale: 'Mayorista',
     th_localsupplier: 'Proveedor local',
     labor_box_title: '🔨 Mano de Obra Estimada <span style="font-weight:400;color:var(--muted);">(separado de los materiales arriba)</span>',
+    labor_source_prefix: '* Tarifa por hora de la ',
+    labor_source_suffix: ' — una fuente federal real, no inventada. La cantidad de horas del proyecto es una estimación propia de StackBid basada en normas de la industria (BLS no rastrea eso), no una estadística federal. Juntas forman una estimación, no una cotización — el costo real de mano de obra depende de tu contratista y proyecto específico.',
     pdf_capture_title: '📄 Recibe esta estimación en PDF',
     share_community_title: '💬 ¿Vas a preguntar en r/HomeImprovement o Nextdoor?',
     tab_audit: '🧾 Auditar',
