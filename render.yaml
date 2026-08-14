@@ -6,7 +6,7 @@ services:
     startCommand: node server.js
     envVars:
       - key: NODE_VERSION
-        value: "22"
+        value: "24"
 
   - type: cron
     name: stackbid-price-agent
@@ -16,7 +16,7 @@ services:
     startCommand: node price-agent.js
     envVars:
       - key: NODE_VERSION
-        value: "22"
+        value: "24"
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: SUPABASE_URL
@@ -36,7 +36,7 @@ services:
     startCommand: node market-scan-agent.js
     envVars:
       - key: NODE_VERSION
-        value: "22"
+        value: "24"
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: SUPABASE_URL
@@ -67,7 +67,7 @@ services:
     startCommand: node analytics-agent.js
     envVars:
       - key: NODE_VERSION
-        value: "22"
+        value: "24"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
