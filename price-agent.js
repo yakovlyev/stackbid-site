@@ -140,11 +140,11 @@ IMPORTANT — how to find the actual price. Try these approaches IN ORDER, movin
 
 3. If both of the above fail, try a plain web_search for the product name + "price" + the retailer name — search result snippets frequently show the price directly (pulled from the retailer's own structured data by the search engine), without you needing to fetch the page at all.
 
-4. If Home Depot and Lowe's both fail, try Menards, 84 Lumber, or a general contractor-supply site — do not assume the product doesn't exist just because two retailers' pages didn't yield a price.
+4. If Home Depot and Lowe's both fail to yield a price after one search+fetch attempt each — do NOT keep re-trying the same two retailers with different search terms. Move straight to Menards, 84 Lumber, or a general contractor-supply site instead. This step is not optional — a "not found" result that never actually tried Menards is not acceptable.
 
 5. Make sure the price you report is per exactly one ${material.unit} (not per pack, pallet, bundle, or case) — divide if needed and say so in the note.
 
-6. Only report "not found" after trying at least steps 1-3 above with at least two different search angles (different retailer, or a broader/more generic search term dropping specific dimensions or the brand name).
+6. Only report "not found" after you have made at least one real attempt at Menards or a similar third retailer/supplier (step 4) — not just Home Depot and Lowe's. If you're running low on search/fetch budget, prioritize reaching step 4 over exhausting retries on steps 1-3.
 
 Do all searching and fetching first. Your FINAL message must contain ONLY a JSON object and nothing else — no markdown fences, no explanation before or after it:
 {"price": <number, USD, per ${material.unit}>, "confidence": "<high|medium|low>", "note": "<one short sentence: retailer, which product you matched, which technique found the price (listing page / JSON-LD / search snippet), and whether you divided a multi-unit price>"}
@@ -245,8 +245,8 @@ async function submitNewBatch() {
         max_tokens: 2000,
         messages: [{ role: 'user', content: buildPrompt(material) }],
         tools: [
-          { type: 'web_search_20250305', name: 'web_search', max_uses: 5 },
-          { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 5, max_content_tokens: 3000 },
+          { type: 'web_search_20250305', name: 'web_search', max_uses: 8 },
+          { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 8, max_content_tokens: 3000 },
         ],
       },
     };
