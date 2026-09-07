@@ -56,6 +56,31 @@ services:
     buildCommand: "true"
     startCommand: "curl -sf https://stackbid-app.onrender.com/ -o /dev/null || true"
 
+  # Публікація промо-відео у всі соцмережі — пряма заміна Make-сценарію
+  # 5571686 (той самий принцип, що і для Cartobi: один прямий виклик
+  # Upload-Post замість зв'язки Make+Cloudinary+нативні модулі).
+  - type: cron
+    name: stackbid-video-poster
+    runtime: node
+    schedule: "*/15 * * * *"
+    buildCommand: npm install
+    startCommand: node video-poster-agent.js
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: UPLOAD_POST_KEY
+        sync: false
+      - key: GOOGLE_DRIVE_FOLDER_ID
+        sync: false
+      - key: GA4_SERVICE_ACCOUNT_JSON
+        sync: false
+
   # Отчёт-аналитик раз в 3 дня — регистрации/сметы/тарифы/how_heard.
   # НЕ дублирует Google Analytics (трафик/страницы уже там, G-FRXYX65KWN) —
   # это только бизнес-метрики из наших таблиц.
