@@ -68,6 +68,14 @@ const savedEmail = localStorage.getItem('stackbid_contractor_email');
 if (savedEmail) document.getElementById('email').value = savedEmail;
 
 async function load() {
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
   const email = document.getElementById('email').value.trim();
   if (!email) return alert('Enter the email you signed up with.');
   localStorage.setItem('stackbid_contractor_email', email);
@@ -91,7 +99,7 @@ async function load() {
         <div class="stat-card"><div class="stat-num">${c.leads_converted || 0}</div><div class="stat-label">Jobs won</div></div>
         <div class="stat-card"><div class="stat-num">${c.rating ? c.rating.toFixed(1) : '—'}</div><div class="stat-label">Rating (${c.review_count || 0})</div></div>
       </div>
-      <div style="font-weight:700;margin-bottom:10px;">${c.company_name}${verifiedBadge} <span style="font-weight:400;color:#667;font-size:13px;">· ${c.subscription_tier || 'free'} ${c.subscription_active ? '(active)' : '(inactive)'}</span></div>
+      <div style="font-weight:700;margin-bottom:10px;">${esc(c.company_name)}${verifiedBadge} <span style="font-weight:400;color:#667;font-size:13px;">· ${esc(c.subscription_tier || 'free')} ${c.subscription_active ? '(active)' : '(inactive)'}</span></div>
     `;
 
     if (!data.leads.length) {
@@ -101,10 +109,10 @@ async function load() {
         <div class="lead-card" id="lead-${l.id}">
           <div class="lead-top">
             <div>
-              <div class="lead-title">${l.project_type || 'Project'} — ZIP ${l.zip_code || '—'}</div>
-              <div class="lead-sub">${l.budget_range || 'Budget not specified'} · ${new Date(l.created_at).toLocaleDateString()}</div>
+              <div class="lead-title">${esc(l.project_type || 'Project')} — ZIP ${esc(l.zip_code || '—')}</div>
+              <div class="lead-sub">${esc(l.budget_range || 'Budget not specified')} · ${new Date(l.created_at).toLocaleDateString()}</div>
             </div>
-            <span class="status-pill status-${l.status}">${l.status}</span>
+            <span class="status-pill status-${esc(l.status)}">${esc(l.status)}</span>
           </div>
           ${l.status === 'new' || l.status === 'contacted' ? `
           <div class="lead-actions">
