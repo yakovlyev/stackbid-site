@@ -132,10 +132,11 @@ async function load() {
 
 async function setStatus(leadId, status) {
   try {
+    const email = localStorage.getItem('stackbid_contractor_email') || document.getElementById('email').value.trim();
     await fetch('/api/contractor-dashboard', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lead_id: leadId, status }),
+      body: JSON.stringify({ lead_id: leadId, status, email }),
     });
     load();
   } catch (e) {

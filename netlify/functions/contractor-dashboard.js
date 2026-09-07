@@ -27,10 +27,25 @@ exports.handler = async (event) => {
     }
 
     if (event.httpMethod === 'POST') {
-      const { lead_id, status } = JSON.parse(event.body || '{}');
-      if (!lead_id || !['contacted', 'won', 'lost'].includes(status)) {
-        return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'lead_id and valid status required' }) };
+      const { lead_id, status, email } = JSON.parse(event.body || '{}');
+      if (!lead_id || !email || !['contacted', 'won', 'lost'].includes(status)) {
+        return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'lead_id, email, and valid status required' }) };
       }
+
+      // Захист від IDOR: перевіряємо, що цей лід реально належить контрактору
+      // з переданого email, а не будь-якому lead_id, який хтось підбере.
+      const lr0 = await fetch(`${SUPABASE_URL}/rest/v1/contractor_leads?id=eq.${lead_id}&select=contractor_id`, { headers });
+      const lrows0 = await lr0.json();
+      const leadContractorId = lrows0?.[0]?.contractor_id;
+      if (!leadContractorId) {
+        return { statusCode: 404, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'lead not found' }) };
+      }
+      const ownerCheck = await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${leadContractorId}&email=eq.${encodeURIComponent(email)}&select=id`, { headers });
+      const ownerRows = await ownerCheck.json();
+      if (!ownerRows?.[0]) {
+        return { statusCode: 403, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'not your lead' }) };
+      }
+
       const patch = { status };
       if (status === 'contacted') patch.contacted_at = new Date().toISOString();
 
@@ -42,17 +57,12 @@ exports.handler = async (event) => {
 
       // При "won" — увеличиваем leads_converted у подрядчика
       if (status === 'won') {
-        const lr = await fetch(`${SUPABASE_URL}/rest/v1/contractor_leads?id=eq.${lead_id}&select=contractor_id`, { headers });
-        const lrows = await lr.json();
-        const contractorId = lrows?.[0]?.contractor_id;
-        if (contractorId) {
-          const cr = await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${contractorId}&select=leads_converted`, { headers });
-          const crows = await cr.json();
-          const current = crows?.[0]?.leads_converted || 0;
-          await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${contractorId}`, {
-            method: 'PATCH', headers, body: JSON.stringify({ leads_converted: current + 1 }),
-          });
-        }
+        const cr = await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${leadContractorId}&select=leads_converted`, { headers });
+        const crows = await cr.json();
+        const current = crows?.[0]?.leads_converted || 0;
+        await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${leadContractorId}`, {
+          method: 'PATCH', headers, body: JSON.stringify({ leads_converted: current + 1 }),
+        });
       }
 
       return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true }) };
