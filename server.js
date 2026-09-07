@@ -301,6 +301,20 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(403); res.end('Forbidden'); return;
   }
 
+  // Block server-side source from being served as a static file. Found via
+  // audit 08.09: the static-file fallback below had no allowlist, so
+  // server.js and every netlify/functions/*.js and *-agent.js file were
+  // directly downloadable (e.g. https://stackbid.app/server.js returned the
+  // full source — rate-limit thresholds, every internal route name, the
+  // exact blocked-path list itself). No secrets were hardcoded in them, but
+  // it's a real reconnaissance gift to an attacker. sw.js is the one
+  // legitimate root-level .js file (service worker, must stay public) —
+  // everything else ending in .js at the root, plus the whole netlify/
+  // directory, is server-only and must never be statically served.
+  if (pathname.startsWith('/netlify/') || (pathname.endsWith('.js') && pathname !== '/sw.js')) {
+    res.writeHead(403); res.end('Forbidden'); return;
+  }
+
   // Security headers
   const origin = req.headers['origin'];
   res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGINS.includes(origin) ? origin : 'https://stackbid.app');
