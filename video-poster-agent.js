@@ -144,7 +144,7 @@ async function generateSocialCaptions(filename) {
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 1000,
-      system: `You write short social captions for StackBid (stackbid.app), a free AI construction cost estimator for US homeowners. Video filename for context: "${filename}". Write honest, direct captions — no fabricated stats, no hype. Always mention the free estimate. IMPORTANT about links: Instagram/TikTok never make a link in the caption text clickable — instead of a raw URL there, add a short "link in bio" style call to action. Facebook, X, and the YouTube description DO auto-link a full https:// URL — always include the complete "https://stackbid.app" there. Output ONLY a JSON object, no markdown fences: {"instagram":"...","tiktok":"...","youtube_title":"...","youtube_description":"...","facebook":"...","threads":"...","x":"..."}. Instagram/TikTok/Threads captions ≤150 chars each (with a link-in-bio CTA, no raw URL). facebook ≤220 chars, must include full https://stackbid.app. x ≤200 chars, must include full https://stackbid.app. youtube_title ≤80 chars, no link. youtube_description ≤200 chars, must include full https://stackbid.app.`,
+      system: `You write short social captions for StackBid (stackbid.app), a free AI construction cost estimator for US homeowners. Video filename for context: "${filename}". Write honest, direct captions — no fabricated stats, no hype. Always mention the free estimate. IMPORTANT about links: Instagram/TikTok never make a link in the caption text clickable — instead of a raw URL there, add a short "link in bio" style call to action. Facebook, X, LinkedIn, and the YouTube description DO auto-link a full https:// URL — always include the complete "https://stackbid.app" there. Output ONLY a JSON object, no markdown fences: {"instagram":"...","tiktok":"...","youtube_title":"...","youtube_description":"...","facebook":"...","threads":"...","x":"...","linkedin":"..."}. Instagram/TikTok/Threads captions ≤150 chars each (with a link-in-bio CTA, no raw URL). facebook ≤220 chars, must include full https://stackbid.app. x ≤200 chars, must include full https://stackbid.app. linkedin ≤400 chars, slightly more professional tone, must include full https://stackbid.app. youtube_title ≤80 chars, no link. youtube_description ≤200 chars, must include full https://stackbid.app.`,
       messages: [{ role: 'user', content: 'Generate the captions.' }],
     }),
   });
@@ -166,11 +166,13 @@ async function postToSocialMedia(videoBuffer, filename, captions) {
   form.append('platform[]', 'threads');
   form.append('platform[]', 'youtube');
   form.append('platform[]', 'x');
+  form.append('platform[]', 'linkedin');
   form.append('instagram_title', captions.instagram || '');
   form.append('facebook_title', captions.facebook || '');
   form.append('threads_title', captions.threads || '');
   form.append('youtube_title', captions.youtube_title || '');
   form.append('x_title', captions.x || '');
+  form.append('linkedin_title', captions.linkedin || '');
   form.append('video', new Blob([videoBuffer], { type: 'video/mp4' }), filename);
 
   const res = await fetch('https://api.upload-post.com/api/upload', {
