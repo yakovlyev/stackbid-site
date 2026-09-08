@@ -45,6 +45,15 @@
 const savedEmail = localStorage.getItem('sb_user_email');
 if (savedEmail) document.getElementById('email').value = savedEmail;
 
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function load() {
   const email = document.getElementById('email').value.trim();
   if (!email) return alert('Enter the email you used on StackBid.');
@@ -81,7 +90,7 @@ async function load() {
     content.innerHTML = `<div style="margin-bottom:12px;font-size:13px;color:#667;">${data.estimates.length} estimate${data.estimates.length > 1 ? 's' : ''}${proBadge}</div>` +
       data.estimates.map(e => `
         <div class="est-card">
-          <div class="est-title">${e.title || e.project_type || 'Estimate'} — ZIP ${e.zip || '—'}</div>
+          <div class="est-title">${escapeHtml(e.title || e.project_type || 'Estimate')} — ZIP ${escapeHtml(e.zip || '—')}</div>
           <div class="est-sub">${new Date(e.created_at).toLocaleDateString()}</div>
           <div class="est-totals">
             ${e.total_retail ? `<span>Retail: <b>$${Math.round(e.total_retail).toLocaleString()}</b></span>` : ''}
