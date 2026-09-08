@@ -280,6 +280,23 @@ function renderBlogArticle(article) {
   return blogLayout(article.title, article.meta_description, body, `/blog/${article.slug}`);
 }
 
+function isServerOnlyPath(pathname) {
+  const raw = String(pathname || '').toLowerCase();
+  let decoded = raw;
+  try { decoded = decodeURIComponent(raw); } catch (_) {}
+  const lower = path.posix.normalize(decoded);
+  return lower.startsWith('/netlify/') ||
+    lower.startsWith('/tools/') ||
+    lower.endsWith('.sql') ||
+    lower.endsWith('.yaml') ||
+    lower.endsWith('.yml') ||
+    lower.endsWith('.md') ||
+    lower.endsWith('.cjs') ||
+    lower.endsWith('.mjs') ||
+    ['/package.json', '/package-lock.json', '/biome.json'].includes(lower) ||
+    (lower.endsWith('.js') && lower !== '/sw.js');
+}
+
 const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
   const pathname = parsed.pathname;
@@ -301,17 +318,9 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(403); res.end('Forbidden'); return;
   }
 
-  // Block server-side source from being served as a static file. Found via
-  // audit 08.09: the static-file fallback below had no allowlist, so
-  // server.js and every netlify/functions/*.js and *-agent.js file were
-  // directly downloadable (e.g. https://stackbid.app/server.js returned the
-  // full source — rate-limit thresholds, every internal route name, the
-  // exact blocked-path list itself). No secrets were hardcoded in them, but
-  // it's a real reconnaissance gift to an attacker. sw.js is the one
-  // legitimate root-level .js file (service worker, must stay public) —
-  // everything else ending in .js at the root, plus the whole netlify/
-  // directory, is server-only and must never be statically served.
-  if (pathname.startsWith('/netlify/') || (pathname.endsWith('.js') && pathname !== '/sw.js')) {
+  // Keep repository metadata, schemas, tests, tools and server source out of
+  // the static-file fallback. manifest.json and sw.js are intentional assets.
+  if (isServerOnlyPath(pathname)) {
     res.writeHead(403); res.end('Forbidden'); return;
   }
 
