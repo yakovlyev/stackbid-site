@@ -24,6 +24,7 @@ const LIMITS = {
   estimate: { max: 10, window: 60000 },   // 10 AI requests/min
   permit:   { max: 10, window: 60000 },
   'quote-audit': { max: 5, window: 60000 },
+  'auth-start': { max: 5, window: 600000 },
   contact:  { max: 5,  window: 60000 },   // 5 contact form submissions/min
   default:  { max: 60, window: 60000 }    // 60 general requests/min
 };
@@ -69,6 +70,7 @@ const handlers = {
   'email-pdf': require('./netlify/functions/email-pdf'),
   'check-access': require('./netlify/functions/check-access'),
   'auth-session': require('./netlify/functions/auth-session'),
+  'auth-start': require('./netlify/functions/auth-start'),
   'create-checkout-session': require('./netlify/functions/create-checkout-session'),
   'stripe-webhook': require('./netlify/functions/stripe-webhook'),
   'get-estimates': require('./netlify/functions/get-estimates'),
@@ -416,7 +418,13 @@ const server = http.createServer(async (req, res) => {
           headers: req.headers,
           queryStringParameters: parsed.query
         });
-        res.writeHead(result.statusCode || 200, result.headers || {});
+        const resHeaders = { ...(result.headers || {}) };
+        if (result.multiValueHeaders) {
+          for (const [name, values] of Object.entries(result.multiValueHeaders)) {
+            resHeaders[name] = Array.isArray(values) ? values : [values];
+          }
+        }
+        res.writeHead(result.statusCode || 200, resHeaders);
         res.end(result.body || '');
       } catch (e) {
         console.error('Handler error:', e.message);
