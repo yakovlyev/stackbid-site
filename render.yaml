@@ -81,6 +81,34 @@ services:
       - key: GA4_SERVICE_ACCOUNT_JSON
         sync: false
 
+  # Ника-Ревизор (ідея з AI Mapper 07.09) — щодня перевіряє нові діалоги
+  # Nika на вигадані ціни/обіцянки гарантій, шле звіт на пошту.
+  - type: cron
+    name: stackbid-nika-reviewer
+    runtime: node
+    schedule: "0 10 * * *"
+    buildCommand: npm install
+    startCommand: node nika-reviewer.js
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ZOHO_CLIENT_ID
+        sync: false
+      - key: ZOHO_CLIENT_SECRET
+        sync: false
+      - key: ZOHO_REFRESH_TOKEN
+        sync: false
+      - key: ZOHO_ACCOUNT_ID
+        sync: false
+      - key: REPORT_TO_EMAIL
+        sync: false
+
   # Отчёт-аналитик раз в 3 дня — регистрации/сметы/тарифы/how_heard.
   # НЕ дублирует Google Analytics (трафик/страницы уже там, G-FRXYX65KWN) —
   # это только бизнес-метрики из наших таблиц.

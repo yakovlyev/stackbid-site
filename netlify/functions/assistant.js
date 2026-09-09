@@ -39,7 +39,7 @@ exports.streamHandler = async (rawBody, res) => {
     parsed = JSON.parse(rawBody || '{}');
   } catch (e) {
     res.writeHead(400, corsHeaders);
-    res.end("Sorry, something went wrong. Please try again.");
+    res.end('Sorry, something went wrong. Please try again.');
     return;
   }
   const { messages, estimate, zip, labor, total_project_range, voice, lang } = parsed;
@@ -51,8 +51,12 @@ exports.streamHandler = async (rawBody, res) => {
 
   const estimateContext = estimate
     ? `Materials estimate context (JSON): ${JSON.stringify(estimate).slice(0, 6000)}\nZIP: ${zip || 'unknown'}\n` +
-      (labor ? `Estimated labor (already calculated for this project): ${JSON.stringify(labor)}\n` : 'Labor estimate: not yet calculated for this project.\n') +
-      (total_project_range ? `Total project cost range (materials + labor): $${total_project_range.low} - $${total_project_range.high}\n` : '')
+      (labor
+        ? `Estimated labor (already calculated for this project): ${JSON.stringify(labor)}\n`
+        : 'Labor estimate: not yet calculated for this project.\n') +
+      (total_project_range
+        ? `Total project cost range (materials + labor): $${total_project_range.low} - $${total_project_range.high}\n`
+        : '')
     : 'No estimate has been generated yet in this session.';
 
   const systemPrompt = `${SYSTEM_PROMPT}\n\n${estimateContext}${voice ? '\n\nThis specific question was asked by voice and your answer will be read aloud via text-to-speech. Keep it to 1-2 short sentences max — a headline number and one key point, nothing more. Never speak a list of items or multiple prices in a row.' : ''}${lang === 'es' ? '\n\nRespond in Spanish. Use the term most widely understood by US Hispanic homeowners regardless of country of origin — for construction materials with noticeably different regional names (e.g. drywall vs tablaroca vs yeso), pick the most neutral/common one and include the English term in parentheses on first mention, e.g. "tablaroca (drywall)". This matters — sounding like machine translation loses trust with this audience fast. Keep dollar amounts as $ figures (do not convert currency).' : ''}`;
@@ -63,7 +67,11 @@ exports.streamHandler = async (rawBody, res) => {
   try {
     anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+      headers: {
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: voice ? 200 : 800,
@@ -73,7 +81,8 @@ exports.streamHandler = async (rawBody, res) => {
         tools: [
           {
             name: 'send_pdf_email',
-            description: 'Email the current estimate as a PDF attachment to the given address. Only call this once you have a plausible email address from the user.',
+            description:
+              'Email the current estimate as a PDF attachment to the given address. Only call this once you have a plausible email address from the user.',
             input_schema: {
               type: 'object',
               properties: { email: { type: 'string', description: 'The email address to send the PDF to' } },
@@ -84,12 +93,12 @@ exports.streamHandler = async (rawBody, res) => {
       }),
     });
   } catch (e) {
-    res.end("Sorry, something went wrong. Please try again.");
+    res.end('Sorry, something went wrong. Please try again.');
     return;
   }
 
   if (!anthropicRes.ok || !anthropicRes.body) {
-    res.end("Sorry, something went wrong. Please try again.");
+    res.end('Sorry, something went wrong. Please try again.');
     return;
   }
 
@@ -105,6 +114,7 @@ exports.streamHandler = async (rawBody, res) => {
   let toolUseId = null;
   let toolUseJsonBuffer = '';
   let sawToolUse = false;
+  let fullResponseText = '';
 
   while (true) {
     const { done, value } = await reader.read();
@@ -128,6 +138,7 @@ exports.streamHandler = async (rawBody, res) => {
       } else if (evt.type === 'content_block_delta') {
         if (evt.delta?.type === 'text_delta' && evt.delta.text) {
           res.write(evt.delta.text);
+          fullResponseText += evt.delta.text;
           sentAnyText = true;
         } else if (evt.delta?.type === 'input_json_delta' && sawToolUse) {
           toolUseJsonBuffer += evt.delta.partial_json || '';
@@ -140,7 +151,11 @@ exports.streamHandler = async (rawBody, res) => {
   // синтетическое подтверждение (та же логика, что раньше в нестримовом пути)
   if (sawToolUse) {
     let email = null;
-    try { email = JSON.parse(toolUseJsonBuffer || '{}').email; } catch (e) { /* оставляем null */ }
+    try {
+      email = JSON.parse(toolUseJsonBuffer || '{}').email;
+    } catch (e) {
+      /* оставляем null */
+    }
 
     let actionResult = null;
     if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && estimate) {
@@ -171,22 +186,62 @@ exports.streamHandler = async (rawBody, res) => {
 
   if (!sentAnyText) res.write("I'm here to help with your estimate — what would you like to know?");
   res.end();
+
+  // Логуємо обмін ПІСЛЯ res.end() — жодним чином не сповільнює відповідь
+  // користувачу. Fire-and-forget: якщо Supabase недоступний, ковтаємо
+  // помилку мовчки, чат не повинен ламатися через логування.
+  logNikaExchange({ messages, zip, lang, voice, responseText: fullResponseText || null }).catch(() => {});
 };
 
+async function logNikaExchange({ messages, zip, lang, voice, responseText }) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return;
+  const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
+  await fetch(`${url}/rest/v1/nika_conversations`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify({
+      question: typeof lastUserMessage?.content === 'string' ? lastUserMessage.content.slice(0, 2000) : null,
+      response: responseText ? responseText.slice(0, 4000) : null,
+      zip: zip || null,
+      lang: lang || 'en',
+      voice: !!voice,
+    }),
+  });
+}
+
 exports.handler = async (event) => {
-  const cors = { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Access-Control-Allow-Methods': 'POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
+  const cors = {
+    'Access-Control-Allow-Origin': 'https://stackbid.app',
+    'Access-Control-Allow-Methods': 'POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors, body: '' };
 
   try {
     const { messages, estimate, zip, labor, total_project_range, voice, lang } = JSON.parse(event.body || '{}');
     if (!Array.isArray(messages) || !messages.length) {
-      return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'messages required' }) };
+      return {
+        statusCode: 400,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'messages required' }),
+      };
     }
 
     const estimateContext = estimate
       ? `Materials estimate context (JSON): ${JSON.stringify(estimate).slice(0, 6000)}\nZIP: ${zip || 'unknown'}\n` +
-        (labor ? `Estimated labor (already calculated for this project): ${JSON.stringify(labor)}\n` : 'Labor estimate: not yet calculated for this project.\n') +
-        (total_project_range ? `Total project cost range (materials + labor): $${total_project_range.low} - $${total_project_range.high}\n` : '')
+        (labor
+          ? `Estimated labor (already calculated for this project): ${JSON.stringify(labor)}\n`
+          : 'Labor estimate: not yet calculated for this project.\n') +
+        (total_project_range
+          ? `Total project cost range (materials + labor): $${total_project_range.low} - $${total_project_range.high}\n`
+          : '')
       : 'No estimate has been generated yet in this session.';
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -204,7 +259,8 @@ exports.handler = async (event) => {
         tools: [
           {
             name: 'send_pdf_email',
-            description: 'Email the current estimate as a PDF attachment to the given address. Only call this once you have a plausible email address from the user.',
+            description:
+              'Email the current estimate as a PDF attachment to the given address. Only call this once you have a plausible email address from the user.',
             input_schema: {
               type: 'object',
               properties: { email: { type: 'string', description: 'The email address to send the PDF to' } },
@@ -217,7 +273,11 @@ exports.handler = async (event) => {
 
     const data = await anthropicRes.json();
     if (data.type === 'error') {
-      return { statusCode: 500, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: data.error?.message || 'Claude API error' }) };
+      return {
+        statusCode: 500,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: data.error?.message || 'Claude API error' }),
+      };
     }
 
     // Обрабатываем tool_use, если модель решила отправить PDF
@@ -249,11 +309,15 @@ exports.handler = async (event) => {
     // Собираем финальный текст для показа пользователю: если был tool_use,
     // просим модель одним коротким сообщением подтвердить результат (без
     // второго полного круга — экономим токены и время ответа виджета).
-    let replyText = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
+    let replyText = (data.content || [])
+      .filter((b) => b.type === 'text')
+      .map((b) => b.text)
+      .join('\n')
+      .trim();
     if (toolUse && actionResult) {
       replyText = actionResult.sent
         ? `✅ Sent! Check ${actionResult.email} for your PDF estimate.`
-        : `I couldn't send that — ${actionResult.error === 'invalid_email' ? 'that email address doesn\'t look valid, could you double-check it?' : 'something went wrong on our end, please try again in a moment.'}`;
+        : `I couldn't send that — ${actionResult.error === 'invalid_email' ? "that email address doesn't look valid, could you double-check it?" : 'something went wrong on our end, please try again in a moment.'}`;
     }
     if (!replyText) replyText = "I'm here to help with your estimate — what would you like to know?";
 
@@ -263,6 +327,10 @@ exports.handler = async (event) => {
       body: JSON.stringify({ reply: replyText, action: actionResult }),
     };
   } catch (err) {
-    return { statusCode: 500, headers: { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Content-Type': 'application/json' }, body: JSON.stringify({ error: err.message }) };
+    return {
+      statusCode: 500,
+      headers: { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };
