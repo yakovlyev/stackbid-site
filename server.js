@@ -25,6 +25,7 @@ const LIMITS = {
   permit:   { max: 10, window: 60000 },
   'quote-audit': { max: 5, window: 60000 },
   'auth-start': { max: 5, window: 600000 },
+  'auth/callback': { max: 10, window: 600000 },
   contact:  { max: 5,  window: 60000 },   // 5 contact form submissions/min
   default:  { max: 60, window: 60000 }    // 60 general requests/min
 };
@@ -71,6 +72,7 @@ const handlers = {
   'check-access': require('./netlify/functions/check-access'),
   'auth-session': require('./netlify/functions/auth-session'),
   'auth-start': require('./netlify/functions/auth-start'),
+  'auth/callback': require('./netlify/functions/auth-callback'),
   'create-checkout-session': require('./netlify/functions/create-checkout-session'),
   'stripe-webhook': require('./netlify/functions/stripe-webhook'),
   'get-estimates': require('./netlify/functions/get-estimates'),
