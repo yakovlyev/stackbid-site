@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Estimates — StackBid Auth Preview</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, sans-serif; background: #F5F6F8; color: #0C2340; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 20px 16px 48px; }
+  .header a { color: #0C2340; text-decoration: none; font-weight: 700; font-size: 18px; }
+  h1 { font-size: 20px; margin: 20px 0 4px; }
+  .sub { color: #667; font-size: 13px; margin-bottom: 20px; }
+  .lookup-row { margin-bottom: 24px; }
+  .lookup-form { display: flex; gap: 8px; margin: 0; }
+  .lookup-form input { flex: 1; min-width: 0; padding: 11px 14px; border-radius: 8px; border: 1.5px solid #DDD; font-size: 14px; }
+  .lookup-form button { padding: 11px 20px; border: 0; border-radius: 8px; background: #0C2340; color: white; font-weight: 700; cursor: pointer; }
+  .est-card { background: white; border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .est-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .est-sub { font-size: 12.5px; color: #667; margin-bottom: 8px; }
+  .est-totals { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; }
+  .empty, .notice { color: #667; font-size: 14px; padding: 18px 0; }
+  .pro-badge { display: inline-block; margin-left: 8px; padding: 3px 10px; border-radius: 10px; background: #F5A623; font-size: 11px; font-weight: 700; }
+  @media (max-width: 480px) {
+    .lookup-form { flex-direction: column; }
+    .lookup-form button { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="/">← StackBid</a></div>
+  <h1>📋 My Estimates</h1>
+  <div class="sub">Authenticated preview. Your current estimate-history page remains unchanged.</div>
+
+  <div class="lookup-row" id="auth-form-row">
+    <form id="auth-form" class="lookup-form" novalidate>
+      <input type="email" id="email" placeholder="Your email" autocomplete="email" inputmode="email" required>
+      <button type="submit">Email me a sign-in link</button>
+    </form>
+  </div>
+  <div id="auth-status"></div>
+  <div id="content"></div>
+</div>
+<script>
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function showAuthForm(show) {
+  const row = document.getElementById('auth-form-row');
+  if (row) row.style.display = show ? '' : 'none';
+}
+
+async function startAuth(event) {
+  if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  const input = document.getElementById('email');
+  const status = document.getElementById('auth-status');
+  const email = input ? input.value.trim() : '';
+  if (!email) {
+    if (status) status.innerHTML = '<div class="notice">Enter your email to receive a sign-in link.</div>';
+    return;
+  }
+  try {
+    const response = await fetch('/api/auth-start', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (response.status === 429) {
+      if (status) status.innerHTML = '<div class="notice">Too many requests. Please wait and try again.</div>';
+      return;
+    }
+    if (status) status.innerHTML = '<div class="notice">If an account is linked to this email, check your inbox for the sign-in link.</div>';
+  } catch {
+    if (status) status.innerHTML = '<div class="notice">Something went wrong. Please try again.</div>';
+  }
+}
+
+async function loadHistory() {
+  const content = document.getElementById('content');
+  if (content) content.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const response = await fetch('/.netlify/functions/get-estimates-auth', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    if (response.status === 401) {
+      showAuthForm(true);
+      if (content) content.innerHTML = '<div class="notice">Your session expired. Sign in again.</div>';
+      return;
+    }
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !data || !Array.isArray(data.estimates)) {
+      if (content) content.innerHTML = '<div class="empty">Authenticated history is not active yet.</div>';
+      return;
+    }
+    if (data.estimates.length === 0) {
+      if (content) content.innerHTML = '<div class="empty">No linked estimates yet.</div>';
+      return;
+    }
+    const pro = data.is_pro === true ? '<span class="pro-badge">PRO</span>' : '';
+    content.innerHTML = `<div class="est-sub">${data.estimates.length} estimate${data.estimates.length === 1 ? '' : 's'}${pro}</div>` + data.estimates.map((estimate) => `
+      <div class="est-card">
+        <div class="est-title">${escapeHtml(estimate.title || estimate.project_type || 'Estimate')} — ZIP ${escapeHtml(estimate.zip || '—')}</div>
+        <div class="est-sub">${escapeHtml(new Date(estimate.created_at).toLocaleDateString())}</div>
+        <div class="est-totals">
+          ${estimate.total_retail ? `<span>Retail: <b>$${Math.round(estimate.total_retail).toLocaleString()}</b></span>` : ''}
+          ${estimate.total_wholesale ? `<span>Wholesale: <b>$${Math.round(estimate.total_wholesale).toLocaleString()}</b></span>` : ''}
+          ${estimate.total_local ? `<span>Local: <b>$${Math.round(estimate.total_local).toLocaleString()}</b></span>` : ''}
+        </div>
+      </div>`).join('');
+  } catch {
+    if (content) content.innerHTML = '<div class="empty">Authenticated history is not active yet.</div>';
+  }
+}
+
+async function boot() {
+  const form = document.getElementById('auth-form');
+  if (form) form.addEventListener('submit', startAuth);
+  try {
+    const response = await fetch('/api/auth-session', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 200 && data.authenticated === true) {
+      showAuthForm(false);
+      await loadHistory();
+    } else {
+      showAuthForm(true);
+    }
+  } catch {
+    showAuthForm(true);
+  }
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+</script>
+</body>
+</html>
