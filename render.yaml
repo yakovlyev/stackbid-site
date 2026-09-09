@@ -188,6 +188,26 @@ services:
         sync: false
       - key: REPORT_TO_EMAIL
         sync: false
+
+  # Отзыв-Добытчик (ідея з AI Mapper 07.09) — щодня шле запит на відгук
+  # домовласникам через 14-28 днів після закриття ліда. ПОТРЕБУЄ нової
+  # nullable-колонки (review-requested-at-migration.sql) — ще не
+  # застосовано, чекає дозволу на зміну схеми.
+  - type: cron
+    name: stackbid-review-request
+    runtime: node
+    schedule: "0 14 * * *"
+    buildCommand: npm install
+    startCommand: node review-request-agent.js
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
       - key: REPORT_TO_EMAIL
         sync: false
 
