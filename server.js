@@ -68,6 +68,7 @@ const handlers = {
   'save-estimate': require('./netlify/functions/save-estimate'),
   'email-pdf': require('./netlify/functions/email-pdf'),
   'check-access': require('./netlify/functions/check-access'),
+  'auth-session': require('./netlify/functions/auth-session'),
   'create-checkout-session': require('./netlify/functions/create-checkout-session'),
   'stripe-webhook': require('./netlify/functions/stripe-webhook'),
   'get-estimates': require('./netlify/functions/get-estimates'),

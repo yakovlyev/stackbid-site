@@ -8,7 +8,7 @@
     "start": "node server.js",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "test": "vitest run price-agent.test.js tests/video-poster-ledger.test.mjs && node --test estimate-security.test.cjs my-estimates.security.test.cjs static-exposure.security.test.mjs",
+    "test": "vitest run price-agent.test.js tests/video-poster-ledger.test.mjs && node --test auth-session.security.test.cjs estimate-security.test.cjs my-estimates.security.test.cjs static-exposure.security.test.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {
