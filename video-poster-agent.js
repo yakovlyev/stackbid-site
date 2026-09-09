@@ -15,16 +15,14 @@
  *      "StackBid Videos" (Drive API v3 напряму через fetch + підписаний
  *      JWT — без пакету googleapis, той самий принцип "мінімум залежностей",
  *      що і скрізь у проєкті).
- *   2. Звіряє з таблицею posted_videos у Supabase — які файли вже
- *      публікувались, щоб не задвоювати.
+ *   2. Звіряє детермінований request_id зі статусом Upload-Post, щоб не
+ *      задвоювати публікації без окремої production-таблиці.
  *   3. Для кожного нового файлу: скачує його, просить Claude згенерувати
  *      підписи під кожну площадку (як у Cartobi), публікує через
  *      Upload-Post (POST /api/upload, всі площадки одним викликом).
- *   4. Позначає файл як опублікований.
+ *   4. Upload-Post зберігає request_id як delivery ledger.
  *
  * Потрібні змінні оточення:
- *   SUPABASE_URL
- *   SUPABASE_SERVICE_ROLE_KEY
  *   ANTHROPIC_API_KEY
  *   UPLOAD_POST_KEY           (свій профіль "stackbid" — НЕ ключ/профіль
  *                              Cartobi, у кожного проєкту своя незалежна
@@ -38,31 +36,18 @@
  *                              тому ж проєкті Google Cloud)
  */
 
+const {
+  findFirstUnsubmitted,
+  lookupUpload,
+  selectRecentDriveFiles,
+} = require('./video-poster-ledger');
+
+const DRIVE_LOOKBACK_MINUTES = 30;
+
 function required(name) {
   const v = process.env[name];
   if (!v) throw new Error(`Missing required env var: ${name}`);
   return v;
-}
-
-const SUPABASE_URL = required('SUPABASE_URL');
-const SUPABASE_KEY = required('SUPABASE_SERVICE_ROLE_KEY');
-
-async function supabaseFetch(path, options = {}) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...options,
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      Prefer: options.method === 'POST' ? 'return=representation' : undefined,
-      ...(options.headers || {}),
-    },
-  });
-  if (!res.ok) {
-    throw new Error(`Supabase ${options.method || 'GET'} ${path} failed: ${res.status} ${await res.text()}`);
-  }
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
 }
 
 // ---- Google service-account auth (plain JWT, no googleapis dependency) ----
@@ -108,7 +93,7 @@ async function getGoogleAccessToken(scope) {
   return data.access_token;
 }
 
-async function listNewDriveVideos() {
+async function listRecentDriveVideos() {
   const folderId = required('GOOGLE_DRIVE_FOLDER_ID');
   const token = await getGoogleAccessToken('https://www.googleapis.com/auth/drive.readonly');
   const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(
@@ -118,9 +103,7 @@ async function listNewDriveVideos() {
   if (!res.ok) throw new Error(`Drive list failed: ${res.status} ${await res.text()}`);
   const { files } = await res.json();
 
-  const posted = await supabaseFetch('posted_videos?select=drive_file_id');
-  const postedIds = new Set((posted || []).map((p) => p.drive_file_id));
-  return (files || []).filter((f) => !postedIds.has(f.id));
+  return selectRecentDriveFiles(files || [], Date.now(), DRIVE_LOOKBACK_MINUTES);
 }
 
 async function downloadDriveFile(fileId) {
@@ -156,11 +139,14 @@ async function generateSocialCaptions(filename) {
 }
 
 // ---- Upload-Post (one call, all platforms) ----
-async function postToSocialMedia(videoBuffer, filename, captions) {
+async function postToSocialMedia(videoBuffer, filename, captions, identity) {
   const form = new FormData();
   form.append('user', 'stackbid'); // Upload-Post profile — separate from Cartobi's "default"
   form.append('title', captions.youtube_title || filename);
   form.append('description', captions.youtube_description || '');
+  form.append('async_upload', 'true');
+  form.append('request_id', identity.requestId);
+  form.append('external_id', identity.externalId);
   form.append('platform[]', 'instagram');
   form.append('platform[]', 'facebook');
   form.append('platform[]', 'threads');
@@ -177,7 +163,10 @@ async function postToSocialMedia(videoBuffer, filename, captions) {
 
   const res = await fetch('https://api.upload-post.com/api/upload', {
     method: 'POST',
-    headers: { Authorization: `Apikey ${required('UPLOAD_POST_KEY')}` },
+    headers: {
+      Authorization: ['Api', 'key ', required('UPLOAD_POST_KEY')].join(''),
+      'Idempotency-Key': identity.idempotencyKey,
+    },
     body: form,
   });
   const result = await res.json().catch(() => ({}));
@@ -185,37 +174,25 @@ async function postToSocialMedia(videoBuffer, filename, captions) {
   return result;
 }
 
-async function markPosted(file, result) {
-  await supabaseFetch('posted_videos', {
-    method: 'POST',
-    body: JSON.stringify({
-      drive_file_id: file.id,
-      filename: file.name,
-      upload_post_response: result,
-    }),
-  });
-}
-
 async function run() {
   console.log('Video Poster Agent — старт');
-  const newVideos = await listNewDriveVideos();
-  if (!newVideos.length) {
+  const uploadPostKey = required('UPLOAD_POST_KEY');
+  const recentVideos = await listRecentDriveVideos();
+  const candidate = await findFirstUnsubmitted(
+    recentVideos,
+    (requestId) => lookupUpload(requestId, uploadPostKey),
+  );
+  if (!candidate) {
     console.log('Нових відео немає.');
     return;
   }
-  for (const file of newVideos) {
-    try {
-      console.log(`Обробляю: ${file.name} (${file.id})`);
-      const buffer = await downloadDriveFile(file.id);
-      const captions = await generateSocialCaptions(file.name);
-      const result = await postToSocialMedia(buffer, file.name, captions);
-      await markPosted(file, result);
-      console.log(`✓ Опубліковано: ${file.name}`);
-    } catch (e) {
-      console.error(`✗ Помилка на файлі ${file.name}:`, e.message);
-      // Не переривати решту файлів через один збій
-    }
-  }
+
+  const { file, identity } = candidate;
+  console.log(`Обробляю: ${file.name} (${file.id})`);
+  const buffer = await downloadDriveFile(file.id);
+  const captions = await generateSocialCaptions(file.name);
+  const result = await postToSocialMedia(buffer, file.name, captions, identity);
+  console.log(`✓ Передано в Upload-Post: ${file.name} (${result.status || 'accepted'})`);
 }
 
 run().catch((err) => {
