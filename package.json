@@ -14,7 +14,7 @@
   "dependencies": {
     "@google-analytics/data": "6.1.0",
     "marked": "^18.0.7",
-    "pdfkit": "0.15.0",
+    "pdfkit": "0.19.1",
     "resend": "2.1.0",
     "stripe": "16.12.0"
   },
