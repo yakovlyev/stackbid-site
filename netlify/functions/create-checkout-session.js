@@ -34,6 +34,29 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'contractor_id required' }) };
     }
 
+    // ВИПРАВЛЕНО 09.09 (знайдено паралельним агентом-аудитором): раніше
+    // contractor_id бралось з тіла запиту БЕЗ жодної перевірки — будь-хто
+    // міг підставити чужий contractor_id разом зі своїм email, реально
+    // оплатити, і вебхук активував би тріал/підписку на ЧУЖОМУ профілі
+    // підрядника замість того, хто платить. Тепер перевіряємо, що цей
+    // contractor_id реально належить саме цьому email, перш ніж взагалі
+    // створювати сесію Stripe.
+    if (isContractor) {
+      const SUPABASE_URL = process.env.SUPABASE_URL;
+      const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (!SUPABASE_URL || !SUPABASE_KEY) {
+        return { statusCode: 503, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Service temporarily unavailable' }) };
+      }
+      const ownerCheck = await fetch(
+        `${SUPABASE_URL}/rest/v1/contractors?id=eq.${encodeURIComponent(contractor_id)}&email=eq.${encodeURIComponent(email)}&select=id`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+      );
+      const ownerRows = ownerCheck.ok ? await ownerCheck.json() : [];
+      if (!ownerRows?.[0]) {
+        return { statusCode: 403, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'contractor_id does not match this email' }) };
+      }
+    }
+
     const stripe = new Stripe(STRIPE_SECRET_KEY);
 
     const sessionParams = {
