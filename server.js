@@ -282,7 +282,21 @@ function renderBlogArticle(article) {
 
 const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
-  const pathname = parsed.pathname;
+  // ВИПРАВЛЕНО 09.09 (знайдено паралельним агентом-аудитором): raw
+  // pathname з url.parse НЕ згортає "../" — запит на /x/../server.js
+  // пройшов би повз перевірку pathname.endsWith('.js') нижче (рядок не
+  // закінчується на .js), а потім якийсь downstream path.join() все одно
+  // згорнув би його до реального server.js. Нормалізуємо ОДРАЗУ, до
+  // будь-яких перевірок за замістом.
+  let pathname;
+  try {
+    pathname = path.posix.normalize(decodeURIComponent(parsed.pathname));
+  } catch (e) {
+    res.writeHead(400); res.end('Bad Request'); return;
+  }
+  if (pathname.includes('..') || !pathname.startsWith('/')) {
+    res.writeHead(403); res.end('Forbidden'); return;
+  }
 
   // Canonical host: www.stackbid.app -> stackbid.app (301).
   // Search Console was reporting www.stackbid.app as "blocked by robots.txt" /
@@ -301,17 +315,23 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(403); res.end('Forbidden'); return;
   }
 
-  // Block server-side source from being served as a static file. Found via
-  // audit 08.09: the static-file fallback below had no allowlist, so
-  // server.js and every netlify/functions/*.js and *-agent.js file were
-  // directly downloadable (e.g. https://stackbid.app/server.js returned the
-  // full source — rate-limit thresholds, every internal route name, the
-  // exact blocked-path list itself). No secrets were hardcoded in them, but
-  // it's a real reconnaissance gift to an attacker. sw.js is the one
-  // legitimate root-level .js file (service worker, must stay public) —
-  // everything else ending in .js at the root, plus the whole netlify/
-  // directory, is server-only and must never be statically served.
-  if (pathname.startsWith('/netlify/') || (pathname.endsWith('.js') && pathname !== '/sw.js')) {
+  // Block server-side source AND metadata from being served as a static
+  // file. Found 08.09: server.js/*.js were fully downloadable. Extended
+  // 09.09 after re-checking with the normalized path: the repo root also
+  // has a dozen .sql files with the FULL production database schema
+  // (every table, every column name — a bigger reconnaissance gift than
+  // the JS source was), plus CLAUDE.md and package(-lock).json/biome.json
+  // (dependency versions, useful for targeting known CVEs). manifest.json
+  // and sw.js are the two legitimate root-level files that must stay
+  // public (PWA requirements) — explicit exceptions, not swept into the
+  // block by a blanket .json rule.
+  const BLOCKED_ROOT_FILES = new Set(['package.json', 'package-lock.json', 'biome.json']);
+  const filename = path.posix.basename(pathname);
+  const isBlockedMetadata =
+    pathname.endsWith('.sql') ||
+    pathname.endsWith('.md') ||
+    (pathname.lastIndexOf('/') <= 0 && BLOCKED_ROOT_FILES.has(filename)); // тільки в корені, не /blog/package.json як контент
+  if (pathname.startsWith('/netlify/') || isBlockedMetadata || (pathname.endsWith('.js') && pathname !== '/sw.js')) {
     res.writeHead(403); res.end('Forbidden'); return;
   }
 

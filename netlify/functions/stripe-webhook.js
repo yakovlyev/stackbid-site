@@ -202,8 +202,11 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: JSON.stringify({ received: true }) };
   } catch (err) {
     console.error('stripe-webhook processing error:', err.message);
-    // 200 даже при внутренней ошибке обработки — иначе Stripe будет
-    // бесконечно ретраить один и тот же ивент; ошибку увидим в логах Render.
-    return { statusCode: 200, body: JSON.stringify({ received: true, warning: err.message }) };
+    // ВИПРАВЛЕНО 09.09 (знайдено паралельним агентом-аудитором): раніше тут
+    // повертався 200 навіть при реальному збої обробки — це гасило ретраї
+    // Stripe (у нього своя схема повторів, до ~3 днів, не "нескінченно"), і
+    // клієнт міг реально оплатити, а стан у нашій БД так і не оновлювався
+    // мовчки. 500 змушує Stripe повторити доставку цієї самої події пізніше.
+    return { statusCode: 500, body: JSON.stringify({ error: 'internal processing error' }) };
   }
 };
