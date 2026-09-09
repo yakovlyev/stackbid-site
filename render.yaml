@@ -208,6 +208,26 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
+
+  # Онбординг-Мастер (ідея з AI Mapper 07.09, адаптована) — нагадує
+  # контракторам, які зареєструвались, але не завершили оплату (subscription_active
+  # лишається false), через 3 дні після реєстрації. Фільтр на license_number
+  # захищає від хибних нагадувань імпортованому каталогу (не справжнім реєстраціям).
+  - type: cron
+    name: stackbid-onboarding-nudge
+    runtime: node
+    schedule: "0 15 * * *"
+    buildCommand: npm install
+    startCommand: node onboarding-nudge-agent.js
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
       - key: REPORT_TO_EMAIL
         sync: false
 
