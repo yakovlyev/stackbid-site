@@ -136,6 +136,33 @@ services:
         sync: false
       - key: REPORT_TO_EMAIL
         sync: false
+
+  # Анти-Отток (ідея з AI Mapper 07.09) — щотижня шле дайджест підрядників
+  # у зоні ризику відмови від підписки (0 конверсій, 0 лідів, або тиша
+  # 30+ днів), використовуючи тільки вже існуючі колонки contractors.
+  - type: cron
+    name: stackbid-churn-risk
+    runtime: node
+    schedule: "0 9 * * 1"
+    buildCommand: npm install
+    startCommand: node churn-risk-agent.js
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ZOHO_CLIENT_ID
+        sync: false
+      - key: ZOHO_CLIENT_SECRET
+        sync: false
+      - key: ZOHO_REFRESH_TOKEN
+        sync: false
+      - key: ZOHO_ACCOUNT_ID
+        sync: false
+      - key: REPORT_TO_EMAIL
+        sync: false
       - key: REPORT_TO_EMAIL
         sync: false
 
