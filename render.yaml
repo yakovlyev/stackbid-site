@@ -163,6 +163,31 @@ services:
         sync: false
       - key: REPORT_TO_EMAIL
         sync: false
+
+  # Оферта-Барьер (ідея з AI Mapper 07.09) — щотижня перевіряє тексти
+  # сайту та промпт Nika на юридично ризиковані формулювання (обіцянки
+  # точної/гарантованої ціни), постійний страж, не разова перевірка.
+  - type: cron
+    name: stackbid-offer-barrier
+    runtime: node
+    schedule: "0 9 * * 1"
+    buildCommand: npm install
+    startCommand: node offer-barrier-agent.js
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ZOHO_CLIENT_ID
+        sync: false
+      - key: ZOHO_CLIENT_SECRET
+        sync: false
+      - key: ZOHO_REFRESH_TOKEN
+        sync: false
+      - key: ZOHO_ACCOUNT_ID
+        sync: false
+      - key: REPORT_TO_EMAIL
+        sync: false
       - key: REPORT_TO_EMAIL
         sync: false
 
