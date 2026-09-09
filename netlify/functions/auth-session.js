@@ -1,9 +1,11 @@
-// GET /api/auth-session — validates the HttpOnly sb_access_token cookie
-// against Supabase Auth (/auth/v1/user) and returns only {authenticated:true}.
-// Read-only: never returns the token, email, user id, or any upstream error
-// body. Missing/malformed cookie short-circuits to 401 without upstream work.
+// GET /api/auth-session — validates the HttpOnly sb_access_token cookie via
+// the shared identity helper (_auth-identity.js) and returns only
+// {authenticated:true}. Read-only: never returns the token, email, user id, or
+// any upstream error body. Missing/malformed cookie short-circuits to 401
+// without upstream work.
+const { resolveIdentity, REASONS } = require('./_auth-identity');
+
 const ALLOWED_ORIGIN = 'https://stackbid.app';
-const AUTH_TIMEOUT_MS = 5000;
 
 const BASE = {
   'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -11,21 +13,12 @@ const BASE = {
   'Cache-Control': 'no-store',
 };
 
-function accessTokenFromCookies(cookieHeader) {
-  if (typeof cookieHeader !== 'string' || !cookieHeader) return null;
-  let token = null;
-  for (const part of cookieHeader.split(';')) {
-    const eq = part.indexOf('=');
-    if (eq === -1) continue;
-    if (part.slice(0, eq).trim() !== 'sb_access_token') continue;
-    if (token !== null) return null;
-    const value = part.slice(eq + 1).trim();
-    // Supabase access tokens are JWTs (base64url chars + dots). Anything else
-    // is malformed — reject without touching the upstream.
-    if (!/^[A-Za-z0-9._-]+$/.test(value)) return null;
-    token = value;
-  }
-  return token;
+function json(statusCode, authenticated, extraHeaders = {}) {
+  return {
+    statusCode,
+    headers: { ...BASE, 'Content-Type': 'application/json', ...extraHeaders },
+    body: JSON.stringify({ authenticated }),
+  };
 }
 
 exports.handler = async (event) => {
@@ -43,68 +36,20 @@ exports.handler = async (event) => {
     };
   }
 
-  if (method !== 'GET') {
-    return {
-      statusCode: 405,
-      headers: { ...BASE, Allow: 'GET, OPTIONS', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ authenticated: false }),
-    };
-  }
+  if (method !== 'GET') return json(405, false, { Allow: 'GET, OPTIONS' });
 
-  const headers = event.headers || {};
-  const token = accessTokenFromCookies(headers.cookie || headers.Cookie);
-  if (!token) {
-    return {
-      statusCode: 401,
-      headers: { ...BASE, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ authenticated: false }),
-    };
-  }
-
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    return {
-      statusCode: 503,
-      headers: { ...BASE, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ authenticated: false }),
-    };
-  }
-
-  try {
-    const upstream = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-    });
-
-    if (upstream.status === 401 || upstream.status === 403) {
-      return {
-        statusCode: 401,
-        headers: { ...BASE, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authenticated: false }),
-      };
+  const identity = await resolveIdentity(event);
+  if (!identity.ok) {
+    if (
+      identity.reason === REASONS.NO_TOKEN ||
+      identity.reason === REASONS.MALFORMED ||
+      identity.reason === REASONS.UNAUTHORIZED
+    ) {
+      return json(401, false);
     }
-    if (!upstream.ok) {
-      return {
-        statusCode: 503,
-        headers: { ...BASE, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authenticated: false }),
-      };
-    }
-    return {
-      statusCode: 200,
-      headers: { ...BASE, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ authenticated: true }),
-    };
-  } catch {
-    return {
-      statusCode: 503,
-      headers: { ...BASE, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ authenticated: false }),
-    };
+    // MISCONFIGURED / INVALID / UNAVAILABLE all fail closed to service-unavailable.
+    return json(503, false);
   }
+
+  return json(200, true);
 };

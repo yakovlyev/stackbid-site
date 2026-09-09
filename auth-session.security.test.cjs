@@ -7,6 +7,7 @@ const { handler } = require('./netlify/functions/auth-session');
 const SUPABASE_URL = 'https://project.supabase.co';
 const ANON_KEY = 'anon-key-123';
 const TOKEN = 'jwt-user-token-456';
+const USER_ID = '3f9c1a7e-2b5d-4e6f-8a2b-c1d2e3f4a5b6';
 
 function setEnv(t) {
   const savedUrl = process.env.SUPABASE_URL;
@@ -94,7 +95,7 @@ test('valid cookie => validates against Supabase Auth and returns only basic fla
   let captured;
   installFetch(t, async (url, init) => {
     captured = { url, init };
-    return { ok: true, status: 200, json: async () => ({ id: 'u_123', email: 'user@example.com' }) };
+    return { ok: true, status: 200, json: async () => ({ id: USER_ID, email: 'user@example.com' }) };
   });
   const res = await handler({ httpMethod: 'GET', headers: { cookie: cookieHeader(TOKEN) } });
   assert.equal(res.statusCode, 200);
@@ -104,6 +105,16 @@ test('valid cookie => validates against Supabase Auth and returns only basic fla
   assert.ok(captured.init.signal instanceof AbortSignal);
   assert.deepEqual(JSON.parse(res.body), { authenticated: true });
   assert.equal(res.body.includes(TOKEN), false);
+  assert.equal(res.body.includes(USER_ID), false);
+  assert.equal(res.body.includes('user@example.com'), false);
+});
+
+test('upstream 2xx with a non-UUID user id => 503 under canonical identity validation', async (t) => {
+  setEnv(t);
+  installFetch(t, async () => ({ ok: true, status: 200, json: async () => ({ id: 'u_123', email: 'user@example.com' }) }));
+  const res = await handler({ httpMethod: 'GET', headers: { cookie: cookieHeader(TOKEN) } });
+  assert.equal(res.statusCode, 503);
+  assert.deepEqual(JSON.parse(res.body), { authenticated: false });
   assert.equal(res.body.includes('u_123'), false);
   assert.equal(res.body.includes('user@example.com'), false);
 });
