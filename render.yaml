@@ -109,6 +109,36 @@ services:
       - key: REPORT_TO_EMAIL
         sync: false
 
+  # Лицензия-Чек (ідея з AI Mapper 07.09) — щотижня шле дайджест
+  # непідтверджених ліцензій підрядників з готовими посиланнями на
+  # офіційні безкоштовні реєстри штатів (жоден штат не дає безкоштовного
+  # API, тому це не автоматична перевірка, а прибрана вручну черга).
+  - type: cron
+    name: stackbid-license-check
+    runtime: node
+    schedule: "0 9 * * 1"
+    buildCommand: npm install
+    startCommand: node license-check-agent.js
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ZOHO_CLIENT_ID
+        sync: false
+      - key: ZOHO_CLIENT_SECRET
+        sync: false
+      - key: ZOHO_REFRESH_TOKEN
+        sync: false
+      - key: ZOHO_ACCOUNT_ID
+        sync: false
+      - key: REPORT_TO_EMAIL
+        sync: false
+      - key: REPORT_TO_EMAIL
+        sync: false
+
   # Отчёт-аналитик раз в 3 дня — регистрации/сметы/тарифы/how_heard.
   # НЕ дублирует Google Analytics (трафик/страницы уже там, G-FRXYX65KWN) —
   # это только бизнес-метрики из наших таблиц.
