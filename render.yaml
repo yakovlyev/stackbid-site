@@ -228,6 +228,29 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
+
+  # Автоматизация-Ревизор (ідея з AI Mapper 07.09) — щомісяця сканує
+  # репозиторій на маркери ручних процесів (TODO/manually/вручную),
+  # збирає розкидане по файлах в один список.
+  - type: cron
+    name: stackbid-automation-audit
+    runtime: node
+    schedule: "0 9 1 * *"
+    buildCommand: npm install
+    startCommand: node automation-audit-agent.js
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: ZOHO_CLIENT_ID
+        sync: false
+      - key: ZOHO_CLIENT_SECRET
+        sync: false
+      - key: ZOHO_REFRESH_TOKEN
+        sync: false
+      - key: ZOHO_ACCOUNT_ID
+        sync: false
+      - key: REPORT_TO_EMAIL
+        sync: false
       - key: REPORT_TO_EMAIL
         sync: false
 
