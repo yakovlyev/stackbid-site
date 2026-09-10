@@ -85,6 +85,7 @@ const handlers = {
   'contractor-lead': require('./netlify/functions/contractor-lead'),
   'contractor-dashboard': require('./netlify/functions/contractor-dashboard'),
   'quote-audit': require('./netlify/functions/quote-audit'),
+  'trigger-location-pages': require('./netlify/functions/trigger-location-pages'),
 };
 
 // Contact form handler
