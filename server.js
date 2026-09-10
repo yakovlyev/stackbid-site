@@ -85,6 +85,7 @@ const handlers = {
   'contractor-lead': require('./netlify/functions/contractor-lead'),
   'contractor-dashboard': require('./netlify/functions/contractor-dashboard'),
   'quote-audit': require('./netlify/functions/quote-audit'),
+  'auth-start': require('./netlify/functions/auth-start'),
 };
 
 // Contact form handler
@@ -614,13 +615,19 @@ const server = http.createServer(async (req, res) => {
   // Ігорю взагалі нічого не треба вводити чи шукати. Ризик мінімальний —
   // результат завжди йде в location_pages зі статусом 'draft', публікація
   // все одно вимагає окремого ручного кроку Ігоря.
-  if (req.method === 'GET' && pathname === '/internal/location-pages-status/d236b2e8e4833ff8dd44c8ec9bbfb043d60f60c536090dd3') {
+  if (
+    req.method === 'GET' &&
+    pathname === '/internal/location-pages-status/d236b2e8e4833ff8dd44c8ec9bbfb043d60f60c536090dd3'
+  ) {
     try {
       const SB_URL = process.env.SUPABASE_URL;
       const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      const r = await fetch(`${SB_URL}/rest/v1/location_pages?select=project_type_slug,city_slug,title,price_low,price_high,status`, {
-        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` },
-      });
+      const r = await fetch(
+        `${SB_URL}/rest/v1/location_pages?select=project_type_slug,city_slug,title,price_low,price_high,status`,
+        {
+          headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` },
+        },
+      );
       const rows = await r.json();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ count: rows.length, rows }, null, 2));
@@ -631,7 +638,10 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === 'GET' && pathname === '/internal/generate-location-pages/d236b2e8e4833ff8dd44c8ec9bbfb043d60f60c536090dd3') {
+  if (
+    req.method === 'GET' &&
+    pathname === '/internal/generate-location-pages/d236b2e8e4833ff8dd44c8ec9bbfb043d60f60c536090dd3'
+  ) {
     res.writeHead(202, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, status: 'started' }));
     (async () => {
@@ -642,18 +652,31 @@ const server = http.createServer(async (req, res) => {
         const sbHeaders = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
         for (const type of PROJECT_TYPES) {
           for (const city of CITIES) {
-            const existingRes = await fetch(`${SB_URL}/rest/v1/location_pages?project_type_slug=eq.${type.slug}&city_slug=eq.${city.slug}&select=id`, { headers: sbHeaders });
+            const existingRes = await fetch(
+              `${SB_URL}/rest/v1/location_pages?project_type_slug=eq.${type.slug}&city_slug=eq.${city.slug}&select=id`,
+              { headers: sbHeaders },
+            );
             const existing = await existingRes.json();
-            if (existing?.[0]) { console.log(`location-pages: пропущено (уже есть) ${type.slug}/${city.slug}`); continue; }
+            if (existing?.[0]) {
+              console.log(`location-pages: пропущено (уже есть) ${type.slug}/${city.slug}`);
+              continue;
+            }
             console.log(`location-pages: генерирую ${type.slug}/${city.slug}...`);
             const page = await generatePage(city, type);
             await fetch(`${SB_URL}/rest/v1/location_pages`, {
-              method: 'POST', headers: sbHeaders,
+              method: 'POST',
+              headers: sbHeaders,
               body: JSON.stringify({
-                project_type_slug: type.slug, city_slug: city.slug, city_name: city.name,
-                title: page.title, meta_description: page.meta_description,
-                price_low: page.price_low, price_high: page.price_high,
-                content_html: page.content_html, faq_json: page.faq, status: 'draft',
+                project_type_slug: type.slug,
+                city_slug: city.slug,
+                city_name: city.name,
+                title: page.title,
+                meta_description: page.meta_description,
+                price_low: page.price_low,
+                price_high: page.price_high,
+                content_html: page.content_html,
+                faq_json: page.faq,
+                status: 'draft',
               }),
             });
             console.log(`location-pages: ✓ ${type.slug}/${city.slug}`);
