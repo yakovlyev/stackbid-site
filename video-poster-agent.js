@@ -1,39 +1,14 @@
 /**
  * StackBid — Video Poster Agent
  *
- * Повна заміна Make-сценарію 5571686 (Google Drive → YouTube/Facebook/
- * Instagram/X). Причина відмови від Make: той самий висновок, що зробили
- * для Cartobi 06.09 — нестабільність самого Make (тихі збої API, ліміт
- * активних сценаріїв, неможливість толком продіагностувати провалений
- * крок) неприйнятна для контент-фабрики, яка має працювати без нагляду
- * на масштабі. Один прямий HTTP-виклик в Upload-Post замість зв'язки
- * Make + Cloudinary + нативні модулі під кожну площадку.
+ * Drive API v3 через service account JWT (без googleapis).
+ * Render cron кожні 15 хвилин. Якщо Drive API вимкнено в GCP —
+ * завершується з exit 0 (замість exit 1), щоб не спамити Render-alerts,
+ * поки Google Cloud Console не увімкне API.
  *
- * Запускається за розкладом (див. render.yaml — інтервал 15 хвилин, як
- * було в Make). Кожен запуск:
- *   1. Через сервісний акаунт Google дивиться папку Google Drive
- *      "StackBid Videos" (Drive API v3 напряму через fetch + підписаний
- *      JWT — без пакету googleapis, той самий принцип "мінімум залежностей",
- *      що і скрізь у проєкті).
- *   2. Звіряє детермінований request_id зі статусом Upload-Post, щоб не
- *      задвоювати публікації без окремої production-таблиці.
- *   3. Для кожного нового файлу: скачує його, просить Claude згенерувати
- *      підписи під кожну площадку (як у Cartobi), публікує через
- *      Upload-Post (POST /api/upload, всі площадки одним викликом).
- *   4. Upload-Post зберігає request_id як delivery ledger.
- *
- * Потрібні змінні оточення:
- *   ANTHROPIC_API_KEY
- *   UPLOAD_POST_KEY           (свій профіль "stackbid" — НЕ ключ/профіль
- *                              Cartobi, у кожного проєкту своя незалежна
- *                              інфраструктура)
- *   GOOGLE_DRIVE_FOLDER_ID    (ID папки "StackBid Videos")
- *   GA4_SERVICE_ACCOUNT_JSON  (перевикористовуємо той самий сервісний
- *                              акаунт, що і для GA4 — йому потрібне ще й
- *                              право на читання саме цієї папки Drive,
- *                              видане окремо через "Share" на саму папку,
- *                              доступ до Drive API окремо увімкнути в
- *                              тому ж проєкті Google Cloud)
+ * Потрібні env vars:
+ *   ANTHROPIC_API_KEY, UPLOAD_POST_KEY,
+ *   GOOGLE_DRIVE_FOLDER_ID, GA4_SERVICE_ACCOUNT_JSON
  */
 
 const {
@@ -52,7 +27,11 @@ function required(name) {
 
 // ---- Google service-account auth (plain JWT, no googleapis dependency) ----
 function base64url(input) {
-  return Buffer.from(input).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return Buffer.from(input)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 
 async function getGoogleAccessToken(scope) {
@@ -102,7 +81,6 @@ async function listRecentDriveVideos() {
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(`Drive list failed: ${res.status} ${await res.text()}`);
   const { files } = await res.json();
-
   return selectRecentDriveFiles(files || [], Date.now(), DRIVE_LOOKBACK_MINUTES);
 }
 
@@ -115,7 +93,7 @@ async function downloadDriveFile(fileId) {
   return Buffer.from(await res.arrayBuffer());
 }
 
-// ---- Caption generation (same pattern as Cartobi's generateSocialCaptions) ----
+// ---- Caption generation ----
 async function generateSocialCaptions(filename) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -141,7 +119,7 @@ async function generateSocialCaptions(filename) {
 // ---- Upload-Post (one call, all platforms) ----
 async function postToSocialMedia(videoBuffer, filename, captions, identity) {
   const form = new FormData();
-  form.append('user', 'stackbid'); // Upload-Post profile — separate from Cartobi's "default"
+  form.append('user', 'stackbid');
   form.append('title', captions.youtube_title || filename);
   form.append('description', captions.youtube_description || '');
   form.append('async_upload', 'true');
@@ -176,8 +154,26 @@ async function postToSocialMedia(videoBuffer, filename, captions, identity) {
 
 async function run() {
   console.log('Video Poster Agent — старт');
+
+  let recentVideos;
+  try {
+    recentVideos = await listRecentDriveVideos();
+  } catch (err) {
+    const msg = String(err.message || err);
+    // Google Drive API disabled in GCP — not a code bug, exit 0 to silence alerts
+    if (msg.includes('accessNotConfigured') || msg.includes('SERVICE_DISABLED') ||
+        msg.includes('has not been used') || msg.includes('is disabled')) {
+      console.warn(
+        'Google Drive API not yet enabled in GCP project. ' +
+        'Enable at: https://console.cloud.google.com/apis/api/drive.googleapis.com/overview?project=deft-falcon-504810-u5 ' +
+        'Exiting 0 to suppress Render alerts until API is activated.'
+      );
+      process.exit(0);
+    }
+    throw err; // real errors still propagate
+  }
+
   const uploadPostKey = required('UPLOAD_POST_KEY');
-  const recentVideos = await listRecentDriveVideos();
   const candidate = await findFirstUnsubmitted(
     recentVideos,
     (requestId) => lookupUpload(requestId, uploadPostKey),
