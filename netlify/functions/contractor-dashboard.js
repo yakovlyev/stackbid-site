@@ -1,9 +1,44 @@
 // Простейший CRM для подрядчика: список лидов + отметка "связался".
-// Тот же паттерн мягкой аутентификации по email, что и у остального сайта
-// (никакого пароля/сессии — email как идентификатор, согласовано с текущей
-// моделью доверия, а не выдумано заново).
+// НОВЕ (наступний крок після auth-callback.js): якщо є валідна cookie-сесія
+// (sb_session), контрактор визначається через ВЕРИФІКОВАНИЙ Supabase Auth
+// UID — це і є "справжня ізоляція власності", а не довіра до email/
+// contractor_id, які клієнт може підставити. Старий email-шлях лишається
+// як резерв — свідомо, поки новий не обкатаний (правило: не вимикати
+// старе, поки нове не перевірене).
+function parseCookies(header) {
+  const out = {};
+  (header || '').split(';').forEach((p) => {
+    const i = p.indexOf('=');
+    if (i > -1) out[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim());
+  });
+  return out;
+}
+
+async function resolveContractorIdViaSession(event, SUPABASE_URL, SUPABASE_KEY) {
+  const cookies = parseCookies(event.headers?.cookie || event.headers?.Cookie);
+  const sessionToken = cookies.sb_session;
+  if (!sessionToken) return null;
+
+  const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${sessionToken}` },
+  });
+  if (!userRes.ok) return null; // прострочена/невалідна сесія — падаємо назад на email-шлях, не помилка
+  const authUser = await userRes.json();
+  if (!authUser?.id) return null;
+
+  const cr = await fetch(`${SUPABASE_URL}/rest/v1/contractors?auth_user_id=eq.${authUser.id}&select=id`, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+  });
+  const rows = cr.ok ? await cr.json() : [];
+  return rows?.[0]?.id || null;
+}
+
 exports.handler = async (event) => {
-  const cors = { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Access-Control-Allow-Methods': 'GET,POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
+  const cors = {
+    'Access-Control-Allow-Origin': 'https://stackbid.app',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors, body: '' };
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -12,38 +47,90 @@ exports.handler = async (event) => {
 
   try {
     if (event.httpMethod === 'GET') {
+      const sessionContractorId = await resolveContractorIdViaSession(event, SUPABASE_URL, SUPABASE_KEY);
       const email = (event.queryStringParameters || {}).email;
-      if (!email) return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'email required' }) };
+      if (!sessionContractorId && !email) {
+        return {
+          statusCode: 400,
+          headers: { ...cors, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'email required' }),
+        };
+      }
 
-      const cr = await fetch(`${SUPABASE_URL}/rest/v1/contractors?email=eq.${encodeURIComponent(email)}&select=id,company_name,subscription_tier,subscription_active,leads_received,leads_converted,rating,review_count,license_verified`, { headers });
+      const contractorFilter = sessionContractorId
+        ? `id=eq.${sessionContractorId}`
+        : `email=eq.${encodeURIComponent(email)}`;
+      const cr = await fetch(
+        `${SUPABASE_URL}/rest/v1/contractors?${contractorFilter}&select=id,company_name,subscription_tier,subscription_active,leads_received,leads_converted,rating,review_count,license_verified`,
+        { headers },
+      );
       const crows = await cr.json();
       const contractor = crows?.[0];
-      if (!contractor) return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ found: false }) };
+      if (!contractor)
+        return {
+          statusCode: 200,
+          headers: { ...cors, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ found: false }),
+        };
 
-      const lr = await fetch(`${SUPABASE_URL}/rest/v1/contractor_leads?contractor_id=eq.${contractor.id}&select=id,project_type,zip_code,budget_range,status,created_at,contacted_at&order=created_at.desc&limit=100`, { headers });
+      const lr = await fetch(
+        `${SUPABASE_URL}/rest/v1/contractor_leads?contractor_id=eq.${contractor.id}&select=id,project_type,zip_code,budget_range,status,created_at,contacted_at&order=created_at.desc&limit=100`,
+        { headers },
+      );
       const leads = await lr.json();
 
-      return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ found: true, contractor, leads: leads || [] }) };
+      return {
+        statusCode: 200,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ found: true, contractor, leads: leads || [], viaSession: !!sessionContractorId }),
+      };
     }
 
     if (event.httpMethod === 'POST') {
       const { lead_id, status, email } = JSON.parse(event.body || '{}');
-      if (!lead_id || !email || !['contacted', 'won', 'lost'].includes(status)) {
-        return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'lead_id, email, and valid status required' }) };
+      if (!lead_id || !['contacted', 'won', 'lost'].includes(status)) {
+        return {
+          statusCode: 400,
+          headers: { ...cors, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'lead_id and valid status required' }),
+        };
       }
 
-      // Захист від IDOR: перевіряємо, що цей лід реально належить контрактору
-      // з переданого email, а не будь-якому lead_id, який хтось підбере.
-      const lr0 = await fetch(`${SUPABASE_URL}/rest/v1/contractor_leads?id=eq.${lead_id}&select=contractor_id`, { headers });
+      const lr0 = await fetch(`${SUPABASE_URL}/rest/v1/contractor_leads?id=eq.${lead_id}&select=contractor_id`, {
+        headers,
+      });
       const lrows0 = await lr0.json();
       const leadContractorId = lrows0?.[0]?.contractor_id;
       if (!leadContractorId) {
-        return { statusCode: 404, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'lead not found' }) };
+        return {
+          statusCode: 404,
+          headers: { ...cors, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'lead not found' }),
+        };
       }
-      const ownerCheck = await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${leadContractorId}&email=eq.${encodeURIComponent(email)}&select=id`, { headers });
-      const ownerRows = await ownerCheck.json();
-      if (!ownerRows?.[0]) {
-        return { statusCode: 403, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'not your lead' }) };
+
+      // Захист від IDOR, тепер у двох варіантах: якщо є сесія — власність
+      // підтверджується через верифікований UID (найнадійніше); інакше —
+      // старий email-шлях лишається як резерв, поки не всі контрактори
+      // перейшли на новий вхід.
+      const sessionContractorId = await resolveContractorIdViaSession(event, SUPABASE_URL, SUPABASE_KEY);
+      let isOwner = false;
+      if (sessionContractorId) {
+        isOwner = sessionContractorId === leadContractorId;
+      } else if (email) {
+        const ownerCheck = await fetch(
+          `${SUPABASE_URL}/rest/v1/contractors?id=eq.${leadContractorId}&email=eq.${encodeURIComponent(email)}&select=id`,
+          { headers },
+        );
+        const ownerRows = await ownerCheck.json();
+        isOwner = !!ownerRows?.[0];
+      }
+      if (!isOwner) {
+        return {
+          statusCode: 403,
+          headers: { ...cors, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'not your lead' }),
+        };
       }
 
       const patch = { status };
@@ -57,19 +144,34 @@ exports.handler = async (event) => {
 
       // При "won" — увеличиваем leads_converted у подрядчика
       if (status === 'won') {
-        const cr = await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${leadContractorId}&select=leads_converted`, { headers });
+        const cr = await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${leadContractorId}&select=leads_converted`, {
+          headers,
+        });
         const crows = await cr.json();
         const current = crows?.[0]?.leads_converted || 0;
         await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${leadContractorId}`, {
-          method: 'PATCH', headers, body: JSON.stringify({ leads_converted: current + 1 }),
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ leads_converted: current + 1 }),
         });
       }
 
-      return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ success: true }) };
+      return {
+        statusCode: 200,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: true }),
+      };
     }
 
     return { statusCode: 405, headers: cors, body: '' };
   } catch (err) {
-    return { statusCode: 500, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: err.message }) };
+    return {
+      statusCode: 500,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };
+
+module.exports.parseCookies = parseCookies;
+module.exports.resolveContractorIdViaSession = resolveContractorIdViaSession;
