@@ -87,6 +87,7 @@ const handlers = {
   'quote-audit': require('./netlify/functions/quote-audit'),
   'auth-start': require('./netlify/functions/auth-start'),
   'auth-callback': require('./netlify/functions/auth-callback'),
+  'auth-logout': require('./netlify/functions/auth-logout'),
 };
 
 // Contact form handler

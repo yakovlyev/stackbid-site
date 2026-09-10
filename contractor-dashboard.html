@@ -134,7 +134,9 @@ async function loadWithQuery(query) {
 
     const c = data.contractor;
     const verifiedBadge = c.license_verified ? '<span class="verified">✓ Verified</span>' : '';
+    const logoutBtn = data.viaSession ? '<button onclick="logout()" style="float:right;padding:6px 12px;border-radius:8px;border:1px solid #DDD;background:white;font-size:12px;cursor:pointer;">Log out</button>' : '';
     let html = `
+      ${logoutBtn}
       <div class="stats-row">
         <div class="stat-card"><div class="stat-num">${c.leads_received || 0}</div><div class="stat-label">Leads received</div></div>
         <div class="stat-card"><div class="stat-num">${c.leads_converted || 0}</div><div class="stat-label">Jobs won</div></div>
@@ -169,6 +171,14 @@ async function loadWithQuery(query) {
   } catch (e) {
     content.innerHTML = '<div class="empty">Error loading your dashboard. Please try again.</div>';
   }
+}
+
+async function logout() {
+  try {
+    await fetch('/api/auth-logout', { method: 'POST' });
+  } catch (e) {}
+  localStorage.removeItem('stackbid_contractor_email');
+  window.location.reload();
 }
 
 async function setStatus(leadId, status) {
