@@ -2757,6 +2757,8 @@ async function generate() {
   const ptype2 = document.getElementById('ptype2').value;
   const type = activeTab === 'text' ? selType : ptype2;
 
+  if (typeof gtag === 'function') gtag('event', 'estimate_started', { project_type: type, zip_code: zip, input_mode: activeTab });
+
   document.getElementById('estimate-out').style.display = 'none';
   document.getElementById('pbar').style.display = 'block';
   document.getElementById('smsg').style.display = 'block';
@@ -3202,6 +3204,8 @@ async function unlockEstimate() {
   if (!fname) { document.getElementById('gate-fname').focus(); return; }
   if (!email || !email.includes('@')) { document.getElementById('gate-email').focus(); return; }
 
+  if (typeof gtag === 'function') gtag('event', 'estimate_unlocked', { role });
+
   // Save to localStorage
   localStorage.setItem('sb_user_email', email);
   localStorage.setItem('sb_user_name',  fname);
@@ -3227,6 +3231,7 @@ async function unlockEstimate() {
 }
 
 function skipGate() {
+  if (typeof gtag === 'function') gtag('event', 'estimate_gate_skipped');
   gateUnlocked = true;
   document.getElementById('gate-overlay').classList.remove('show');
   if (pendingEstimateData) {
