@@ -614,6 +614,23 @@ const server = http.createServer(async (req, res) => {
   // Ігорю взагалі нічого не треба вводити чи шукати. Ризик мінімальний —
   // результат завжди йде в location_pages зі статусом 'draft', публікація
   // все одно вимагає окремого ручного кроку Ігоря.
+  if (req.method === 'GET' && pathname === '/internal/location-pages-status/d236b2e8e4833ff8dd44c8ec9bbfb043d60f60c536090dd3') {
+    try {
+      const SB_URL = process.env.SUPABASE_URL;
+      const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      const r = await fetch(`${SB_URL}/rest/v1/location_pages?select=project_type_slug,city_slug,title,price_low,price_high,status`, {
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` },
+      });
+      const rows = await r.json();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ count: rows.length, rows }, null, 2));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
   if (req.method === 'GET' && pathname === '/internal/generate-location-pages/d236b2e8e4833ff8dd44c8ec9bbfb043d60f60c536090dd3') {
     res.writeHead(202, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, status: 'started' }));
