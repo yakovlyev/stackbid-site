@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StackBid — Contractor Dashboard Auth Preview</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, sans-serif; background: #F5F6F8; color: #0C2340; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; }
+  .header a { color: #0C2340; text-decoration: none; font-weight: 700; }
+  h1 { font-size: 22px; margin: 20px 0 4px; }
+  .sub, .notice, .empty { color: #667; font-size: 13px; }
+  .notice, .empty { padding: 18px 0; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+  .stat, .lead { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .stat strong { display: block; font-size: 22px; }
+  .stat span { color: #667; font-size: 11px; text-transform: uppercase; }
+  .lead { margin-bottom: 12px; }
+  .lead-title { font-weight: 700; }
+  .lead-sub { color: #667; font-size: 12px; margin-top: 4px; }
+  @media (max-width: 480px) { .stats { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header"><a href="/">← StackBid</a></div>
+  <h1>Contractor Dashboard</h1>
+  <div class="sub">Authenticated read-only preview. The current contractor dashboard remains unchanged.</div>
+  <div id="auth-notice"></div>
+  <div id="content"></div>
+</div>
+<script>
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function safeNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
+async function loadDashboard() {
+  const content = document.getElementById('content');
+  if (content) content.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const response = await fetch('/.netlify/functions/contractor-dashboard-auth', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    if (response.status === 401 || response.status === 403) {
+      if (content) content.innerHTML = '<div class="notice">This signed-in account is not linked to a contractor profile.</div>';
+      return;
+    }
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !data || data.found !== true || !data.contractor || !Array.isArray(data.leads)) {
+      if (content) content.innerHTML = '<div class="empty">Authenticated contractor dashboard is not active yet.</div>';
+      return;
+    }
+
+    const contractor = data.contractor;
+    const rating = safeNumber(contractor.rating);
+    const company = escapeHtml(contractor.company_name || 'Contractor');
+    const tier = escapeHtml(contractor.subscription_tier || 'free');
+    let html = `<h2>${company}</h2><div class="sub">${tier}${contractor.license_verified === true ? ' · Verified license' : ''}</div>`;
+    html += `<div class="stats">
+      <div class="stat"><strong>${safeNumber(contractor.leads_received)}</strong><span>Leads received</span></div>
+      <div class="stat"><strong>${safeNumber(contractor.leads_converted)}</strong><span>Jobs won</span></div>
+      <div class="stat"><strong>${rating || '—'}</strong><span>Rating (${safeNumber(contractor.review_count)})</span></div>
+    </div>`;
+    if (data.leads.length === 0) {
+      html += '<div class="empty">No linked leads yet.</div>';
+    } else {
+      html += data.leads.map((lead) => `<div class="lead">
+        <div class="lead-title">${escapeHtml(lead.project_type || 'Project')} — ZIP ${escapeHtml(lead.zip_code || '—')}</div>
+        <div class="lead-sub">${escapeHtml(lead.budget_range || 'Budget not specified')} · ${escapeHtml(lead.status || 'new')} · ${escapeHtml(new Date(lead.created_at).toLocaleDateString())}</div>
+      </div>`).join('');
+    }
+    content.innerHTML = html;
+  } catch {
+    if (content) content.innerHTML = '<div class="empty">Authenticated contractor dashboard is not active yet.</div>';
+  }
+}
+
+async function boot() {
+  const notice = document.getElementById('auth-notice');
+  try {
+    const response = await fetch('/api/auth-session', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 200 && data.authenticated === true) {
+      if (notice) notice.innerHTML = '';
+      await loadDashboard();
+      return;
+    }
+  } catch {}
+  if (notice) notice.innerHTML = '<div class="notice">Sign in with your verified account to view contractor data.</div>';
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+</script>
+</body>
+</html>
