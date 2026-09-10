@@ -48,7 +48,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         email,
         create_user: false, // не створюємо нового Auth-користувача просто з запиту логіну — тільки реальні контрактори мають цим користуватись; сам "claim" існуючого запису — окремий майбутній крок
-        options: { emailRedirectTo: 'https://stackbid.app/contractor-dashboard.html' },
+        options: { emailRedirectTo: 'https://stackbid.app/contractor-login-callback.html' },
       }),
     });
   } catch (e) {

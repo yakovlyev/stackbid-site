@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signing you in — StackBid</title>
+<meta name="robots" content="noindex">
+</head>
+<body style="font-family:system-ui,sans-serif;text-align:center;padding:60px 20px;">
+  <p id="msg">Signing you in…</p>
+  <script>
+  (async function () {
+    // Supabase magic link повертає токен ПІСЛЯ # (fragment) — сервер його
+    // ніколи не бачить, тому читаємо тут, на клієнті, і передаємо самі.
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    const access_token = hash.get('access_token');
+    const msg = document.getElementById('msg');
+    if (!access_token) {
+      msg.textContent = 'Missing or expired login link. Please request a new one.';
+      return;
+    }
+    try {
+      const res = await fetch('/api/auth-callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token }),
+      });
+      const data = await res.json();
+      if (res.ok && data.redirect) {
+        window.location.replace(data.redirect);
+      } else {
+        msg.textContent = data.error || 'Could not complete sign-in. Please request a new link.';
+      }
+    } catch (e) {
+      msg.textContent = 'Something went wrong. Please try again.';
+    }
+  })();
+  </script>
+</body>
+</html>

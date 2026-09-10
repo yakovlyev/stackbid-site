@@ -86,6 +86,7 @@ const handlers = {
   'contractor-dashboard': require('./netlify/functions/contractor-dashboard'),
   'quote-audit': require('./netlify/functions/quote-audit'),
   'auth-start': require('./netlify/functions/auth-start'),
+  'auth-callback': require('./netlify/functions/auth-callback'),
 };
 
 // Contact form handler
