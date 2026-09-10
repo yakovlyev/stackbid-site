@@ -43,10 +43,23 @@
   <h1>🔨 Contractor Dashboard</h1>
   <div class="sub">See and manage the leads StackBid has sent you.</div>
 
-  <div class="lookup-row">
-    <input type="email" id="email" placeholder="Your account email">
-    <button onclick="load()">View my leads</button>
+  <div class="grow-box" style="margin-top:0;margin-bottom:20px;">
+    <h2>🔐 Sign in</h2>
+    <div class="sub">We'll email you a secure link — no password needed.</div>
+    <div class="lookup-row">
+      <input type="email" id="login-email" placeholder="Your account email">
+      <button onclick="sendLoginLink()">Send login link</button>
+    </div>
+    <div id="login-status" style="font-size:13px;color:#556;margin-top:4px;"></div>
   </div>
+
+  <details style="margin-bottom:20px;">
+    <summary style="cursor:pointer;color:#667;font-size:13px;">Or, quick lookup without signing in</summary>
+    <div class="lookup-row" style="margin-top:10px;">
+      <input type="email" id="email" placeholder="Your account email">
+      <button onclick="load()">View my leads</button>
+    </div>
+  </details>
 
   <div id="content"></div>
 
@@ -66,8 +79,40 @@
 <script>
 const savedEmail = localStorage.getItem('stackbid_contractor_email');
 if (savedEmail) document.getElementById('email').value = savedEmail;
+let lastQuery = '';
+
+async function sendLoginLink() {
+  const email = document.getElementById('login-email').value.trim();
+  const status = document.getElementById('login-status');
+  if (!email) return alert('Enter your email first.');
+  status.textContent = 'Sending…';
+  try {
+    const res = await fetch('/api/auth-start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    status.textContent = res.ok ? (data.message || 'Check your email for a login link.') : (data.error || 'Something went wrong.');
+  } catch (e) {
+    status.textContent = 'Something went wrong. Please try again.';
+  }
+}
+
+// При завантаженні сторінки — якщо вже є дійсна cookie-сесія (наприклад,
+// щойно повернулись за magic link), одразу підвантажуємо дані без
+// потреби знову вводити email.
+window.addEventListener('DOMContentLoaded', () => { loadWithQuery(''); });
 
 async function load() {
+  const email = document.getElementById('email').value.trim();
+  if (!email) return alert('Enter the email you signed up with.');
+  localStorage.setItem('stackbid_contractor_email', email);
+  await loadWithQuery('?email=' + encodeURIComponent(email));
+}
+
+async function loadWithQuery(query) {
+  lastQuery = query;
   function esc(str) {
     return String(str == null ? '' : str)
       .replace(/&/g,'&amp;')
@@ -76,19 +121,15 @@ async function load() {
       .replace(/"/g,'&quot;')
       .replace(/'/g,'&#39;');
   }
-  const email = document.getElementById('email').value.trim();
-  if (!email) return alert('Enter the email you signed up with.');
-  localStorage.setItem('stackbid_contractor_email', email);
-
   const content = document.getElementById('content');
-  content.innerHTML = '<div class="empty">Loading…</div>';
+  if (query) content.innerHTML = '<div class="empty">Loading…</div>';
 
   try {
-    const res = await fetch('/api/contractor-dashboard?email=' + encodeURIComponent(email));
+    const res = await fetch('/api/contractor-dashboard' + query);
     const data = await res.json();
     if (!data.found) {
-      content.innerHTML = '<div class="empty">No contractor account found for this email. If you just signed up, check that you used the same email — or contact hello@stackbid.app.</div>';
-      return;
+      if (query) content.innerHTML = '<div class="empty">No contractor account found for this email. If you just signed up, check that you used the same email — or contact hello@stackbid.app.</div>';
+      return; // тиха невдача для автоперевірки сесії при завантаженні сторінки — це не помилка, просто ще немає сесії
     }
 
     const c = data.contractor;
@@ -138,13 +179,11 @@ async function setStatus(leadId, status) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ lead_id: leadId, status, email }),
     });
-    load();
+    loadWithQuery(lastQuery);
   } catch (e) {
     alert('Could not update — please try again.');
   }
 }
-
-if (savedEmail) load();
 </script>
 </body>
 </html>
