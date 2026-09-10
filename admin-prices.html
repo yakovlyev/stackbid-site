@@ -39,31 +39,10 @@
     <button onclick="load()">Load</button>
   </div>
 
-  <div class="card" style="margin-bottom:20px;">
-    <div class="card-title">📍 Programmatic SEO — Location Pages</div>
-    <div class="card-sub">Generates draft "[service] cost in [city]" pages via web-search research (8 cities × roof-replacement, first batch). Takes a few minutes — check the location_pages table in Supabase afterward.</div>
-    <button class="apply-btn" style="width:100%;" onclick="triggerLocationPages()">Generate location pages</button>
-    <div id="lp-status" style="margin-top:8px;font-size:13px;color:#556;"></div>
-  </div>
-
   <div id="list"></div>
 </div>
 
 <script>
-async function triggerLocationPages() {
-  const key = document.getElementById('key').value.trim() || localStorage.getItem('stackbid_admin_key');
-  if (!key) return alert('Enter the admin key first.');
-  const status = document.getElementById('lp-status');
-  status.textContent = 'Starting...';
-  try {
-    const res = await fetch('/api/trigger-location-pages', { method: 'POST', headers: { 'Authorization': 'Bearer ' + key } });
-    const data = await res.json();
-    status.textContent = res.ok ? '✓ ' + (data.note || 'Started') : '✗ ' + (data.error || 'Failed');
-  } catch (e) {
-    status.textContent = '✗ ' + e.message;
-  }
-}
-
 const savedKey = localStorage.getItem('stackbid_admin_key');
 if (savedKey) document.getElementById('key').value = savedKey;
 
