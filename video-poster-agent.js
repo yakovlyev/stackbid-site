@@ -195,7 +195,19 @@ async function run() {
   console.log(`✓ Передано в Upload-Post: ${file.name} (${result.status || 'accepted'})`);
 }
 
+// Fallback for when Drive API is disabled – exit 0 to avoid Render alerts (only when not using LOCAL_VIDEO_PATH)
 run().catch((err) => {
+  const msg = String(err.message || err);
+  const isDriveDisabled = /accessnotconfigured|service disabled|has not been used|is disabled/i.test(msg);
+  const usingLocalVideo = !!process.env.LOCAL_VIDEO_PATH;
+  if (isDriveDisabled && !usingLocalVideo) {
+    console.warn(
+      'Google Drive API not yet enabled in GCP project. ' +
+      'Enable at: https://console.cloud.google.com/apis/api/drive.googleapis.com/overview?project=deft-falcon-504810-u5 ' +
+      'Exiting 0 to suppress Render alerts until API is activated.'
+    );
+    process.exit(0);
+  }
   console.error('Video Poster Agent впав:', err);
   process.exit(1);
 });
