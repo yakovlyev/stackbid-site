@@ -8,7 +8,7 @@
     "start": "node server.js",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "test": "vitest run price-agent.test.js tests/video-poster-ledger.test.mjs && node --test auth-callback.security.test.cjs auth-start.security.test.cjs auth-session.security.test.cjs auth-identity.test.cjs get-estimates-auth.security.test.cjs my-estimates-auth.security.test.cjs stackbid-homeowner-auth-identity-migration.test.cjs estimate-security.test.cjs my-estimates.security.test.cjs static-exposure.security.test.mjs",
+    "test": "vitest run price-agent.test.js tests/video-poster-ledger.test.mjs && node --test auth-callback.security.test.cjs auth-logout.security.test.cjs auth-start.security.test.cjs auth-session.security.test.cjs auth-identity.test.cjs get-estimates-auth.security.test.cjs my-estimates-auth.security.test.cjs stackbid-homeowner-auth-identity-migration.test.cjs estimate-security.test.cjs my-estimates.security.test.cjs static-exposure.security.test.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {
