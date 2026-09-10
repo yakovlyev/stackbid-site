@@ -6,56 +6,108 @@
 // надёжный способ гарантировать, что либо у подрядчика есть доступ, либо с
 // него не списывают ни цента — а не "заплатил и ничего не получил".
 const Stripe = require('stripe');
+const { resolveContractorIdViaSession } = require('./_session-helper');
+
+// Винесено окремо, щоб тестувати саму логіку визначення особи (найважливіша
+// частина цієї безпекової правки) без потреби мокати весь Stripe SDK.
+// Повертає { email, contractor_id } АБО { error, statusCode } при відмові.
+async function resolveCheckoutIdentity(event, isContractor, bodyEmail, bodyContractorId, SUPABASE_URL, SUPABASE_KEY) {
+  if (!isContractor) {
+    if (!bodyEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bodyEmail)) {
+      return { error: 'Invalid email', statusCode: 400 };
+    }
+    return { email: bodyEmail, contractor_id: null };
+  }
+
+  // БЕЗОПАСНОСТЬ (BOSS-approved slice, 10.09): если есть валидная сессия
+  // контрактора — email/contractor_id из тела запроса ИГНОРИРУЮТСЯ
+  // полностью, они не могут перекрыть аутентифицированную личность.
+  const sessionContractorId = await resolveContractorIdViaSession(event, SUPABASE_URL, SUPABASE_KEY);
+  if (sessionContractorId) {
+    const cr = await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${sessionContractorId}&select=id,email`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+    });
+    const rows = cr.ok ? await cr.json() : [];
+    if (!rows?.[0]?.email) {
+      return { error: 'Service temporarily unavailable', statusCode: 503 };
+    }
+    return { email: rows[0].email, contractor_id: rows[0].id };
+  }
+
+  // Нет сессии — легаси-путь (email+contractor_id из тела, с проверкой
+  // соответствия), как и раньше. Временно, пока не все контракторы
+  // перешли на новый вход.
+  if (!bodyEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bodyEmail)) {
+    return { error: 'Invalid email', statusCode: 400 };
+  }
+  if (!bodyContractorId) {
+    return { error: 'contractor_id required', statusCode: 400 };
+  }
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return { error: 'Service temporarily unavailable', statusCode: 503 };
+  }
+  const ownerCheck = await fetch(
+    `${SUPABASE_URL}/rest/v1/contractors?id=eq.${encodeURIComponent(bodyContractorId)}&email=eq.${encodeURIComponent(bodyEmail)}&select=id`,
+    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } },
+  );
+  const ownerRows = ownerCheck.ok ? await ownerCheck.json() : [];
+  if (!ownerRows?.[0]) {
+    return { error: 'contractor_id does not match this email', statusCode: 403 };
+  }
+  return { email: bodyEmail, contractor_id: bodyContractorId };
+}
 
 exports.handler = async (event) => {
-  const cors = { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Access-Control-Allow-Methods': 'POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
+  const cors = {
+    'Access-Control-Allow-Origin': 'https://stackbid.app',
+    'Access-Control-Allow-Methods': 'POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors, body: '' };
 
   try {
-    const { email, tier, contractor_id } = JSON.parse(event.body || '{}');
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Invalid email' }) };
-    }
+    const { email: bodyEmail, tier, contractor_id: bodyContractorId } = JSON.parse(event.body || '{}');
+    const isContractor = tier === 'contractor';
 
     const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
     const SITE_URL = process.env.SITE_URL || 'https://stackbid.app';
-    const isContractor = tier === 'contractor';
     const STRIPE_PRICE_ID = isContractor ? process.env.STRIPE_PRICE_ID_CONTRACTOR : process.env.STRIPE_PRICE_ID;
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!STRIPE_SECRET_KEY || !STRIPE_PRICE_ID) {
       // Явно говорим, что оплата ещё не настроена, вместо непонятной 500-ошибки
       return {
         statusCode: 503,
         headers: { ...cors, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: isContractor ? 'Contractor billing is not configured yet — please email hello@stackbid.app' : 'Payments are not configured yet' })
+        body: JSON.stringify({
+          error: isContractor
+            ? 'Contractor billing is not configured yet — please email hello@stackbid.app'
+            : 'Payments are not configured yet',
+        }),
       };
     }
-    if (isContractor && !contractor_id) {
-      return { statusCode: 400, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'contractor_id required' }) };
-    }
 
-    // ВИПРАВЛЕНО 09.09 (знайдено паралельним агентом-аудитором): раніше
-    // contractor_id бралось з тіла запиту БЕЗ жодної перевірки — будь-хто
-    // міг підставити чужий contractor_id разом зі своїм email, реально
-    // оплатити, і вебхук активував би тріал/підписку на ЧУЖОМУ профілі
-    // підрядника замість того, хто платить. Тепер перевіряємо, що цей
-    // contractor_id реально належить саме цьому email, перш ніж взагалі
-    // створювати сесію Stripe.
-    if (isContractor) {
-      const SUPABASE_URL = process.env.SUPABASE_URL;
-      const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      if (!SUPABASE_URL || !SUPABASE_KEY) {
-        return { statusCode: 503, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Service temporarily unavailable' }) };
-      }
-      const ownerCheck = await fetch(
-        `${SUPABASE_URL}/rest/v1/contractors?id=eq.${encodeURIComponent(contractor_id)}&email=eq.${encodeURIComponent(email)}&select=id`,
-        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-      );
-      const ownerRows = ownerCheck.ok ? await ownerCheck.json() : [];
-      if (!ownerRows?.[0]) {
-        return { statusCode: 403, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'contractor_id does not match this email' }) };
-      }
+    let email = bodyEmail;
+    let contractor_id = bodyContractorId;
+
+    const identity = await resolveCheckoutIdentity(
+      event,
+      isContractor,
+      bodyEmail,
+      bodyContractorId,
+      SUPABASE_URL,
+      SUPABASE_KEY,
+    );
+    if (identity.error) {
+      return {
+        statusCode: identity.statusCode,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: identity.error }),
+      };
     }
+    email = identity.email;
+    contractor_id = identity.contractor_id;
 
     const stripe = new Stripe(STRIPE_SECRET_KEY);
 
@@ -82,9 +134,19 @@ exports.handler = async (event) => {
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ url: session.url }) };
+    return {
+      statusCode: 200,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: session.url }),
+    };
   } catch (err) {
     console.error('create-checkout-session error:', err.message);
-    return { statusCode: 500, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Could not start checkout' }) };
+    return {
+      statusCode: 500,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Could not start checkout' }),
+    };
   }
 };
+
+module.exports.resolveCheckoutIdentity = resolveCheckoutIdentity;
