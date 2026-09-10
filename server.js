@@ -21,18 +21,18 @@ const PORT = process.env.PORT || 3000;
 // ============================================================
 const rateMap = new Map();
 const LIMITS = {
-  estimate: { max: 10, window: 60000 },   // 10 AI requests/min
-  permit:   { max: 10, window: 60000 },
+  estimate: { max: 10, window: 60000 }, // 10 AI requests/min
+  permit: { max: 10, window: 60000 },
   'quote-audit': { max: 5, window: 60000 },
-  contact:  { max: 5,  window: 60000 },   // 5 contact form submissions/min
-  default:  { max: 60, window: 60000 }    // 60 general requests/min
+  contact: { max: 5, window: 60000 }, // 5 contact form submissions/min
+  default: { max: 60, window: 60000 }, // 60 general requests/min
 };
 
 function checkRateLimit(ip, endpoint) {
   const key = `${ip}:${endpoint}`;
   const limit = LIMITS[endpoint] || LIMITS.default;
   const now = Date.now();
-  const hits = (rateMap.get(key) || []).filter(t => now - t < limit.window);
+  const hits = (rateMap.get(key) || []).filter((t) => now - t < limit.window);
   if (hits.length >= limit.max) return false;
   rateMap.set(key, [...hits, now]);
   return true;
@@ -42,7 +42,7 @@ function checkRateLimit(ip, endpoint) {
 setInterval(() => {
   const now = Date.now();
   for (const [key, hits] of rateMap.entries()) {
-    if (hits.every(t => now - t > 300000)) rateMap.delete(key);
+    if (hits.every((t) => now - t > 300000)) rateMap.delete(key);
   }
 }, 300000);
 
@@ -51,7 +51,11 @@ setInterval(() => {
 // ============================================================
 function sanitizeString(str, maxLen = 1000) {
   if (typeof str !== 'string') return '';
-  return str.replace(/<[^>]*>/g, '').replace(/[<>'"]/g, '').trim().slice(0, maxLen);
+  return str
+    .replace(/<[^>]*>/g, '')
+    .replace(/[<>'"]/g, '')
+    .trim()
+    .slice(0, maxLen);
 }
 
 function validateEmail(email) {
@@ -75,18 +79,24 @@ const handlers = {
   'create-portal-session': require('./netlify/functions/create-portal-session'),
   'price-anomalies': require('./netlify/functions/price-anomalies'),
   'labor-estimate': require('./netlify/functions/labor-estimate'),
-  'assistant': require('./netlify/functions/assistant'),
+  assistant: require('./netlify/functions/assistant'),
   'whatsapp-webhook': require('./netlify/functions/whatsapp-webhook'),
   'contractor-signup': require('./netlify/functions/contractor-signup'),
   'contractor-lead': require('./netlify/functions/contractor-lead'),
   'contractor-dashboard': require('./netlify/functions/contractor-dashboard'),
-  'quote-audit': require('./netlify/functions/quote-audit')
+  'quote-audit': require('./netlify/functions/quote-audit'),
 };
 
 // Contact form handler
 async function handleContact(req, res) {
   let body = '';
-  req.on('data', d => { body += d; if (body.length > 10000) { res.writeHead(413); res.end('{}'); } });
+  req.on('data', (d) => {
+    body += d;
+    if (body.length > 10000) {
+      res.writeHead(413);
+      res.end('{}');
+    }
+  });
   req.on('end', async () => {
     try {
       const parsed = JSON.parse(body);
@@ -94,8 +104,16 @@ async function handleContact(req, res) {
       const email = sanitizeString(parsed.email, 254);
       const message = sanitizeString(parsed.message, 2000);
 
-      if (!name || !email || !message) { res.writeHead(400); res.end('{"error":"Missing fields"}'); return; }
-      if (!validateEmail(email)) { res.writeHead(400); res.end('{"error":"Invalid email"}'); return; }
+      if (!name || !email || !message) {
+        res.writeHead(400);
+        res.end('{"error":"Missing fields"}');
+        return;
+      }
+      if (!validateEmail(email)) {
+        res.writeHead(400);
+        res.end('{"error":"Invalid email"}');
+        return;
+      }
 
       const SUPABASE_URL = process.env.SUPABASE_URL;
       const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -105,33 +123,41 @@ async function handleContact(req, res) {
         await fetch(`${SUPABASE_URL}/rest/v1/contact_messages`, {
           method: 'POST',
           headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            apikey: SUPABASE_KEY,
+            Authorization: 'Bearer ' + SUPABASE_KEY,
             'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
+            Prefer: 'return=minimal',
           },
-          body: JSON.stringify({ name, email, message, created_at: new Date().toISOString() })
+          body: JSON.stringify({ name, email, message, created_at: new Date().toISOString() }),
         });
       }
 
       if (resendKey) {
         await fetch('https://api.resend.com/emails', {
           method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
+          headers: { Authorization: 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             from: 'StackBid <hello@stackbid.app>',
             to: ['hello@stackbid.app', 'yakovlyev62@gmail.com'],
             subject: 'New message from ' + name,
-            html: '<p><b>From:</b> ' + name + ' (' + email + ')</p><p><b>Message:</b></p><p>' + message.replace(/\n/g,'<br>') + '</p>'
-          })
+            html:
+              '<p><b>From:</b> ' +
+              name +
+              ' (' +
+              email +
+              ')</p><p><b>Message:</b></p><p>' +
+              message.replace(/\n/g, '<br>') +
+              '</p>',
+          }),
         });
       }
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end('{"ok":true}');
-    } catch(e) {
+    } catch (e) {
       console.error('Contact handler error:', e.message);
-      res.writeHead(500); res.end('{}');
+      res.writeHead(500);
+      res.end('{}');
     }
   });
 }
@@ -139,13 +165,21 @@ async function handleContact(req, res) {
 // Brevo contact proxy
 async function handleBrevoContact(req, res) {
   let body = '';
-  req.on('data', d => body += d);
+  req.on('data', (d) => (body += d));
   req.on('end', async () => {
     try {
       const { fname, email, role, alerts } = JSON.parse(body);
-      if (!validateEmail(email || '')) { res.writeHead(400); res.end('{}'); return; }
+      if (!validateEmail(email || '')) {
+        res.writeHead(400);
+        res.end('{}');
+        return;
+      }
       const brevoKey = process.env.BREVO_API_KEY;
-      if (!brevoKey) { res.writeHead(400); res.end('{}'); return; }
+      if (!brevoKey) {
+        res.writeHead(400);
+        res.end('{}');
+        return;
+      }
       const r = await fetch('https://api.brevo.com/v3/contacts', {
         method: 'POST',
         headers: { 'api-key': brevoKey, 'Content-Type': 'application/json' },
@@ -153,12 +187,15 @@ async function handleBrevoContact(req, res) {
           email: sanitizeString(email, 254),
           attributes: { FIRSTNAME: sanitizeString(fname, 100), ROLE: sanitizeString(role, 50), PRICE_ALERTS: alerts },
           listIds: [2],
-          updateEnabled: true
-        })
+          updateEnabled: true,
+        }),
       });
       res.writeHead(r.status, { 'Content-Type': 'application/json' });
       res.end('{}');
-    } catch(e) { res.writeHead(500); res.end('{}'); }
+    } catch (e) {
+      res.writeHead(500);
+      res.end('{}');
+    }
   });
 }
 
@@ -178,7 +215,12 @@ async function handleUnsubscribe(query, res) {
 
   if (!email || !validateEmail(email) || !token || token !== unsubscribeToken(email)) {
     res.writeHead(400, { 'Content-Type': 'text/html; charset=UTF-8' });
-    res.end(page('Link not valid', 'This unsubscribe link is invalid or expired. Contact hello@stackbid.app if you keep getting emails you don\'t want.'));
+    res.end(
+      page(
+        'Link not valid',
+        "This unsubscribe link is invalid or expired. Contact hello@stackbid.app if you keep getting emails you don't want.",
+      ),
+    );
     return;
   }
 
@@ -188,10 +230,15 @@ async function handleUnsubscribe(query, res) {
     await fetch(`${SB_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}`, {
       method: 'PATCH',
       headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ unsubscribed: true })
+      body: JSON.stringify({ unsubscribed: true }),
     });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
-    res.end(page('You\'re unsubscribed', `${email} won't receive any more marketing emails from StackBid. Transactional emails about your account may still be sent.`));
+    res.end(
+      page(
+        "You're unsubscribed",
+        `${email} won't receive any more marketing emails from StackBid. Transactional emails about your account may still be sent.`,
+      ),
+    );
   } catch (e) {
     console.error('Unsubscribe error:', e.message);
     res.writeHead(500, { 'Content-Type': 'text/html; charset=UTF-8' });
@@ -199,12 +246,7 @@ async function handleUnsubscribe(query, res) {
   }
 }
 
-
-const ALLOWED_ORIGINS = [
-  'https://stackbid.app',
-  'https://www.stackbid.app',
-  'https://stackbid-app.onrender.com'
-];
+const ALLOWED_ORIGINS = ['https://stackbid.app', 'https://www.stackbid.app', 'https://stackbid-app.onrender.com'];
 
 // ============================================================
 // BLOG — renders published seo_articles from Supabase (read-only)
@@ -252,9 +294,18 @@ function blogLayout(title, description, bodyHtml, canonicalPath) {
 
 function renderBlogIndex(articles) {
   const list = articles.length
-    ? articles.map(a => `<div class="card"><a href="/blog/${a.slug}">${a.title}</a><p>${a.meta_description || ''}</p></div>`).join('')
+    ? articles
+        .map(
+          (a) => `<div class="card"><a href="/blog/${a.slug}">${a.title}</a><p>${a.meta_description || ''}</p></div>`,
+        )
+        .join('')
     : `<p>No articles published yet — check back soon.</p>`;
-  return blogLayout('Guides & Cost Data', 'Real construction cost guides for US homeowners.', `<h1 style="color:#0C2340;">Guides &amp; Cost Data</h1>${list}`, '/blog');
+  return blogLayout(
+    'Guides & Cost Data',
+    'Real construction cost guides for US homeowners.',
+    `<h1 style="color:#0C2340;">Guides &amp; Cost Data</h1>${list}`,
+    '/blog',
+  );
 }
 
 function renderBlogNotFound() {
@@ -266,18 +317,53 @@ function renderBlogArticle(article) {
   let faqHtml = '';
   let faqSchema = '';
   if (Array.isArray(article.faq_json) && article.faq_json.length) {
-    faqHtml = '<h2>FAQ</h2>' + article.faq_json.map(f => `<p><strong>${f.question}</strong><br>${f.answer}</p>`).join('');
+    faqHtml =
+      '<h2>FAQ</h2>' + article.faq_json.map((f) => `<p><strong>${f.question}</strong><br>${f.answer}</p>`).join('');
     faqSchema = `<script type="application/ld+json">${JSON.stringify({
-      '@context': 'https://schema.org', '@type': 'FAQPage',
-      mainEntity: article.faq_json.map(f => ({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } }))
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: article.faq_json.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      })),
     })}</script>`;
   }
   let relatedHtml = '';
   if (Array.isArray(article.internal_links) && article.internal_links.length) {
-    relatedHtml = `<div class="related">${article.internal_links.map(l => `<a href="${l.path}">${l.anchor}</a>`).join('')}</div>`;
+    relatedHtml = `<div class="related">${article.internal_links.map((l) => `<a href="${l.path}">${l.anchor}</a>`).join('')}</div>`;
   }
   const body = `<article><h1>${article.title}</h1>${contentHtml}${faqHtml}${relatedHtml}</article>${faqSchema}`;
   return blogLayout(article.title, article.meta_description, body, `/blog/${article.slug}`);
+}
+
+function renderLocationPage(page) {
+  let faqHtml = '';
+  let faqSchema = '';
+  if (Array.isArray(page.faq_json) && page.faq_json.length) {
+    faqHtml =
+      '<h2>FAQ</h2>' + page.faq_json.map((f) => `<p><strong>${f.question}</strong><br>${f.answer}</p>`).join('');
+    faqSchema = `<script type="application/ld+json">${JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: page.faq_json.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      })),
+    })}</script>`;
+  }
+  const priceLine =
+    page.price_low && page.price_high
+      ? `<p style="font-size:20px;font-weight:700;color:#0C2340;">Typical range: $${page.price_low.toLocaleString()} – $${page.price_high.toLocaleString()}</p>`
+      : '';
+  const body = `<article><h1>${page.title}</h1>${priceLine}${page.content_html || ''}${faqHtml}
+    <p><a href="/">← Get a free instant estimate for your own project</a></p></article>${faqSchema}`;
+  return blogLayout(page.title, page.meta_description, body, `/cost/${page.project_type_slug}/${page.city_slug}`);
+}
+
+function renderLocationPageNotFound() {
+  return blogLayout('Not found', '', `<h1>Page not found</h1><p><a href="/">Back to StackBid</a></p>`, '/');
 }
 
 const server = http.createServer(async (req, res) => {
@@ -292,10 +378,14 @@ const server = http.createServer(async (req, res) => {
   try {
     pathname = path.posix.normalize(decodeURIComponent(parsed.pathname));
   } catch (e) {
-    res.writeHead(400); res.end('Bad Request'); return;
+    res.writeHead(400);
+    res.end('Bad Request');
+    return;
   }
   if (pathname.includes('..') || !pathname.startsWith('/')) {
-    res.writeHead(403); res.end('Forbidden'); return;
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
   }
 
   // Canonical host: www.stackbid.app -> stackbid.app (301).
@@ -311,8 +401,10 @@ const server = http.createServer(async (req, res) => {
 
   // Block suspicious paths
   const blocked = ['.php', '.asp', '.env', 'wp-admin', 'wp-login', '.git', 'xmlrpc', 'eval(', 'base64'];
-  if (blocked.some(b => pathname.toLowerCase().includes(b))) {
-    res.writeHead(403); res.end('Forbidden'); return;
+  if (blocked.some((b) => pathname.toLowerCase().includes(b))) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
   }
 
   // Block server-side source AND metadata from being served as a static
@@ -332,7 +424,9 @@ const server = http.createServer(async (req, res) => {
     pathname.endsWith('.md') ||
     (pathname.lastIndexOf('/') <= 0 && BLOCKED_ROOT_FILES.has(filename)); // тільки в корені, не /blog/package.json як контент
   if (pathname.startsWith('/netlify/') || isBlockedMetadata || (pathname.endsWith('.js') && pathname !== '/sw.js')) {
-    res.writeHead(403); res.end('Forbidden'); return;
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
   }
 
   // Security headers
@@ -345,26 +439,39 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=()');
-  res.setHeader('Content-Security-Policy',
+  res.setHeader(
+    'Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-    "font-src https://fonts.gstatic.com; " +
-    "img-src 'self' data: blob: https:; " +
-    "connect-src 'self' https://xbxknpsqecwahxzwsvpt.supabase.co https://api.anthropic.com https://api.resend.com https://api.brevo.com https://www.google.com https://www.google-analytics.com https://region1.google-analytics.com; " +
-    "frame-ancestors 'none';"
+      "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      'font-src https://fonts.gstatic.com; ' +
+      "img-src 'self' data: blob: https:; " +
+      "connect-src 'self' https://xbxknpsqecwahxzwsvpt.supabase.co https://api.anthropic.com https://api.resend.com https://api.brevo.com https://www.google.com https://www.google-analytics.com https://region1.google-analytics.com; " +
+      "frame-ancestors 'none';",
   );
 
-  if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
 
   // Block oversized requests
   const contentLength = parseInt(req.headers['content-length'] || '0');
-  if (contentLength > 10 * 1024 * 1024) { res.writeHead(413, {'Content-Type':'application/json'}); res.end(JSON.stringify({error:'Request too large'})); return; }
+  if (contentLength > 10 * 1024 * 1024) {
+    res.writeHead(413, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Request too large' }));
+    return;
+  }
 
   // Routes
   if (pathname === '/api/contact' && req.method === 'POST') {
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
-    if (!checkRateLimit(ip, 'contact')) { res.writeHead(429); res.end('{"error":"Too many requests"}'); return; }
+    if (!checkRateLimit(ip, 'contact')) {
+      res.writeHead(429);
+      res.end('{"error":"Too many requests"}');
+      return;
+    }
     return handleContact(req, res);
   }
 
@@ -388,19 +495,27 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     let sBody = '';
-    req.on('data', (d) => { sBody += d; });
+    req.on('data', (d) => {
+      sBody += d;
+    });
     req.on('end', async () => {
       try {
         await handlers['assistant'].streamHandler(sBody, res);
       } catch (e) {
         console.error('Assistant stream error:', e.message);
-        try { res.end(); } catch (_) {}
+        try {
+          res.end();
+        } catch (_) {}
       }
     });
     return;
   }
   if (pathname === '/api/assistant' && req.method === 'OPTIONS') {
-    res.writeHead(204, { 'Access-Control-Allow-Origin': 'https://stackbid.app', 'Access-Control-Allow-Methods': 'POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' });
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': 'https://stackbid.app',
+      'Access-Control-Allow-Methods': 'POST,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    });
     res.end();
     return;
   }
@@ -408,7 +523,11 @@ const server = http.createServer(async (req, res) => {
   const apiMatch = pathname.match(/^\/api\/(.+)$/);
   if (apiMatch) {
     const handler = handlers[apiMatch[1]];
-    if (!handler) { res.writeHead(404); res.end('Not found'); return; }
+    if (!handler) {
+      res.writeHead(404);
+      res.end('Not found');
+      return;
+    }
 
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
     if (!checkRateLimit(ip, apiMatch[1])) {
@@ -418,19 +537,21 @@ const server = http.createServer(async (req, res) => {
     }
 
     let body = '';
-    req.on('data', d => body += d);
+    req.on('data', (d) => (body += d));
     req.on('end', async () => {
       try {
         const result = await handler.handler({
-          httpMethod: req.method, body,
+          httpMethod: req.method,
+          body,
           headers: req.headers,
-          queryStringParameters: parsed.query
+          queryStringParameters: parsed.query,
         });
         res.writeHead(result.statusCode || 200, result.headers || {});
         res.end(result.body || '');
       } catch (e) {
         console.error('Handler error:', e.message);
-        res.writeHead(500); res.end(JSON.stringify({ error: 'Internal server error' }));
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: 'Internal server error' }));
       }
     });
     return;
@@ -450,7 +571,7 @@ const server = http.createServer(async (req, res) => {
       if (pathname === '/blog' || pathname === '/blog/') {
         const r = await fetch(
           `${SB_URL}/rest/v1/seo_articles?status=eq.published&select=title,slug,meta_description,created_at&order=created_at.desc`,
-          { headers }
+          { headers },
         );
         if (!r.ok) throw new Error(`Supabase REST ${r.status}: ${await r.text()}`);
         const articles = await r.json();
@@ -461,7 +582,7 @@ const server = http.createServer(async (req, res) => {
       const slug = pathname.replace(/^\/blog\//, '').split('/')[0];
       const r = await fetch(
         `${SB_URL}/rest/v1/seo_articles?slug=eq.${encodeURIComponent(slug)}&status=eq.published&select=title,slug,meta_description,content_markdown,faq_json,internal_links,created_at&limit=1`,
-        { headers }
+        { headers },
       );
       if (!r.ok) throw new Error(`Supabase REST ${r.status}: ${await r.text()}`);
       const rows = await r.json();
@@ -482,19 +603,61 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // Programmatic SEO location pages (09.09) — "[service] cost in [city]".
+  // Той самий патерн, що і /blog вище: status='published' контролюється
+  // вручну в Supabase (Ігор перевіряє перед публікацією), тут просто
+  // рендеримо. URL: /cost/roof-replacement/charlotte-nc
+  if (req.method === 'GET' && pathname.startsWith('/cost/')) {
+    try {
+      const parts = pathname
+        .replace(/^\/cost\//, '')
+        .split('/')
+        .filter(Boolean);
+      if (parts.length !== 2) {
+        res.writeHead(404, { 'Content-Type': 'text/html; charset=UTF-8' });
+        res.end(renderLocationPageNotFound());
+        return;
+      }
+      const [typeSlug, citySlug] = parts;
+      const SB_URL = process.env.SUPABASE_URL;
+      const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      const headers = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` };
+      const r = await fetch(
+        `${SB_URL}/rest/v1/location_pages?project_type_slug=eq.${encodeURIComponent(typeSlug)}&city_slug=eq.${encodeURIComponent(citySlug)}&status=eq.published&select=*&limit=1`,
+        { headers },
+      );
+      if (!r.ok) throw new Error(`Supabase REST ${r.status}: ${await r.text()}`);
+      const rows = await r.json();
+      const page = Array.isArray(rows) ? rows[0] : null;
+      if (!page) {
+        res.writeHead(404, { 'Content-Type': 'text/html; charset=UTF-8' });
+        res.end(renderLocationPageNotFound());
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
+      res.end(renderLocationPage(page));
+      return;
+    } catch (e) {
+      console.error('Location page route error:', e.message);
+      res.writeHead(500, { 'Content-Type': 'text/html; charset=UTF-8' });
+      res.end('<h1>Something went wrong</h1><p><a href="/">Back to StackBid</a></p>');
+      return;
+    }
+  }
+
   // Static files
   const MIME = {
     '.html': 'text/html; charset=UTF-8',
-    '.js':   'application/javascript',
-    '.svg':  'image/svg+xml',
+    '.js': 'application/javascript',
+    '.svg': 'image/svg+xml',
     '.json': 'application/json',
-    '.css':  'text/css',
-    '.png':  'image/png',
-    '.ico':  'image/x-icon',
+    '.css': 'text/css',
+    '.png': 'image/png',
+    '.ico': 'image/x-icon',
     '.webp': 'image/webp',
     '.webmanifest': 'application/manifest+json',
-    '.xml':  'application/xml; charset=UTF-8',
-    '.txt':  'text/plain; charset=UTF-8'
+    '.xml': 'application/xml; charset=UTF-8',
+    '.txt': 'text/plain; charset=UTF-8',
   };
 
   let filePath;
@@ -502,17 +665,23 @@ const server = http.createServer(async (req, res) => {
     filePath = path.join(__dirname, 'index.html');
   } else {
     // Prevent path traversal
-    const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
+    const safePath = path.normalize(pathname).replace(/^(\.\.[/\\])+/, '');
     filePath = path.join(__dirname, safePath);
     if (!filePath.startsWith(__dirname)) {
-      res.writeHead(403); res.end('Forbidden'); return;
+      res.writeHead(403);
+      res.end('Forbidden');
+      return;
     }
   }
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
       fs.readFile(path.join(__dirname, 'index.html'), (e2, d2) => {
-        if (e2) { res.writeHead(404); res.end('Not found'); return; }
+        if (e2) {
+          res.writeHead(404);
+          res.end('Not found');
+          return;
+        }
         res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
         res.end(d2);
       });
@@ -540,9 +709,12 @@ async function sendFeedbackEmails() {
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
     const r = await fetch(
       `${SB_URL}/rest/v1/users?feedback_sent=eq.false&estimate_date=lte.${fiveDaysAgo.toISOString()}&email=not.is.null&select=id,name,email,estimate_date`,
-      { headers }
+      { headers },
     );
-    if (!r.ok) { console.error('Feedback cron error:', r.status, await r.text()); return; }
+    if (!r.ok) {
+      console.error('Feedback cron error:', r.status, await r.text());
+      return;
+    }
     const users = await r.json();
     for (const user of users) {
       try {
@@ -556,16 +728,20 @@ async function sendFeedbackEmails() {
             <p>We'd love to hear how it went:</p>
             <a href="https://stackbid.app/feedback?uid=${user.id}" style="display:inline-block;background:#C9952A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Share Your Feedback</a>
             <p style="color:#6B7A8D;font-size:13px;">Thanks,<br>The StackBid Team</p>
-          </div>`
+          </div>`,
         });
         await fetch(`${SB_URL}/rest/v1/users?id=eq.${user.id}`, {
           method: 'PATCH',
           headers: { ...headers, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ feedback_sent: true })
+          body: JSON.stringify({ feedback_sent: true }),
         });
-      } catch (e) { console.error(`Feedback failed: ${user.email}`, e.message); }
+      } catch (e) {
+        console.error(`Feedback failed: ${user.email}`, e.message);
+      }
     }
-  } catch (e) { console.error('Feedback cron failed:', e.message); }
+  } catch (e) {
+    console.error('Feedback cron failed:', e.message);
+  }
 }
 
 function scheduleDailyCron() {
@@ -578,7 +754,7 @@ function scheduleDailyCron() {
     sendFeedbackEmails();
     setInterval(sendFeedbackEmails, 24 * 60 * 60 * 1000);
   }, delay);
-  console.log(`Feedback cron scheduled, next run in ${Math.round(delay/60000)} minutes`);
+  console.log(`Feedback cron scheduled, next run in ${Math.round(delay / 60000)} minutes`);
 }
 
 scheduleDailyCron();
@@ -616,10 +792,10 @@ const NURTURE_TEMPLATES = {
       <a href="https://stackbid.app/#pricing" style="display:inline-block;background:#C9952A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">See StackBid Pro</a>
       <p style="color:#6B7A8D;font-size:13px;">Thanks,<br>The StackBid Team</p>
       ${emailFooter(unsubUrl)}
-    </div>`
+    </div>`,
   },
   2: {
-    subject: 'Material prices don\'t hold still',
+    subject: "Material prices don't hold still",
     html: (user, unsubUrl) => `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
       <h2 style="color:#0C2340;">Hi ${user.name || 'there'},</h2>
       <p>Lumber, fixtures, appliances — prices move week to week. The estimate you got is a snapshot from that day.</p>
@@ -627,7 +803,7 @@ const NURTURE_TEMPLATES = {
       <a href="https://stackbid.app/#pricing" style="display:inline-block;background:#C9952A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">$9.99/month, unlimited estimates</a>
       <p style="color:#6B7A8D;font-size:13px;">Thanks,<br>The StackBid Team</p>
       ${emailFooter(unsubUrl)}
-    </div>`
+    </div>`,
   },
   3: {
     subject: 'Last note about your estimate',
@@ -638,8 +814,8 @@ const NURTURE_TEMPLATES = {
       <a href="https://stackbid.app/#pricing" style="display:inline-block;background:#C9952A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">See StackBid Pro</a>
       <p style="color:#6B7A8D;font-size:13px;">Thanks,<br>The StackBid Team</p>
       ${emailFooter(unsubUrl)}
-    </div>`
-  }
+    </div>`,
+  },
 };
 
 async function sendNurtureEmails() {
@@ -648,7 +824,9 @@ async function sendNurtureEmails() {
     return;
   }
   if (!process.env.CAN_SPAM_ADDRESS) {
-    console.error('Nurture cron: CAN_SPAM_ADDRESS not set, refusing to send (US law requires a real physical address in marketing email).');
+    console.error(
+      'Nurture cron: CAN_SPAM_ADDRESS not set, refusing to send (US law requires a real physical address in marketing email).',
+    );
     return;
   }
   try {
@@ -658,9 +836,12 @@ async function sendNurtureEmails() {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const r = await fetch(
       `${SB_URL}/rest/v1/users?free_estimate_used=eq.true&is_pro=eq.false&unsubscribed=eq.false&email=not.is.null&estimate_date=not.is.null&select=id,name,email,estimate_date,nurture1_sent,nurture2_sent,nurture3_sent`,
-      { headers }
+      { headers },
     );
-    if (!r.ok) { console.error('Nurture cron error:', r.status, await r.text()); return; }
+    if (!r.ok) {
+      console.error('Nurture cron error:', r.status, await r.text());
+      return;
+    }
     const users = await r.json();
 
     const now = Date.now();
@@ -679,12 +860,12 @@ async function sendNurtureEmails() {
           from: 'StackBid <hello@stackbid.app>',
           to: user.email,
           subject: template.subject,
-          html: template.html(user, unsubUrl)
+          html: template.html(user, unsubUrl),
         });
         await fetch(`${SB_URL}/rest/v1/users?id=eq.${user.id}`, {
           method: 'PATCH',
           headers: { ...headers, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ [`nurture${stage}_sent`]: true })
+          body: JSON.stringify({ [`nurture${stage}_sent`]: true }),
         });
       } catch (e) {
         console.error(`Nurture stage ${stage} failed for ${user.email}:`, e.message);
@@ -705,7 +886,7 @@ function scheduleNurtureCron() {
     sendNurtureEmails();
     setInterval(sendNurtureEmails, 24 * 60 * 60 * 1000);
   }, delay);
-  console.log(`Nurture cron scheduled, next run in ${Math.round(delay/60000)} minutes`);
+  console.log(`Nurture cron scheduled, next run in ${Math.round(delay / 60000)} minutes`);
 }
 
 scheduleNurtureCron();
