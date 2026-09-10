@@ -31,9 +31,9 @@ exports.handler = async (event) => {
     return { statusCode: 503, headers, body: JSON.stringify({ error: 'Service temporarily unavailable' }) };
   }
 
-  let access_token;
+  let access_token, refresh_token;
   try {
-    ({ access_token } = JSON.parse(event.body || '{}'));
+    ({ access_token, refresh_token } = JSON.parse(event.body || '{}'));
   } catch {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid request body' }) };
   }
@@ -83,11 +83,16 @@ exports.handler = async (event) => {
     console.error('auth-callback: claim step failed (non-fatal, session still issued):', e.message);
   }
 
+  const setCookies = [cookieHeader('sb_session', access_token, 60 * 60 * 8)];
+  if (refresh_token && typeof refresh_token === 'string') {
+    setCookies.push(cookieHeader('sb_refresh', refresh_token, 60 * 60 * 24 * 30)); // 30 днів — типовий термін дії Supabase refresh token
+  }
+
   return {
     statusCode: 200,
     headers: {
       ...headers,
-      'Set-Cookie': cookieHeader('sb_session', access_token, 60 * 60 * 8), // 8 годин, узгоджено з типовим Supabase access-token TTL
+      'Set-Cookie': setCookies,
     },
     body: JSON.stringify({ ok: true, claimed, redirect: '/contractor-dashboard.html' }),
   };

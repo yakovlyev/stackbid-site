@@ -32,20 +32,35 @@ test('rejects a token Supabase itself says is invalid', async () => {
   }
 });
 
-test('sets an HttpOnly Secure cookie and claims a matching unclaimed contractor row', async () => {
+test('sets an HttpOnly Secure session cookie AND a longer-lived refresh cookie, and claims a matching unclaimed contractor row', async () => {
   try {
     mockFetchSequence([
       { ok: true, json: async () => ({ id: 'auth-uid-123', email: 'real@example.com' }) },
       { ok: true, json: async () => ([{ id: 42, auth_user_id: 'auth-uid-123' }]) },
     ]);
-    const res = await handler({ httpMethod: 'POST', body: JSON.stringify({ access_token: 'good-token' }) });
+    const res = await handler({ httpMethod: 'POST', body: JSON.stringify({ access_token: 'good-token', refresh_token: 'good-refresh' }) });
     assert.equal(res.statusCode, 200);
-    assert.match(res.headers['Set-Cookie'], /HttpOnly/);
-    assert.match(res.headers['Set-Cookie'], /Secure/);
-    assert.match(res.headers['Set-Cookie'], /SameSite=Lax/);
+    const cookies = res.headers['Set-Cookie'];
+    assert.ok(Array.isArray(cookies) && cookies.length === 2);
+    assert.ok(cookies.some((c) => c.startsWith('sb_session=good-token') && c.includes('HttpOnly') && c.includes('Secure') && c.includes('SameSite=Lax')));
+    assert.ok(cookies.some((c) => c.startsWith('sb_refresh=good-refresh')));
     const body = JSON.parse(res.body);
     assert.equal(body.claimed, true);
     assert.equal(body.redirect, '/contractor-dashboard.html');
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('still works with only access_token (no refresh_token) - sets just the session cookie', async () => {
+  try {
+    mockFetchSequence([
+      { ok: true, json: async () => ({ id: 'auth-uid-1', email: 'a@example.com' }) },
+      { ok: true, json: async () => ([]) },
+    ]);
+    const res = await handler({ httpMethod: 'POST', body: JSON.stringify({ access_token: 'good-token' }) });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.headers['Set-Cookie'].length, 1);
   } finally {
     global.fetch = originalFetch;
   }

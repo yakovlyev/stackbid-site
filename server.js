@@ -88,6 +88,7 @@ const handlers = {
   'auth-start': require('./netlify/functions/auth-start'),
   'auth-callback': require('./netlify/functions/auth-callback'),
   'auth-logout': require('./netlify/functions/auth-logout'),
+  'auth-refresh': require('./netlify/functions/auth-refresh'),
 };
 
 // Contact form handler

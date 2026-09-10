@@ -10,7 +10,13 @@ exports.handler = async (event) => {
   }
   return {
     statusCode: 200,
-    headers: { ...headers, 'Set-Cookie': 'sb_session=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0' },
+    headers: {
+      ...headers,
+      'Set-Cookie': [
+        'sb_session=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0',
+        'sb_refresh=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0',
+      ],
+    },
     body: JSON.stringify({ ok: true }),
   };
 };

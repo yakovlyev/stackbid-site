@@ -13,6 +13,7 @@
     // ніколи не бачить, тому читаємо тут, на клієнті, і передаємо самі.
     const hash = new URLSearchParams(window.location.hash.slice(1));
     const access_token = hash.get('access_token');
+    const refresh_token = hash.get('refresh_token');
     const msg = document.getElementById('msg');
     if (!access_token) {
       msg.textContent = 'Missing or expired login link. Please request a new one.';
@@ -22,7 +23,7 @@
       const res = await fetch('/api/auth-callback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token }),
+        body: JSON.stringify({ access_token, refresh_token }),
       });
       const data = await res.json();
       if (res.ok && data.redirect) {

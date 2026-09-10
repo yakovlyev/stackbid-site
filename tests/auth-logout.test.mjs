@@ -8,12 +8,17 @@ test('rejects non-POST methods', async () => {
   assert.equal(res.statusCode, 405);
 });
 
-test('clears the session cookie with Max-Age=0 and the same security attributes it was set with', async () => {
+test('clears both the session AND refresh cookies with Max-Age=0 and the same security attributes they were set with', async () => {
   const res = await handler({ httpMethod: 'POST' });
   assert.equal(res.statusCode, 200);
-  assert.match(res.headers['Set-Cookie'], /sb_session=;/);
-  assert.match(res.headers['Set-Cookie'], /Max-Age=0/);
-  assert.match(res.headers['Set-Cookie'], /HttpOnly/);
-  assert.match(res.headers['Set-Cookie'], /Secure/);
-  assert.match(res.headers['Set-Cookie'], /SameSite=Lax/);
+  const cookies = res.headers['Set-Cookie'];
+  assert.ok(Array.isArray(cookies) && cookies.length === 2);
+  for (const c of cookies) {
+    assert.match(c, /Max-Age=0/);
+    assert.match(c, /HttpOnly/);
+    assert.match(c, /Secure/);
+    assert.match(c, /SameSite=Lax/);
+  }
+  assert.ok(cookies.some((c) => c.startsWith('sb_session=;')));
+  assert.ok(cookies.some((c) => c.startsWith('sb_refresh=;')));
 });
