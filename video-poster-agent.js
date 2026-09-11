@@ -195,12 +195,13 @@ async function run() {
   console.log(`✓ Передано в Upload-Post: ${file.name} (${result.status || 'accepted'})`);
 }
 
-// Fallback for when Drive API is disabled – exit 0 to avoid Render alerts (only when not using LOCAL_VIDEO_PATH)
+// Exit 0 when Google Drive API is specifically disabled in GCP (SERVICE_DISABLED /
+// accessNotConfigured). This suppresses repeated Render failure alerts while the
+// API is being activated. All other errors remain real failures (exit 1).
 run().catch((err) => {
   const msg = String(err.message || err);
-  const isDriveDisabled = /accessnotconfigured|service disabled|has not been used|is disabled/i.test(msg);
-  const usingLocalVideo = !!process.env.LOCAL_VIDEO_PATH;
-  if (isDriveDisabled && !usingLocalVideo) {
+  const isDriveDisabled = /accessNotConfigured|SERVICE_DISABLED|has not been used in project.*before or it is disabled/i.test(msg);
+  if (isDriveDisabled) {
     console.warn(
       'Google Drive API not yet enabled in GCP project. ' +
       'Enable at: https://console.cloud.google.com/apis/api/drive.googleapis.com/overview?project=deft-falcon-504810-u5 ' +
