@@ -327,6 +327,12 @@ async function main() {
   console.log(`Done. Processed ${processedCount} message(s), sent ${digestItems.filter(i => i.draft).length} auto-reply(ies), in ${Date.now() - startedAt}ms.`);
 }
 
+if (process.env.EMAIL_AGENT_ENABLED !== 'true') {
+  // Paused by owner 14.10.2026: no automatic replies until EMAIL_AGENT_ENABLED=true is set on Render.
+  console.log('email-agent paused (EMAIL_AGENT_ENABLED is not true) - nothing sent');
+  process.exit(0);
+}
+
 main().catch(err => {
   console.error('email-agent fatal error:', err);
   process.exit(1);

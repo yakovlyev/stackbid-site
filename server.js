@@ -643,7 +643,8 @@ const server = http.createServer(async (req, res) => {
 
   if (
     req.method === 'GET' &&
-    pathname === '/internal/generate-location-pages/d236b2e8e4833ff8dd44c8ec9bbfb043d60f60c536090dd3'
+    process.env.LOCATION_PAGES_TOKEN &&
+    pathname === '/internal/generate-location-pages/' + process.env.LOCATION_PAGES_TOKEN
   ) {
     res.writeHead(202, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, status: 'started' }));
@@ -843,7 +844,9 @@ function scheduleDailyCron() {
   console.log(`Feedback cron scheduled, next run in ${Math.round(delay / 60000)} minutes`);
 }
 
-scheduleDailyCron();
+// Feedback emails paused by owner 14.10.2026; set FEEDBACK_EMAILS_ENABLED=true on Render to resume.
+if (process.env.FEEDBACK_EMAILS_ENABLED === 'true') scheduleDailyCron();
+else console.log('Feedback cron paused (FEEDBACK_EMAILS_ENABLED is not true)');
 
 // ============================================================
 // EMAIL NURTURE CAMPAIGN — free estimate → Pro, runs daily at 10am UTC
