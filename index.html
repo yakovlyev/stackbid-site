@@ -22,6 +22,7 @@
 <title>StackBid — Know Your Materials & Labor Cost Before You Talk to a Contractor</title>
 <meta name="description" content="Free AI construction cost estimator for US homeowners — materials and labor. Compare wholesale and retail prices by ZIP code in 3 minutes.">
 <meta name="keywords" content="construction estimate, materials cost, wholesale prices, home improvement, deck cost, roofing estimate">
+<link rel="canonical" href="https://stackbid.app/">
 <link rel="alternate" hreflang="es" href="https://stackbid.app/es.html">
 <link rel="alternate" hreflang="en" href="https://stackbid.app/">
 <!-- PWA -->
@@ -4494,6 +4495,50 @@ window.addEventListener('load', () => setTimeout(animateCounters, 400));
     var key = el.getAttribute('data-i18n-aria');
     if (t[key] !== undefined) el.setAttribute('aria-label', t[key]);
   });
+})();
+</script>
+
+<script>
+/* GA4 click events (delegated; no PII). Added 23.10.2026 */
+(function(){
+  function ev(n,p){try{if(typeof gtag==='function')gtag('event',n,p||{});}catch(e){}}
+  var OC=[
+    ['handleSubscribeClick','subscribe_click'],
+    ["handyman-form-overlay').style.display='flex'",'handyman_form_open'],
+    ["pro-form-overlay').style.display='flex'",'pro_form_open'],
+    ['submitProForm','pro_form_submit_click'],
+    ['submitHandymanForm','handyman_form_submit_click'],
+    ['submitContactForm','contact_form_submit_click'],
+    ['unlockEstimate','estimate_unlock_click'],
+    ['doPrint(','estimate_pdf_click'],
+    ['exportCSV','estimate_excel_click'],
+    ['shareEmail','estimate_email_click'],
+    ['shareiMessage','estimate_imessage_click'],
+    ['shareWhatsApp','estimate_whatsapp_click'],
+    ['sbAskNikaWhy','ask_nika_click'],
+    ['requestContractorQuote','contractor_quote_click'],
+    ['sendPdfEmail','pdf_email_click'],
+    ['copyEstimateForCommunity','community_copy_click'],
+    ['runQuoteAudit','quote_audit_click'],
+    ['checkPermit','permit_check_click'],
+    ['lookupHDPrices','hd_prices_click'],
+    ['analyzePhoto','photo_analyze_click'],
+    ['runCalc','area_calc_click']
+  ];
+  document.addEventListener('click',function(e){
+    try{
+      var t=e.target&&e.target.closest?e.target.closest('a,button,[onclick]'):null;
+      if(!t)return;
+      if(t.classList.contains('btn-hero')){ev('cta_hero_click');return;}
+      if(t.id==='main-gen-btn'){ev('estimate_generate_click');return;}
+      if(t.classList.contains('tool-tab')){ev('tool_tab_select',{tab:(t.textContent||'').replace(/[^A-Za-z]/g,'').slice(0,20)});return;}
+      var oc=t.getAttribute('onclick')||'';
+      for(var i=0;i<OC.length;i++){if(oc.indexOf(OC[i][0])!==-1){ev(OC[i][1]);return;}}
+      var h=t.getAttribute('href')||'';
+      if(h.indexOf('mailto:')===0){ev('email_link_click');return;}
+      if(/^https?:\/\//i.test(h)&&h.indexOf(location.host)===-1){var host='';try{host=new URL(h).hostname;}catch(x){}ev('outbound_click',{host:host});}
+    }catch(err){}
+  },true);
 })();
 </script>
 

@@ -20,24 +20,22 @@
 - **Деплой:** через Render (не Netlify — там были проблемы с build credits; netlify/functions/ есть в репо, но не используется)
 - **Важно:** `.yarnrc` с `--ignore-engines true` обязателен для Render-сборки (supabase/functions-js требует Node ≥22, Render дефолтил на Node 20)
 
-## Текущий статус (на 06.07.2026)
+## Текущий статус (на 23.10.2026)
 
-### Готово и работает
-- Лендинг (`index.html`) с FAQ-секцией (8 вопросов) + FAQPage JSON-LD schema (GEO) + `llms.txt` в корне
-- Make.com сценарий (ID 5571686, "Integration Google Drive, YouTube") — Google Drive (watch folder "StackBid Videos" на stackbid.app@gmail.com) → Google Drive (download) → YouTube (upload) → Facebook Pages (upload a video, ИСПРАВЛЕНО с текстового поста) → HTTP module (X через Buffer API, т.к. нативный X-коннектор в Make устарел с мая 2025)
-- Instagram @stackbid1 успешно привязан к Facebook Page StackBid (Connected assets подтверждено)
-- `price-agent.js` — Node-скрипт, использует Anthropic API + web_search, раз в неделю обновляет цены материалов, валидирует аномалии >30% (не применяет автоматически, логирует), пишет в Supabase
-- `render.yaml` обновлён — добавлен Cron Job сервис `stackbid-price-agent` (расписание "0 9 * * 1", каждый понедельник)
-- `supabase-price-log.sql` — SQL для таблицы `price_update_log`
-- **Freemium-модель для homeowners (07.07.2026):** первая смета бесплатна (текущий email-гейт), со второй сметы — paywall с подпиской $9.99/мес. Реализовано: `supabase-subscription.sql` (поля users.free_estimate_used, is_pro, pro_since, stripe_customer_id), `netlify/functions/check-access.js` (новый endpoint проверки доступа по email), `save-estimate.js` обновлён (помечает free_estimate_used=true после первой сметы), `index.html` обновлён (renderEstimateWithGate теперь async, проверяет сервер перед показом полной сметы повторным посетителям, новый paywall-overlay UI с ценой $9.99/мес). Кнопка Subscribe пока placeholder (alert) — реальный Stripe Checkout подключить, когда будет готов расчётный счёт (ожидается в течение недели)
+Подробный статус по запускам, агентам и блокерам ведётся в памяти проекта и в репозитории `hermes-artifact-handoff` (review/). Здесь только то, что нужно знать при правке кода.
 
-### В процессе / известные проблемы
-- **Make.com сценарий:** после пересборки модуля Facebook Pages (удалили/пересоздали для смены действия с "Create a Post" на "Upload a Video") возникла ошибка "references inaccessible module" — связи между модулями 8 (Google Drive Download) → 9 (YouTube) и 12 (Facebook Pages) нужно пересоздать вручную (открыть поле Data в каждом модуле, заново выбрать переменную из выпадающего списка, не оставлять как есть)
-- **price-agent.js активация** — ждёт 2 ручных шага от Игоря: (1) выполнить `supabase-price-log.sql` в Supabase SQL Editor, (2) добавить 5 env vars в Render Dashboard для сервиса `stackbid-price-agent`: `ANTHROPIC_API_KEY` (новый ключ с console.anthropic.com), `SUPABASE_URL` (https://xbxknpsqecwahxzwsvpt.supabase.co), `SUPABASE_SERVICE_ROLE_KEY` (НЕ anon key), `RESEND_API_KEY`, `ALERT_EMAIL`
-- **Impact.com Marketplace** — заявка (StackBid Materials, ID 7454757) отклонена официально 05.07.2026 (недостаточно трафика). Решение: не переподавать сейчас, ждать 1-1.5 месяца роста контента/трафика
-- **Монетизация homeowners** — решение принято: НЕ делать обязательную подписку на входе. Freemium: первая смета бесплатно (крючок для вирусности/GEO), Pro $9.99/мес для сохранения истории/price alerts/приоритетного матчинга с контракторами/расширенного PDF. Основная монетизация — не подписка homeowners, а контракторы Pro + affiliate
+### Работает
+- Лендинг `index.html` (EN) и `es.html` (ES): canonical + hreflang, JSON-LD (SoftwareApplication, Organization с sameAs, FAQPage), `llms.txt`, `sitemap.xml`, `robots.txt`; блог `/blog` рендерится из `server.js`.
+- Freemium: первая смета бесплатно, далее подписка Homeowner Pro $9.99/мес (Stripe live ждёт LLC). Contractor Pro $49, Handyman $29, 30 дней бесплатно.
+- GA4 `G-FRXYX65KWN`: события estimate_started / estimate_unlocked / estimate_gate_skipped и (с 23.10) делегированные клики по CTA, формам, экспорту, подписке, mailto и внешним ссылкам — один скрипт перед `</body>` в обеих страницах.
+- Агенты на Render (cron): price, seo, market-scan, community-content, analytics, email (пауза автоответов с 14.10), video-poster (приостановлен), location-pages. Node 24 указан в `package.json`.
+- Контактный email: `hello@stackbid.app`. Соцсети: Instagram stackbid1, TikTok stackbid, YouTube @stackbid, X StackBid1, Reddit u/StackBid, Threads, Pinterest, Facebook.
 
-- **Voice input dedup bug (07.07.2026):** `dedupeRepeatedPhrases()` had a hardcoded max window of 15 words — Android continuous recognition sometimes resends the entire prior final utterance after auto-restart, and if that duplicated block exceeds 15 words it slipped through as visible looping/stuttering text. Fixed: window size now scales dynamically (`Math.floor(words.length/2)`) instead of a fixed cap.
+### Открытые пункты
+- Google Search Console: подтверждение сайта (meta-тег) ещё не добавлен.
+- Cookie-баннер/согласие: макет на утверждении у Игоря.
+- LLC → Stripe live и верификация WhatsApp; Apple Developer; Render платный план для stackbid-app (сейчас free, засыпает); USPS PO Box для рассылки; адрес для GBP/Houzz.
+- Страницы по локациям: первая партия через кнопку в `admin-prices.html` после утверждения образца.
 
 ## Инструменты разработки (добавлено 07.07.2026)
 
